@@ -5,7 +5,7 @@
 <!ENTITY default-objects SYSTEM "../../../data/tracks/objects.xml">
 ]>
 
-<params name="tino" type="trackdef" mode="mw">
+<params name="output" type="trackdef" mode="mw">
   <section name="Surfaces">
       &default-surfaces;
   </section>
@@ -16,13 +16,13 @@
   </section>  <!-- Objects -->
 
   <section name="Header">
-    <attstr name="name"        val="tino"/>
+    <attstr name="name"        val="output"/>
     <attstr name="category"    val="dirt"/>
     <attnum name="version"     val="4"/>
   </section>
 
   <section name="Graphic">
-    <attstr name="3d description" val="tino.ac"/>
+    <attstr name="3d description" val="output.ac"/>
     <attnum name="ambient color R" val="0.4"/>
     <attnum name="ambient color G" val="0.45"/>
     <attnum name="ambient color B" val="0.6"/>

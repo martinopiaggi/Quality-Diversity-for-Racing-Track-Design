@@ -1,6 +1,8 @@
+//modules
 const fs = require('fs');
 const Voronoi = require('./rhill-voronoi-core')
 const seedrandom = require('seedrandom');
+const { exec } = require('child_process');
 
 let bbox = {
     xl: 0,
@@ -8,7 +10,7 @@ let bbox = {
     yt: 0,
     yb: 600
 };
-let seed = 42; //Math.random();
+let seed = Math.random();
 let randomGen = seedrandom(seed);
 let trackSize = 3;
 let dataSet = [];
@@ -20,6 +22,11 @@ let selectedSites = [];
 let xml = '';
 const xmlTrackHeader = fs.readFileSync("startTrackTemplate.xml", 'utf8');
 const closingXml = "</section>\n</section>\n</params>"
+
+console.log("SEED: "+seed)
+console.log("trackSize (# cells): "+trackSize)
+
+//TRACK GENERATION:
 
 generatePoints();
 diagram = voronoi.compute(dataSet, bbox);
@@ -38,6 +45,36 @@ trackEdges = pushApart(trackEdges,1);
 exportTrackToXML(trackEdges,20); //second argument is starting index of XML
 
 
+// Execute Torcs Trackgen command + move files into Torcs folder
+exec(`"C:\\Program Files (x86)\\torcs\\trackgen.exe" -c dirt -n output`, (error, stdout, stderr) => {
+    if (error) {
+        console.error(`exec error: ${error}`);
+        return;
+    }
+    if (stderr) {
+        console.error(`stderr: ${stderr}`);
+        return;
+    }
+    console.log(`stdout: ${stdout}`);
+
+    // If the track generation is successful, move to copying the files
+    exec(`powershell -ExecutionPolicy Bypass -File ./copyFilesToTorcs.ps1`, (copyError, copyStdout, copyStderr) => {
+        if (copyError) {
+            console.error(`exec error: ${copyError}`);
+            return;
+        }
+        if (copyStderr) {
+            console.error(`stderr: ${copyStderr}`);
+            return;
+        }
+        console.log(copyStdout);
+        console.log(`Track copied to Torcs folder`);
+    });
+});
+
+
+
+// --- FUNCTIONS : 
 
 function exportTrackToXML(trackEdges,startIndex = 0) {
     let previousLength = 0;
@@ -89,7 +126,8 @@ function exportTrackToXML(trackEdges,startIndex = 0) {
         segmentNumber++;
     }
 
-    console.log(xml);
+    //console.log(xml);
+    
     console.log(maxIndex);
     // Ensure the directory exists
     
