@@ -10,9 +10,9 @@ let bbox = {
     yt: 0,
     yb: 600
 };
-let seed = 0.7296934139460391; //Math.random();
+let seed = Math.random();
 let randomGen = new seedrandom(seed);
-let trackSize = 3;
+let trackSize = 5;
 let dataSet = [];
 let voronoi = new Voronoi();
 let diagram = null;
