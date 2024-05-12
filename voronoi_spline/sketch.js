@@ -4,7 +4,8 @@ let bbox = {
     yt: 0,
     yb: 600
 };
-let seedPoints = Math.random(); 
+let seed = Math.random();
+let randomGen = new Math.seedrandom(seed);
 let trackSize = 3;
 let dataSet = [];
 let voronoi = new Voronoi();
@@ -38,7 +39,7 @@ function setup() {
     trackEdges.splice(trackEdges.length-10,10)
     
     exportTrackToXML(trackEdges,0); //second argument is starting index of XML
-    console.log(seedPoints)
+    console.log(seed)
 }
 
 
@@ -67,7 +68,7 @@ function findMinCurvatureSegment(trackEdges, segmentLength = 20) {
         }
     }
 
-    return (minSegmentStartIndex+segmentLength)%trackLength; // Return the end index of the segment with the lowest average curvature
+    return (minSegmentStartIndex+segmentLength/2)%trackLength; // Return the middle point of the segment with the lowest average curvature
 }
 
 
@@ -218,15 +219,14 @@ function draw() {
 }
 
 function generatePoints() {
-    randomSeed(seedPoints)
     for (let i = 0; i < 50; i++) {
         dataSet.push({
-            x: random(bbox.xr),
-            y: random(bbox.yb)
+            x: randomGen() * bbox.xr, //randomGern gives [0,1]
+            y: randomGen() * bbox.yb
         });
     }
-
 }
+
 
 function selectCellsForTrack(numCells) {
     let bboxCenter = {
@@ -266,7 +266,7 @@ function getNextCell(cell) {
             neighbors.push(diagram.cells[twin.voronoiId]);
         }
     }
-    return neighbors.length > 0 ? neighbors[floor(random(neighbors.length))] : null;
+    return neighbors.length > 0 ? neighbors[floor(randomGen()*(neighbors.length))] : null;
 }
 
 function findTrackEdges() {
