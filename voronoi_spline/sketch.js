@@ -4,7 +4,7 @@ let bbox = {
     yt: 0,
     yb: 600
 };
-let seedPoints = 2 //Math.Random; 
+let seedPoints = Math.random(); 
 let trackSize = 3;
 let dataSet = [];
 let voronoi = new Voronoi();
@@ -27,13 +27,48 @@ function setup() {
       trackEdges = fixAngles(trackEdges);
     }
     
-    trackEdges = generateCatmullRomSpline(trackEdges,10,0); 
+    trackEdges = generateCatmullRomSpline(trackEdges,10,0);
     trackEdges = pushApart(trackEdges,1);
     
-    exportTrackToXML(trackEdges,20); //second argument is starting index of XML
+    let minIndex = findMinCurvatureSegment(trackEdges,20);
+  
+    trackEdges = trackEdges.slice(minIndex).concat(trackEdges.slice(0, minIndex));
+    
+    trackEdges.splice(0,10)
+    trackEdges.splice(trackEdges.length-10,10)
+    
+    exportTrackToXML(trackEdges,0); //second argument is starting index of XML
+    console.log(seedPoints)
 }
 
 
+function findMinCurvatureSegment(trackEdges, segmentLength = 20) {
+    let minAverageCurvature = Infinity;
+    let minSegmentStartIndex = 0;
+    let trackLength = trackEdges.length;
+
+    for (let index = 0; index < trackLength; index++) {
+        let totalCurvature = 0;
+
+        // total curvature for a segment of 'segmentLength'
+        for (let offset = 0; offset < segmentLength; offset++) {
+            let curvatureIndex = (index + offset) % trackLength;
+            let curvature = calculateCurvature(trackEdges, curvatureIndex);
+            totalCurvature += curvature;
+        }
+
+        // Calculate average curvature for this segment
+        let averageCurvature = totalCurvature / segmentLength;
+
+        // Update the minimum average curvature and its corresponding start index
+        if (averageCurvature < minAverageCurvature) {
+            minAverageCurvature = averageCurvature;
+            minSegmentStartIndex = index;
+        }
+    }
+
+    return (minSegmentStartIndex+segmentLength)%trackLength; // Return the end index of the segment with the lowest average curvature
+}
 
 
 function exportTrackToXML(trackEdges,startIndex = 0) {
@@ -41,9 +76,10 @@ function exportTrackToXML(trackEdges,startIndex = 0) {
     const threshold = 0.001; 
     let segmentNumber = 0;
     let curvature = 0;
-  
-    let massima = -100; 
-    let maxIndex = 0;
+    let segInitEndLength = 10; 
+    //init segment of 5 meters 
+    addSection(segmentNumber, 'straight', segInitEndLength, null);
+    segmentNumber++;
   
     for (let index = startIndex; index < startIndex + trackEdges.length - 2; index++) {
         let i = (index) % trackEdges.length;
@@ -53,14 +89,8 @@ function exportTrackToXML(trackEdges,startIndex = 0) {
         const next = trackEdges[i_next];
         const nextNext = trackEdges[i_nextnext];
         const segment = calculateSegment(current, next);
-        const nextSegment = calculateSegment(next, nextNext);
         
         curvature = calculateCurvature(trackEdges,i)
-        
-        if(curvature>=massima){
-          massima = curvature;
-          maxIndex = index;
-        }
       
         if (curvature < threshold) {
             previousLength += segment.length;
@@ -81,14 +111,19 @@ function exportTrackToXML(trackEdges,startIndex = 0) {
         }
     }
 
+    
+    let additionalStr = segInitEndLength;
     if (previousLength > 0) {
-        addSection(segmentNumber, 'straight', previousLength, null);
-        segmentNumber++;
+      let additionalStr = previousLength;
     }
+    
+    addSection(segmentNumber, 'straight', additionalStr, null);
+    segmentNumber++;
+    
 
     console.log(xml);
-    console.log(maxIndex)
 }
+
 
 
 function calculateCurvature(trackEdges, i) {
