@@ -26,9 +26,7 @@ const closingXml = "</section>\n</section>\n</params>"
 console.log("SEED: "+seed)
 console.log("trackSize (# cells): "+trackSize)
 
-//TRACK GENERATION:
-
-
+//TRACK GENERATION
 generatePoints();
 diagram = voronoi.compute(dataSet, bbox);
 selectCellsForTrack(trackSize);
@@ -52,6 +50,7 @@ trackEdges.splice(trackEdges.length-10,10)
 
 exportTrackToXML(trackEdges,0); //second argument is starting index of XML
 
+// CLI COMMANDS
 
 // Execute Torcs Trackgen command + move files into Torcs folder
 exec(`"C:\\Program Files (x86)\\torcs\\trackgen.exe" -c dirt -n output`, (error, stdout, stderr) => {
@@ -77,10 +76,27 @@ exec(`"C:\\Program Files (x86)\\torcs\\trackgen.exe" -c dirt -n output`, (error,
         }
         console.log(copyStdout);
         console.log(`Track copied to Torcs folder`);
+    
+        
+        // Once the files are copied, execute the TORCS simulation with the new track
+        exec(`wtorcs.exe -nofuel -nodamage -r "./config/raceman/mapelite.xml"`, {
+            cwd: "C:\\Program Files (x86)\\torcs"
+        }, (torcsError, torcsStdout, torcsStderr) => {
+            if (torcsError) {
+                console.error(`exec error: ${torcsError}`);
+                return;
+            }
+            if (torcsStderr) {
+                console.error(`stderr: ${torcsStderr}`);
+                return;
+            }
+            console.log(`TORCS Simulation stdout: ${torcsStdout}`);
+            console.log(`TORCS simulation completed successfully.`);
+        });
+    
+    
     });
 });
-
-
 
 // --- FUNCTIONS : 
 
