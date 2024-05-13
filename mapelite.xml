@@ -2,11 +2,12 @@
 <!DOCTYPE params SYSTEM "params.dtd">
 
 
-<params name="MAPELITE">
+<params name="mapelite">
   <section name="Header">
-    <attstr name="name" val="MAPELITE"/>
-    <attstr name="description" val="MAPELITE"/>
+    <attstr name="name" val="mapelite"/>
+    <attstr name="description" val="mapelite"/>
     <attnum name="priority" val="0"/>
+    <attstr name="menu image" val="data/img/splash-qr.png"/>
   </section>
 
   <section name="Tracks">
@@ -20,21 +21,22 @@
 
   <section name="Races">
     <section name="1">
-      <attstr name="name" val="Race"/>
+      <attstr name="name" val="mapelite"/>
     </section>
 
   </section>
 
-  <section name="Race">
-    <attnum name="laps" val="3"/>
+  <section name="mapelite">
+    <attnum name="distance" unit="km" val="0"/>
     <attstr name="type" val="race"/>
     <attstr name="starting order" val="drivers list"/>
-    <attstr name="display mode" val="results only"/>
-    <attstr name="restart" val="no"/>
+    <attstr name="display mode" val="normal"/>
     <attstr name="display results" val="yes"/>
+    <attstr name="restart" val="yes"/>
+    <attnum name="laps" val="10"/>
     <section name="Starting Grid">
-      <attnum name="rows" val="1"/>
-      <attnum name="distance to start" val="100"/>
+      <attnum name="rows" val="2"/>
+      <attnum name="distance to start" val="25"/>
       <attnum name="distance between columns" val="20"/>
       <attnum name="offset within a column" val="10"/>
       <attnum name="initial speed" val="0"/>
@@ -44,28 +46,80 @@
   </section>
 
   <section name="Drivers">
+    <attnum name="maximum number" val="40"/>
+    <attnum name="focused idx" val="3"/>
+    <attstr name="focused module" val="berniw"/>
     <section name="1">
-      <attnum name="idx" val="3"/>
-      <attstr name="module" val="bt"/>
-    </section>
-
-    <section name="2">
       <attnum name="idx" val="3"/>
       <attstr name="module" val="berniw"/>
     </section>
 
+    <section name="2">
+      <attnum name="idx" val="2"/>
+      <attstr name="module" val="bt"/>
+    </section>
+
     <section name="3">
       <attnum name="idx" val="3"/>
-      <attstr name="module" val="lliaw"/>
+      <attstr name="module" val="inferno"/>
     </section>
 
     <section name="4">
       <attnum name="idx" val="3"/>
-      <attstr name="module" val="tita"/>
+      <attstr name="module" val="lliaw"/>
     </section>
 
   </section>
 
+  <section name="Configuration">
+    <attnum name="current configuration" val="4"/>
+    <section name="1">
+      <attstr name="type" val="track select"/>
+    </section>
 
+    <section name="2">
+      <attstr name="type" val="drivers select"/>
+    </section>
+
+    <section name="3">
+      <attstr name="type" val="race config"/>
+      <attstr name="race" val="mapelite"/>
+      <section name="Options">
+        <section name="1">
+          <attstr name="type" val="race length"/>
+        </section>
+
+        <section name="2">
+          <attstr name="type" val="display mode"/>
+        </section>
+
+      </section>
+
+    </section>
+
+  </section>
+
+  <section name="Drivers Start List">
+    <section name="1">
+      <attstr name="module" val="berniw"/>
+      <attnum name="idx" val="2"/>
+    </section>
+
+    <section name="2">
+      <attstr name="module" val="bt"/>
+      <attnum name="idx" val="2"/>
+    </section>
+
+    <section name="3">
+      <attstr name="module" val="inferno"/>
+      <attnum name="idx" val="2"/>
+    </section>
+
+    <section name="4">
+      <attstr name="module" val="lliaw"/>
+      <attnum name="idx" val="3"/>
+    </section>
+
+  </section>
 
 </params>
