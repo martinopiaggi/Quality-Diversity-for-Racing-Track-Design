@@ -1,5 +1,5 @@
-const Voronoi = require('./rhill-voronoi-core');
-const seedrandom = require('./seedrandom');
+const Voronoi = require('./libraries/rhill-voronoi-core');
+const seedrandom = require('./libraries/seedrandom');
 
 class TrackGenerator {
     constructor(bbox, seed,size) {
