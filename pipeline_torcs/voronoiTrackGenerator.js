@@ -1,7 +1,7 @@
 const Voronoi = require('./libraries/rhill-voronoi-core');
 const seedrandom = require('./libraries/seedrandom');
 
-class TrackGenerator {
+class VoronoiTrackGenerator {
     constructor(bbox, seed,size) {
         this.bbox = bbox;
         this.seed = seed;
@@ -100,4 +100,4 @@ class TrackGenerator {
     }
 }
 
-module.exports = TrackGenerator;
+module.exports = VoronoiTrackGenerator;

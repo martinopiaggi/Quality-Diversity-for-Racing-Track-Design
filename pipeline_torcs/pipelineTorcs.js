@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { exec } = require('child_process');
-const TrackGenerator = require('./voronoiTrackGenerator');
+const VoronoiTrackGenerator = require('./voronoiTrackGenerator');
 const utils = require('./utils/utils');
-const xml = require('./xmlTorcsGenerator');
+const xml = require('./utils/xmlTorcsGenerator');
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -10,7 +10,7 @@ const TRACK_SIZE = 5;
 
 // Track generation
 const seed = Math.random();
-const trackGenerator = new TrackGenerator(BBOX, seed, TRACK_SIZE);
+const trackGenerator = new VoronoiTrackGenerator(BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
 const splineTrack = utils.splineSmoothing(trackEdges);
 
