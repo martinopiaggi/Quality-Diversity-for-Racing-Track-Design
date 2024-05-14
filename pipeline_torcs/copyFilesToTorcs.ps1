@@ -1,3 +1,5 @@
+# Powershell script used to move generated files to torcs folder
+
 # Define the list of source files
 $sourceFiles = @(
   ".\tracks\dirt\output\output-trk.ac",
