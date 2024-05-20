@@ -9,7 +9,7 @@ function splineSmoothing(spline) {
     return spline;
 }
 
-function findMinCurvatureSegment(track, segmentLength = 20) {
+function findMinCurvatureSegment(track, segmentLength) {
     let minAverageCurvature = Infinity;
     let minSegmentStartIndex = 0;
     const trackLength = track.length;
@@ -30,8 +30,53 @@ function findMinCurvatureSegment(track, segmentLength = 20) {
         }
     }
 
-    return (minSegmentStartIndex + segmentLength) % trackLength;
+    return (minSegmentStartIndex + segmentLength/2) % trackLength;
 }
+
+function findMaxCurveBeforeStraight(track, segmentLength) {
+    let bestScore = -Infinity;
+    let desiredSegmentStartIndex = 0;
+    const trackLength = track.length;
+    const halfSegmentLength = Math.floor(segmentLength / 2);
+
+    for (let index = 0; index < trackLength; index++) {
+        let firstHalfTotalCurvature = 0;
+        let secondHalfTotalCurvature = 0;
+
+        // Calculate total curvature for the first half of the segment
+        for (let offset = 0; offset < halfSegmentLength; offset++) {
+            const curvatureIndex = (index + offset) % trackLength;
+            const curvature = calculateCurvature(track, curvatureIndex);
+            firstHalfTotalCurvature += curvature;
+        }
+
+        // Calculate total curvature for the second half of the segment
+        for (let offset = halfSegmentLength; offset < segmentLength; offset++) {
+            const curvatureIndex = (index + offset) % trackLength;
+            const curvature = calculateCurvature(track, curvatureIndex);
+            secondHalfTotalCurvature += curvature;
+        }
+
+        const firstHalfAverageCurvature = firstHalfTotalCurvature / halfSegmentLength;
+        const secondHalfAverageCurvature = secondHalfTotalCurvature / halfSegmentLength;
+
+        // Score calculation
+        const curvatureScore = firstHalfAverageCurvature; // Higher score for higher curvature
+        const straightnessScore = 1 / (secondHalfAverageCurvature + 1); // Higher score for lower curvature (more straight)
+        
+        const totalScore = straightnessScore + curvatureScore;
+
+        // Update if current segment has a better score
+        if (totalScore > bestScore) {
+            bestScore = totalScore;
+            desiredSegmentStartIndex = index;
+        }
+    }
+
+    return (desiredSegmentStartIndex + segmentLength/2) % trackLength;
+}
+
+
 
 function calculateCurvature(track, i) {
     const current = track[i];
@@ -174,6 +219,7 @@ function generateCatmullRomSpline(data, steps, startIndex) {
 module.exports = {
     splineSmoothing,
     findMinCurvatureSegment,
+    findMaxCurveBeforeStraight,
     calculateCurvature,
     calculateSegment,
     calculateCurve,

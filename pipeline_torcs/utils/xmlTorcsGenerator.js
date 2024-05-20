@@ -9,10 +9,6 @@ function exportTrackToXML(track, startIndex = 0) {
     const threshold = 0.001;
     let segmentNumber = 0;
     let curvature = 0;
-    const segInitEndLength = 10;
-
-    addSection(segmentNumber, 'straight', segInitEndLength, null);
-    segmentNumber++;
 
     for (let index = startIndex; index < startIndex + track.length - 2; index++) {
         let i = (index) % track.length;
@@ -41,13 +37,12 @@ function exportTrackToXML(track, startIndex = 0) {
         }
     }
 
-    let additionalStr = segInitEndLength;
     if (previousLength > 0) {
-        additionalStr = previousLength;
+        addSection(segmentNumber, 'straight', previousLength, null);
+    segmentNumber++;
     }
 
-    addSection(segmentNumber, 'straight', additionalStr, null);
-    segmentNumber++;
+    
 
     fs.mkdir("./tracks/dirt/output/", { recursive: true }, (dirErr) => {
         if (dirErr) {

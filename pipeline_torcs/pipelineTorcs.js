@@ -6,7 +6,14 @@ const xml = require('./utils/xmlTorcsGenerator');
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const TRACK_SIZE = 5;
+const TRACK_SIZE = 2;
+
+//paths using docker image
+const dockerImageName = 'torcs';
+const dockerContainerName = 'torcs-container';
+const tracksPath = './tracks/dirt/output';
+const mapelitePath = 'mapelite.xml'; 
+
 
 // Track generation
 const seed = Math.random();
@@ -24,17 +31,49 @@ console.log("trackSize (# cells): " + TRACK_SIZE);
 generateAndMoveTrackFiles();
 
 function processTrackEdges(track) {
-    let minIndex = utils.findMinCurvatureSegment(track, 20);
+    const segmentLength = 20;
+    let minIndex = utils.findMinCurvatureSegment(track, segmentLength);
+    //let minIndex = utils.findMaxCurveBeforeStraight(track,40)
+    //make the track start from minIndex
     track = track.slice(minIndex).concat(track.slice(0, minIndex));
-    track.splice(0, 10);
-    track.splice(track.length - 10, 10);
+    track.splice(0, segmentLength/4); 
+    //track.splice(track.length - 5, 5);
     xml.exportTrackToXML(track, 0);
 }
 
 function generateAndMoveTrackFiles() {
-    exec(`"C:\\Program Files (x86)\\torcs\\trackgen.exe" -c dirt -n output`, (error, stdout, stderr) => {
+        // Step 1: Run the Docker container interactively with a random name
+        executeCommand(`docker run -d -it ${dockerImageName}`, (containerId) => {
+            console.log(`Docker container started with ID: ${containerId}`);
+
+            // Step 2: Copy track files to Docker container
+            executeCommand(`docker cp ${tracksPath} ${containerId}:/usr/share/games/torcs/tracks/dirt/output`, () => {
+
+                // Step 3: Generate track files inside the Docker container 
+                // xvfb-run is used for virtual display (otherwise trackgen quit)
+                executeCommand(`docker exec ${containerId} xvfb-run /usr/games/trackgen -c dirt -n output`, () => {
+
+                    // Step 4: Copy mapelite.xml to Docker container
+                    executeCommand(`docker cp ${mapelitePath} ${containerId}:/usr/share/games/torcs/config/raceman/mapelite.xml`, () => {
+
+                        // Step 5: Run TORCS simulation inside Docker container
+                        executeCommand(`docker exec ${containerId} /usr/games/torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`, () => {
+
+                            // Step 6: Clean up by stopping and removing the Docker container
+                            executeCommand(`docker stop ${containerId} && docker rm ${containerId}`, () => {
+                                console.log(`Docker container ${containerId} stopped and removed.`);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+function executeCommand(command, callback) {
+    exec(command, (error, stdout, stderr) => {
         if (error) {
-            console.error(`exec error: ${error}`);
+            console.error(`Error: ${error.message}`);
             return;
         }
         if (stderr) {
@@ -42,33 +81,6 @@ function generateAndMoveTrackFiles() {
             return;
         }
         console.log(`stdout: ${stdout}`);
-
-        exec(`powershell -ExecutionPolicy Bypass -File ./copyFilesToTorcs.ps1`, (copyError, copyStdout, copyStderr) => {
-            if (copyError) {
-                console.error(`exec error: ${copyError}`);
-                return;
-            }
-            if (copyStderr) {
-                console.error(`stderr: ${copyStderr}`);
-                return;
-            }
-            console.log(copyStdout);
-            console.log(`Track copied to Torcs folder`);
-
-            exec(`wtorcs.exe -nofuel -nodamage -r "./config/raceman/mapelite.xml"`, {
-                cwd: "C:\\Program Files (x86)\\torcs"
-            }, (torcsError, torcsStdout, torcsStderr) => {
-                if (torcsError) {
-                    console.error(`exec error: ${torcsError}`);
-                    return;
-                }
-                if (torcsStderr) {
-                    console.error(`stderr: ${torcsStderr}`);
-                    return;
-                }
-                console.log(`TORCS Simulation stdout: ${torcsStdout}`);
-                console.log(`TORCS simulation completed successfully.`);
-            });
-        });
+        if (callback) callback(stdout.trim());
     });
 }
