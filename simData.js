@@ -29,7 +29,7 @@ const runSimulation = (index) => {
     let stderr = '';
     let resolved = false;
 
-    const child = exec('sudo node pipelineTorcs.js', { cwd: './pipeline_torcs' });
+    const child = exec('sudo node pipelineTorcs.js');
 
     child.stdout.on('data', (data) => {
       stdout += data;
