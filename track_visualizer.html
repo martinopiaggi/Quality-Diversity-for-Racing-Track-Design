@@ -20,7 +20,8 @@
     </form>
   </main>
   <script type="module">
-    import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
+    //import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
+    import { ConvexHullTrackGenerator } from './src/convexHullTrackGenerator.js';
     import * as utils from './src/utils/utils.js';
 
     // Constants
@@ -36,10 +37,11 @@
     });
 
     function generateTrack(seed, trackSize) {
-      trackGenerator = new VoronoiTrackGenerator(BBOX, seed, trackSize);
+      //trackGenerator = new VoronoiTrackGenerator(BBOX, seed, trackSize);
+      trackGenerator = new ConvexHullTrackGenerator(BBOX, trackSize);
       trackEdges = trackGenerator.trackEdges;
-      diagram = trackGenerator.diagram;
-      splineTrack = utils.splineSmoothing(trackEdges);
+      //diagram = trackGenerator.diagram;
+      splineTrack = utils.splineSmoothing(trackEdges);  
 
       // Redraw the track with the new seed and track size
       redraw();
@@ -54,7 +56,7 @@
       if (splineTrack) {
         background(0);
         strokeWeight(0.5);
-        drawVoronoi();
+        //drawVoronoi();
         noFill();
         stroke(0, 255, 0);
         strokeWeight(3);
