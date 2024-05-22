@@ -1,11 +1,10 @@
-const Voronoi = require('./libraries/rhill-voronoi-core');
-const seedrandom = require('./libraries/seedrandom');
+import Voronoi from './libraries/rhill-voronoi-core.js';
+import { prng_alea } from './libraries/esm-seedrandom/alea.min.mjs';
 
-class VoronoiTrackGenerator {
+export class VoronoiTrackGenerator {
     constructor(bbox, seed,size) {
         this.bbox = bbox;
-        this.seed = seed;
-        this.randomGen = new seedrandom(seed);
+        this.randomGen = prng_alea(seed);
         this.dataSet = this.generatePoints();
         this.voronoi = new Voronoi();
         this.diagram = this.voronoi.compute(this.dataSet, this.bbox);
@@ -99,5 +98,3 @@ class VoronoiTrackGenerator {
         return point1.x === point2.x && point1.y === point2.y;
     }
 }
-
-module.exports = VoronoiTrackGenerator;

@@ -1,502 +1,52 @@
 [
   {
     "success": true,
-    "seed": 0.83305254521131,
-    "length": 368.141663
+    "seed": 0.5451566333998936,
+    "length": 0
   },
   {
     "success": true,
-    "seed": 0.7127203325152085,
-    "length": 443.603516
+    "seed": 0.1890965385340575,
+    "length": 0
   },
   {
     "success": true,
-    "seed": 0.7756779832830132,
-    "length": 761.509155
+    "seed": 0.288007564419527,
+    "length": 0
   },
   {
-    "success": false,
-    "seed": 0.20924273008685512,
-    "length": 540.561401
-  },
-  {
-    "success": true,
-    "seed": 0.4985620857505155,
-    "length": 803.536438
-  },
-  {
-    "success": true,
-    "seed": 0.2621642532982915,
-    "length": 698.455078
-  },
-  {
-    "success": true,
-    "seed": 0.9835639270335468,
-    "length": 599.530884
-  },
-  {
-    "success": true,
-    "seed": 0.24720900054890294,
-    "length": 383.841125
-  },
-  {
-    "success": true,
-    "seed": 0.887686374595742,
-    "length": 483.40329
-  },
-  {
-    "success": true,
-    "seed": 0.8098439332794893,
-    "length": 555.52478
-  },
-  {
-    "success": true,
-    "seed": 0.06804079512708139,
-    "length": 515.398804
-  },
-  {
-    "success": true,
-    "seed": 0.7789238545401085,
-    "length": 434.971161
-  },
-  {
-    "success": true,
-    "seed": 0.4081058448067514,
-    "length": 786.124146
-  },
-  {
-    "success": true,
-    "seed": 0.5516173513445422,
-    "length": 519.896484
-  },
-  {
-    "success": true,
-    "seed": 0.8969007919999452,
-    "length": 368.87619
-  },
-  {
-    "success": true,
-    "seed": 0.5687603562152765,
-    "length": 559.252014
-  },
-  {
-    "success": true,
-    "seed": 0.4714386985450232,
-    "length": 368.2034
-  },
-  {
-    "success": true,
-    "seed": 0.9692250967987812,
-    "length": 600.470154
-  },
-  {
-    "success": false,
-    "seed": 0.8878397097836535,
-    "length": 697.603882
-  },
-  {
-    "success": false,
-    "seed": 0.8693170721141155,
-    "length": 658.776306
-  },
-  {
-    "success": true,
-    "seed": 0.4578067085894526,
-    "length": 532.528748
-  },
-  {
-    "success": true,
-    "seed": 0.43798105027853707,
-    "length": 545.557129
-  },
-  {
-    "success": true,
-    "seed": 0.18141871120966413,
-    "length": 504.592712
-  },
-  {
-    "success": true,
-    "seed": 0.027381234248929243,
-    "length": 629.974365
-  },
-  {
-    "success": true,
-    "seed": 0.7354663357954425,
-    "length": 720.786926
-  },
-  {
-    "success": true,
-    "seed": 0.5640035689974214,
-    "length": 564.524597
-  },
-  {
-    "success": true,
-    "seed": 0.9088608665193403,
-    "length": 408.682281
-  },
-  {
-    "success": true,
-    "seed": 0.5288722960209986,
-    "length": 534.609436
-  },
-  {
-    "success": true,
-    "seed": 0.0990494145667884,
-    "length": 875.062561
-  },
-  {
-    "success": true,
-    "seed": 0.3101839922625529,
-    "length": 448.184509
-  },
-  {
-    "success": true,
-    "seed": 0.9115011943304381,
-    "length": 548.900391
-  },
-  {
-    "success": true,
-    "seed": 0.7744458266026215,
-    "length": 514.849792
-  },
-  {
-    "success": true,
-    "seed": 0.32722899670211825,
-    "length": 666.475952
-  },
-  {
-    "success": true,
-    "seed": 0.43794301589867213,
-    "length": 614.119873
-  },
-  {
-    "success": false,
-    "seed": 0.7418277219496703,
-    "length": 516.042419
-  },
-  {
-    "success": true,
-    "seed": 0.9722177046697138,
-    "length": 588.031677
-  },
-  {
-    "success": true,
-    "seed": 0.7752461725029247,
-    "length": 497.990967
-  },
-  {
-    "success": true,
-    "seed": 0.8476871275454767,
-    "length": 669.51239
-  },
-  {
-    "success": true,
-    "seed": 0.26553291091429165,
-    "length": 657.190247
-  },
-  {
-    "success": true,
-    "seed": 0.7079727310957287,
-    "length": 491.704407
-  },
-  {
-    "success": true,
-    "seed": 0.7553830141164302,
-    "length": 782.127136
-  },
-  {
-    "success": true,
-    "seed": 0.8645687868186724,
-    "length": 587.723206
-  },
-  {
-    "success": true,
-    "seed": 0.28643510455512233,
-    "length": 604.201233
-  },
-  {
-    "success": true,
-    "seed": 0.313505991001501,
-    "length": 695.355286
-  },
-  {
-    "success": false,
-    "seed": 0.5051098847460169,
-    "length": 555.56958
-  },
-  {
-    "success": true,
-    "seed": 0.5052918724149089,
-    "length": 499.954559
-  },
-  {
-    "success": true,
-    "seed": 0.06970178492856016,
-    "length": 397.993774
-  },
-  {
     "success": true,
-    "seed": 0.14299595636386275,
-    "length": 586.235901
+    "seed": 0.2512960214576101,
+    "length": 0
   },
   {
     "success": true,
-    "seed": 0.37119856588620936,
-    "length": 495.912445
+    "seed": 0.4863208910419905,
+    "length": 0
   },
   {
-    "success": false,
-    "seed": 0.07400637423233558,
-    "length": 789.096497
-  },
-  {
-    "success": true,
-    "seed": 0.07051884641080908,
-    "length": 435.432587
-  },
-  {
-    "success": true,
-    "seed": 0.4850291589000453,
-    "length": 342.214691
-  },
-  {
-    "success": true,
-    "seed": 0.5260080838014765,
-    "length": 832.389282
-  },
-  {
-    "success": true,
-    "seed": 0.026528787363117035,
-    "length": 711.578003
-  },
-  {
-    "success": true,
-    "seed": 0.444322415772221,
-    "length": 371.911499
-  },
-  {
-    "success": true,
-    "seed": 0.7657443141402949,
-    "length": 662.100952
-  },
-  {
-    "success": true,
-    "seed": 0.08974111027286757,
-    "length": 336.818359
-  },
-  {
-    "success": true,
-    "seed": 0.5667960850124816,
-    "length": 694.365967
-  },
-  {
-    "success": true,
-    "seed": 0.5941984385082895,
-    "length": 479.305389
-  },
-  {
-    "success": true,
-    "seed": 0.07293705496053082,
-    "length": 773.808105
-  },
-  {
-    "success": true,
-    "seed": 0.9249266274771755,
-    "length": 553.264465
-  },
-  {
-    "success": false,
-    "seed": 0.24754146752263928,
-    "length": 605.503784
-  },
-  {
-    "success": true,
-    "seed": 0.8047897549794998,
-    "length": 594.786011
-  },
-  {
-    "success": true,
-    "seed": 0.23302507377816628,
-    "length": 385.983643
-  },
-  {
-    "success": true,
-    "seed": 0.059558205995459135,
-    "length": 642.990845
-  },
-  {
-    "success": true,
-    "seed": 0.22356888214453052,
-    "length": 520.112915
-  },
-  {
-    "success": false,
-    "seed": 0.6481294086293876,
-    "length": 639.364258
-  },
-  {
-    "success": true,
-    "seed": 0.24679516991512007,
-    "length": 313.872528
-  },
-  {
-    "success": true,
-    "seed": 0.06894953062228248,
-    "length": 264.850769
-  },
-  {
-    "success": true,
-    "seed": 0.4858162223510596,
-    "length": 674.561279
-  },
-  {
-    "success": false,
-    "seed": 0.7008104233835837,
-    "length": 495.621277
-  },
-  {
-    "success": true,
-    "seed": 0.7116241120398203,
-    "length": 511.766571
-  },
-  {
-    "success": true,
-    "seed": 0.4739064138397855,
-    "length": 589.518738
-  },
-  {
-    "success": true,
-    "seed": 0.871886234924756,
-    "length": 316.161346
-  },
-  {
-    "success": true,
-    "seed": 0.9528825536116565,
-    "length": 687.733276
-  },
-  {
-    "success": true,
-    "seed": 0.9013486185532236,
-    "length": 764.887512
-  },
-  {
-    "success": true,
-    "seed": 0.20454715685857905,
-    "length": 545.139343
-  },
-  {
-    "success": true,
-    "seed": 0.06048612357176242,
-    "length": 466.546051
-  },
-  {
-    "success": false,
-    "seed": 0.34461959274519094,
-    "length": 810.552002
-  },
-  {
-    "success": true,
-    "seed": 0.2778281159001721,
-    "length": 540.251831
-  },
-  {
-    "success": true,
-    "seed": 0.7226835523682646,
-    "length": 541.1604
-  },
-  {
-    "success": false,
-    "seed": 0.6491180541621351,
-    "length": 633.775452
-  },
-  {
-    "success": true,
-    "seed": 0.7187739897329244,
-    "length": 499.144318
-  },
-  {
     "success": true,
-    "seed": 0.38012168793630585,
-    "length": 632.615601
+    "seed": 0.6016967151426611,
+    "length": 574.774536
   },
   {
     "success": true,
-    "seed": 0.1902119829323099,
-    "length": 825.176331
+    "seed": 0.8124641355090869,
+    "length": 574.774536
   },
   {
     "success": true,
-    "seed": 0.24730367933994635,
-    "length": 637.624512
+    "seed": 0.6702813903736475,
+    "length": 574.774536
   },
   {
     "success": true,
-    "seed": 0.2623551990625259,
-    "length": 661.192139
-  },
-  {
-    "success": false,
-    "seed": 0.6154404344211153,
-    "length": 471.096985
-  },
-  {
-    "success": false,
-    "seed": 0.9344436357145605,
-    "length": 718.685059
-  },
-  {
-    "success": true,
-    "seed": 0.14090045859069278,
-    "length": 516.047729
-  },
-  {
-    "success": true,
-    "seed": 0.7374545187705097,
-    "length": 569.175903
-  },
-  {
-    "success": false,
-    "seed": 0.1125718101720421,
-    "length": 797.190918
-  },
-  {
-    "success": true,
-    "seed": 0.7219028260722051,
-    "length": 799.834473
-  },
-  {
-    "success": true,
-    "seed": 0.717422266610247,
-    "length": 661.461975
-  },
-  {
-    "success": true,
-    "seed": 0.891868925075419,
-    "length": 672.708984
-  },
-  {
-    "success": true,
-    "seed": 0.8388289733964933,
-    "length": 662.615906
-  },
-  {
-    "success": true,
-    "seed": 0.573498462464662,
-    "length": 547.222107
-  },
-  {
-    "success": true,
-    "seed": 0.6943934464603054,
-    "length": 462.226288
-  },
-  {
-    "success": false,
-    "seed": 0.1890236623615058,
-    "length": 537.820251
+    "seed": 0.7324813678718618,
+    "length": 574.774536
   },
   {
     "success": true,
-    "seed": 0.1540172695870079,
-    "length": 635.309265
+    "seed": 0.023881638499472446,
+    "length": 574.774536
   }
 ]

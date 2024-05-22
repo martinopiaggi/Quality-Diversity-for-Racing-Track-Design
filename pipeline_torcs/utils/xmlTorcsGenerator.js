@@ -1,10 +1,10 @@
-const fs = require('fs');
-const utils = require('./utils');
+import fs from 'fs';
+import * as utils from './utils.js';
 const XML_TRACK_HEADER = fs.readFileSync("utils/startTrackTemplate.xml", 'utf8');
 const CLOSING_XML = "</section>\n</section>\n</params>";
 let xml = '';
 
-function exportTrackToXML(track, startIndex = 0) {
+export function exportTrackToXML(track, startIndex = 0) {
     let previousLength = 0;
     const threshold = 0.001;
     let segmentNumber = 0;
@@ -74,7 +74,3 @@ function addSection(index, type, length, curv) {
         xml += '  </section>\n';
     }
 }
-
-module.exports = {
-    exportTrackToXML
-};

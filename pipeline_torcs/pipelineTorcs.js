@@ -1,8 +1,7 @@
-const fs = require('fs');
-const { exec } = require('child_process');
-const VoronoiTrackGenerator = require('./voronoiTrackGenerator');
-const utils = require('./utils/utils');
-const xml = require('./utils/xmlTorcsGenerator');
+import { exec } from 'child_process';
+import { VoronoiTrackGenerator } from './voronoiTrackGenerator.js';
+import * as utils from './utils/utils.js';
+import * as xml from './utils/xmlTorcsGenerator.js';
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -16,7 +15,7 @@ const mapelitePath = 'mapelite.xml';
 
 
 // Track generation
-const seed = Math.random();
+const seed = 0.023881638499472446 //Math.random();
 const trackGenerator = new VoronoiTrackGenerator(BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
 const splineTrack = utils.splineSmoothing(trackEdges);

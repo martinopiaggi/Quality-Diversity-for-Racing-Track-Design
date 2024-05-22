@@ -1,4 +1,4 @@
-function splineSmoothing(spline) {
+export function splineSmoothing(spline) {
     for (let i = 0; i < 10; i++) {
         spline = generateCatmullRomSpline(spline, 5, i * 10);
         spline = pushApart(spline, 20);
@@ -9,7 +9,7 @@ function splineSmoothing(spline) {
     return spline;
 }
 
-function findMinCurvatureSegment(track, segmentLength) {
+export function findMinCurvatureSegment(track, segmentLength) {
     let minAverageCurvature = Infinity;
     let minSegmentStartIndex = 0;
     const trackLength = track.length;
@@ -33,7 +33,7 @@ function findMinCurvatureSegment(track, segmentLength) {
     return (minSegmentStartIndex + segmentLength/2) % trackLength;
 }
 
-function findMaxCurveBeforeStraight(track, segmentLength) {
+export function findMaxCurveBeforeStraight(track, segmentLength) {
     let bestScore = -Infinity;
     let desiredSegmentStartIndex = 0;
     const trackLength = track.length;
@@ -78,7 +78,7 @@ function findMaxCurveBeforeStraight(track, segmentLength) {
 
 
 
-function calculateCurvature(track, i) {
+export function calculateCurvature(track, i) {
     const current = track[i];
     const next = track[(i + 1) % track.length];
     const nextNext = track[(i + 2) % track.length];
@@ -94,13 +94,13 @@ function calculateCurvature(track, i) {
     return denominator !== 0 ? Math.abs(numerator / denominator) : 0;
 }
 
-function calculateSegment(point1, point2) {
+export function calculateSegment(point1, point2) {
     const dx = point2.x - point1.x;
     const dy = point2.y - point1.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function calculateCurve(p1, p2, p3) {
+export function calculateCurve(p1, p2, p3) {
     function determinant(x1, y1, x2, y2, x3, y3) {
         return x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2);
     }
@@ -127,7 +127,7 @@ function calculateCurve(p1, p2, p3) {
     return { dir, radius, angle: theta };
 }
 
-function pushApart(points, minDistance = 5) {
+export function pushApart(points, minDistance = 5) {
     const minDistanceSquared = minDistance * minDistance;
     let i = 0;
     while (i < points.length) {
@@ -149,7 +149,7 @@ function pushApart(points, minDistance = 5) {
     return points;
 }
 
-function fixAngles(points) {
+export function fixAngles(points) {
     const radDeg = 180 / Math.PI;
     const degRad = Math.PI / 180;
     const maxAngle = 80;
@@ -187,7 +187,7 @@ function fixAngles(points) {
     return points;
 }
 
-function generateCatmullRomSpline(data, steps, startIndex) {
+export function generateCatmullRomSpline(data, steps, startIndex) {
     let spline = [];
 
     for (let i = startIndex; i < startIndex + data.length; i++) {
@@ -215,15 +215,3 @@ function generateCatmullRomSpline(data, steps, startIndex) {
 
     return spline;
 }
-
-module.exports = {
-    splineSmoothing,
-    findMinCurvatureSegment,
-    findMaxCurveBeforeStraight,
-    calculateCurvature,
-    calculateSegment,
-    calculateCurve,
-    pushApart,
-    fixAngles,
-    generateCatmullRomSpline
-};
