@@ -13,7 +13,7 @@ const mapelitePath = './src/utils/mapelite.xml';
 
 
 // Track generation
-const seed = Math.random();
+const seed = 42 //Math.random();
 const trackGenerator = new VoronoiTrackGenerator(BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
 const splineTrack = utils.splineSmoothing(trackEdges);

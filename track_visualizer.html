@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voronoi Track Visualization</title>
+  <script src="src/libraries/p5.js"></script>
+  <script src="src/libraries/p5.sound.min.js"></script>
+  <script src="src/libraries/rhill-voronoi-core.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <main>
+    <form id="trackForm">
+      <label for="seedInput">Enter Seed:</label>
+      <input type="text" id="seedInput" name="seedInput">
+      <label for="cellCountInput">Enter Number of Cell Tracks:</label>
+      <input type="text" id="cellCountInput" name="cellCountInput">
+      <button type="submit">Generate Track</button>
+    </form>
+  </main>
+  <script type="module">
+    import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
+    import * as utils from './src/utils/utils.js';
+
+    // Constants
+    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+
+    let trackGenerator, trackEdges, diagram, splineTrack;
+
+    document.getElementById('trackForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const seed = parseInt(document.getElementById('seedInput').value);
+      const trackSize = parseInt(document.getElementById('cellCountInput').value);
+      generateTrack(seed, trackSize);
+    });
+
+    function generateTrack(seed, trackSize) {
+      trackGenerator = new VoronoiTrackGenerator(BBOX, seed, trackSize);
+      trackEdges = trackGenerator.trackEdges;
+      diagram = trackGenerator.diagram;
+      splineTrack = utils.splineSmoothing(trackEdges);
+
+      // Redraw the track with the new seed and track size
+      redraw();
+    }
+
+    function setup() {
+      createCanvas(BBOX.xr, BBOX.yb);
+      noLoop();
+    }
+
+    function draw() {
+      if (splineTrack) {
+        background(0);
+        strokeWeight(0.5);
+        drawVoronoi();
+        noFill();
+        stroke(0, 255, 0);
+        strokeWeight(3);
+        drawSpline(splineTrack);
+      }
+    }
+
+    function drawVoronoi() {
+      stroke(255);
+      diagram.edges.forEach(edge => line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y));
+    }
+
+    function drawSpline(spline) {
+      beginShape();
+      let startColor = color(0, 255, 255);
+      let endColor = color(255, 0, 255);
+      for (let i = 0; i < spline.length; i++) {
+        stroke(lerpColor(startColor, endColor, i / spline.length));
+        point(spline[i].x, spline[i].y);
+      }
+      endShape(CLOSE);
+    }
+
+    // Make setup and draw available globally
+    window.setup = setup;
+    window.draw = draw;
+  </script>
+</body>
+</html>

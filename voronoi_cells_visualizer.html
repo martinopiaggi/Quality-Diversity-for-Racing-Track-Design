@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voronoi Track Visualization</title>
+  <script src="src/libraries/p5.js"></script>
+  <script src="src/libraries/p5.sound.min.js"></script>
+  <script src="src/libraries/rhill-voronoi-core.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <main>
+    <form id="trackForm">
+      <label for="seedInput">Enter Seed:</label>
+      <input type="text" id="seedInput" name="seedInput">
+      <label for="cellCountInput">Enter Number of Cell Tracks:</label>
+      <input type="text" id="cellCountInput" name="cellCountInput">
+      <button type="submit">Generate Track</button>
+    </form>
+  </main>
+  <script type="module">
+    import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
+    import * as utils from './src/utils/utils.js';
+
+    // Constants
+    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+
+    let trackGenerator, trackEdges, dataSet, diagram, selectedCells;
+
+    document.getElementById('trackForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const seed = parseInt(document.getElementById('seedInput').value);
+      const trackSize = parseInt(document.getElementById('cellCountInput').value);
+      generateTrack(seed, trackSize);
+    });
+
+    function generateTrack(seed, trackSize) {
+      trackGenerator = new VoronoiTrackGenerator(BBOX, seed, trackSize);
+      trackEdges = trackGenerator.trackEdges;
+      dataSet = trackGenerator.dataSet;
+      diagram = trackGenerator.diagram;
+      selectedCells = trackGenerator.selectedCells;
+      // Redraw the track with the new seed and track size
+      redraw();
+    }
+
+    function setup() {
+      createCanvas(BBOX.xr, BBOX.yb);
+      noLoop();
+    }
+
+    function draw() {
+      background(0);
+      drawVoronoi();
+      drawPoints();
+      drawOriginalEdges();
+      drawSelectedSites();
+    }
+
+    function drawSelectedSites() {
+      fill(0, 255, 0); // Set fill color to green
+      noStroke();
+      selectedCells.forEach((cell) => {
+            let site = cell.site;
+            ellipse(site.x, site.y, 8, 8); 
+      });
+    }
+
+    function drawOriginalEdges() {
+      stroke(0, 255, 255); // Set stroke color to blue for debugging edges
+      strokeWeight(2); // Slightly thicker line for visibility
+      for (let i = 0; i< trackEdges.length; i++) {
+        line(trackEdges[i].x, trackEdges[i].y, trackEdges[(i+1)%trackEdges.length].x, trackEdges[(i+1)%trackEdges.length].y);
+      }
+      strokeWeight(1); // Reset stroke weight for other drawings
+    }
+
+    function drawPoints() {
+      fill(255);
+      noStroke();
+      dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
+    }
+
+    function drawVoronoi() {
+      stroke(255);
+      diagram.edges.forEach(edge => line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y));
+    }
+
+    // Make setup and draw available globally
+    window.setup = setup;
+    window.draw = draw;
+  </script>
+</body>
+</html>

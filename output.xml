@@ -48,728 +48,523 @@
     <attnum name="width" unit="m" val="10.0"/>
     <section name="Track Segments">  <section name="c0">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="329.713561766558"/>
-    <attnum name="arc" unit="deg" val="0.6820746231856298"/>
+    <attnum name="radius" unit="m" val="465.0307200867212"/>
+    <attnum name="arc" unit="deg" val="0.6140032332445162"/>
   </section>
   <section name="c1">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="312.8359194316507"/>
-    <attnum name="arc" unit="deg" val="0.7958598594652309"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="566.3906927577252"/>
+    <attnum name="arc" unit="deg" val="0.5043366348722014"/>
   </section>
   <section name="c2">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="124.04280786013547"/>
-    <attnum name="arc" unit="deg" val="2.0444318412826497"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="206.38199306648744"/>
+    <attnum name="arc" unit="deg" val="1.3372100860080423"/>
   </section>
   <section name="c3">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="76.67599149958546"/>
-    <attnum name="arc" unit="deg" val="3.326641268633551"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="38.86327430114523"/>
+    <attnum name="arc" unit="deg" val="6.775303682688481"/>
   </section>
   <section name="c4">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="54.00392453144648"/>
-    <attnum name="arc" unit="deg" val="4.707457992495379"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="51.056899341481156"/>
+    <attnum name="arc" unit="deg" val="5.285625475515016"/>
   </section>
   <section name="c5">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="53.50091930840893"/>
-    <attnum name="arc" unit="deg" val="4.742486416366171"/>
+    <attnum name="radius" unit="m" val="312.74707155637446"/>
+    <attnum name="arc" unit="deg" val="0.8492032950193484"/>
   </section>
   <section name="c6">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="74.21868749386091"/>
-    <attnum name="arc" unit="deg" val="3.5061700877669546"/>
+    <attnum name="radius" unit="m" val="29.296221366368187"/>
+    <attnum name="arc" unit="deg" val="8.280402810948043"/>
   </section>
   <section name="c7">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="72.64496084456864"/>
-    <attnum name="arc" unit="deg" val="3.639129313862772"/>
+    <attnum name="radius" unit="m" val="10.178487944445049"/>
+    <attnum name="arc" unit="deg" val="20.576507589005406"/>
   </section>
   <section name="c8">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="67.18502519772797"/>
-    <attnum name="arc" unit="deg" val="3.9401126477296557"/>
+    <attnum name="radius" unit="m" val="6.637098820392568"/>
+    <attnum name="arc" unit="deg" val="29.66778345000696"/>
   </section>
   <section name="c9">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="59.11108085889998"/>
-    <attnum name="arc" unit="deg" val="4.424961139604602"/>
+    <attnum name="radius" unit="m" val="13.54567691922203"/>
+    <attnum name="arc" unit="deg" val="16.59715632906862"/>
   </section>
   <section name="c10">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="53.0358258737009"/>
-    <attnum name="arc" unit="deg" val="4.852039757086753"/>
+    <attnum name="radius" unit="m" val="27.18629798367389"/>
+    <attnum name="arc" unit="deg" val="9.468004029782094"/>
   </section>
   <section name="c11">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="61.06967886058357"/>
-    <attnum name="arc" unit="deg" val="4.289906959704578"/>
+    <attnum name="radius" unit="m" val="47.00172769600012"/>
+    <attnum name="arc" unit="deg" val="5.885053685492861"/>
   </section>
   <section name="c12">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="65.94350835266039"/>
-    <attnum name="arc" unit="deg" val="4.017172551505049"/>
+    <attnum name="radius" unit="m" val="68.84608972492603"/>
+    <attnum name="arc" unit="deg" val="4.010710239336855"/>
   </section>
   <section name="c13">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="66.79619102703523"/>
-    <attnum name="arc" unit="deg" val="3.9500972858218613"/>
+    <attnum name="radius" unit="m" val="50.826299908729304"/>
+    <attnum name="arc" unit="deg" val="5.140190671716838"/>
   </section>
   <section name="c14">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="63.28391700288197"/>
-    <attnum name="arc" unit="deg" val="4.088518126788137"/>
+    <attnum name="radius" unit="m" val="50.577531619525274"/>
+    <attnum name="arc" unit="deg" val="5.452415495279536"/>
   </section>
   <section name="c15">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="55.983631805098"/>
-    <attnum name="arc" unit="deg" val="4.482166977450563"/>
+    <attnum name="radius" unit="m" val="66.10272453307142"/>
+    <attnum name="arc" unit="deg" val="4.350058387125574"/>
   </section>
   <section name="c16">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="56.10364703091565"/>
-    <attnum name="arc" unit="deg" val="4.436685242397218"/>
+    <attnum name="radius" unit="m" val="74.80153465874477"/>
+    <attnum name="arc" unit="deg" val="3.852548586101562"/>
   </section>
   <section name="c17">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="58.57824199898413"/>
-    <attnum name="arc" unit="deg" val="4.250216346604154"/>
+    <attnum name="radius" unit="m" val="72.03542300160265"/>
+    <attnum name="arc" unit="deg" val="3.8466588902357097"/>
   </section>
   <section name="c18">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="61.717424910534156"/>
-    <attnum name="arc" unit="deg" val="4.047745645797118"/>
+    <attnum name="radius" unit="m" val="29.870898824094194"/>
+    <attnum name="arc" unit="deg" val="8.598840436707784"/>
   </section>
   <section name="c19">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="65.46086903239605"/>
-    <attnum name="arc" unit="deg" val="3.8385588762547473"/>
+    <attnum name="radius" unit="m" val="29.11398700489802"/>
+    <attnum name="arc" unit="deg" val="8.563949510427978"/>
   </section>
   <section name="c20">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="76.29568068318069"/>
-    <attnum name="arc" unit="deg" val="3.334187176001919"/>
+    <attnum name="radius" unit="m" val="83.26926878469821"/>
+    <attnum name="arc" unit="deg" val="2.975231285019775"/>
   </section>
   <section name="c21">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="80.16571115582387"/>
-    <attnum name="arc" unit="deg" val="3.282613905043979"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="89.93706138562212"/>
+    <attnum name="arc" unit="deg" val="2.7052844339357343"/>
   </section>
   <section name="c22">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="71.45524674980223"/>
-    <attnum name="arc" unit="deg" val="3.7617341303432026"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="26.398948219870263"/>
+    <attnum name="arc" unit="deg" val="8.935736676057857"/>
   </section>
   <section name="c23">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="61.34014854230512"/>
-    <attnum name="arc" unit="deg" val="4.407740130939448"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="25.41183000201353"/>
+    <attnum name="arc" unit="deg" val="9.194526127115088"/>
   </section>
   <section name="c24">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="51.16479375561997"/>
-    <attnum name="arc" unit="deg" val="5.248995055140106"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="53.49423755505205"/>
+    <attnum name="arc" unit="deg" val="4.494534966351106"/>
   </section>
   <section name="c25">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="48.05534319776954"/>
-    <attnum name="arc" unit="deg" val="5.566890255457626"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="45.51767991119236"/>
+    <attnum name="arc" unit="deg" val="5.326692967325677"/>
   </section>
   <section name="c26">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="63.2543486687671"/>
-    <attnum name="arc" unit="deg" val="4.439290357739009"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="36.409398143980376"/>
+    <attnum name="arc" unit="deg" val="6.570005833602988"/>
   </section>
   <section name="c27">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="66.80888105578752"/>
-    <attnum name="arc" unit="deg" val="4.30331380882208"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="27.94195520313222"/>
+    <attnum name="arc" unit="deg" val="8.311641531734853"/>
   </section>
   <section name="c28">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="60.915144507321415"/>
-    <attnum name="arc" unit="deg" val="4.662697061298174"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="14.007215753479585"/>
+    <attnum name="arc" unit="deg" val="16.134441844318975"/>
   </section>
   <section name="c29">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="48.246979323668505"/>
-    <attnum name="arc" unit="deg" val="5.612100164188932"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="18.969888388996967"/>
+    <attnum name="arc" unit="deg" val="12.55578713976787"/>
   </section>
   <section name="c30">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="32.32818217958444"/>
-    <attnum name="arc" unit="deg" val="7.761131592277926"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="71.40518785095807"/>
+    <attnum name="arc" unit="deg" val="3.5329188650370735"/>
   </section>
   <section name="c31">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="32.6664428118469"/>
-    <attnum name="arc" unit="deg" val="7.40501158663979"/>
+    <attnum name="radius" unit="m" val="61.12655382017484"/>
+    <attnum name="arc" unit="deg" val="4.113623629524388"/>
   </section>
   <section name="c32">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="41.17923286920783"/>
-    <attnum name="arc" unit="deg" val="5.81545759609907"/>
+    <attnum name="radius" unit="m" val="17.65735857716567"/>
+    <attnum name="arc" unit="deg" val="13.38233569617663"/>
   </section>
   <section name="c33">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="58.83169168895633"/>
-    <attnum name="arc" unit="deg" val="4.07378712806721"/>
+    <attnum name="radius" unit="m" val="14.297318907894141"/>
+    <attnum name="arc" unit="deg" val="15.790172204552391"/>
   </section>
   <section name="c34">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="103.37385680771636"/>
-    <attnum name="arc" unit="deg" val="2.327521036922578"/>
+    <attnum name="radius" unit="m" val="30.50621538798725"/>
+    <attnum name="arc" unit="deg" val="7.772613499128569"/>
   </section>
   <section name="c35">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="65.13072617836988"/>
-    <attnum name="arc" unit="deg" val="3.715678032963734"/>
+    <attnum name="radius" unit="m" val="32.24791484257519"/>
+    <attnum name="arc" unit="deg" val="7.612671116610393"/>
   </section>
   <section name="c36">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="53.98403190319412"/>
-    <attnum name="arc" unit="deg" val="4.5933930696938035"/>
+    <attnum name="radius" unit="m" val="30.480261155230135"/>
+    <attnum name="arc" unit="deg" val="8.137531187824717"/>
   </section>
   <section name="c37">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="98.25476596534818"/>
-    <attnum name="arc" unit="deg" val="2.5689565012133833"/>
+    <attnum name="radius" unit="m" val="26.408792182859393"/>
+    <attnum name="arc" unit="deg" val="9.308658979587172"/>
   </section>
   <section name="c38">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="345.5631119561832"/>
-    <attnum name="arc" unit="deg" val="0.7316108451494808"/>
+    <attnum name="radius" unit="m" val="19.588576192339932"/>
+    <attnum name="arc" unit="deg" val="12.492774621135423"/>
   </section>
   <section name="c39">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="224.42429143326885"/>
-    <attnum name="arc" unit="deg" val="1.1071598398441729"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="28.57224710363221"/>
+    <attnum name="arc" unit="deg" val="9.290826890767763"/>
   </section>
   <section name="c40">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="342.46107175898607"/>
-    <attnum name="arc" unit="deg" val="0.6999367069338573"/>
+    <attnum name="radius" unit="m" val="53.65977006901363"/>
+    <attnum name="arc" unit="deg" val="5.314473828415595"/>
   </section>
   <section name="c41">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="112.45985378364489"/>
-    <attnum name="arc" unit="deg" val="2.0593982642170974"/>
+    <attnum name="radius" unit="m" val="115.17373688243656"/>
+    <attnum name="arc" unit="deg" val="2.5509562050646175"/>
   </section>
   <section name="c42">
     <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="282.15159131674966"/>
-    <attnum name="arc" unit="deg" val="0.8061902830444427"/>
+    <attnum name="radius" unit="m" val="277.4908999057968"/>
+    <attnum name="arc" unit="deg" val="1.0095269584442728"/>
   </section>
   <section name="c43">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="61.10370280621168"/>
-    <attnum name="arc" unit="deg" val="3.716903077294785"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="87.21890174888065"/>
+    <attnum name="arc" unit="deg" val="3.062159855351927"/>
   </section>
   <section name="c44">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="36.702011007291524"/>
-    <attnum name="arc" unit="deg" val="6.31799740136204"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="122.78824280610196"/>
+    <attnum name="arc" unit="deg" val="2.1535809199195164"/>
   </section>
   <section name="c45">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="52.20945266273251"/>
-    <attnum name="arc" unit="deg" val="4.7094927678538"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="216.93002863843148"/>
+    <attnum name="arc" unit="deg" val="1.2094274277767678"/>
   </section>
   <section name="c46">
     <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="104.10426500874883"/>
-    <attnum name="arc" unit="deg" val="2.581885720808182"/>
+    <attnum name="radius" unit="m" val="346.02833100965404"/>
+    <attnum name="arc" unit="deg" val="0.7473367704466297"/>
   </section>
   <section name="c47">
     <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="69.6108439484027"/>
-    <attnum name="arc" unit="deg" val="4.014206440125966"/>
+    <attnum name="radius" unit="m" val="104.52112534443202"/>
+    <attnum name="arc" unit="deg" val="2.481456978575716"/>
   </section>
   <section name="c48">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="46.150611951736465"/>
-    <attnum name="arc" unit="deg" val="5.995494490848328"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="215.65885670940196"/>
+    <attnum name="arc" unit="deg" val="1.2011293761552206"/>
   </section>
   <section name="c49">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="29.22567561863829"/>
-    <attnum name="arc" unit="deg" val="9.004490165701384"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="66.81804440664376"/>
+    <attnum name="arc" unit="deg" val="3.7982249286509444"/>
   </section>
   <section name="c50">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="19.346507777350947"/>
-    <attnum name="arc" unit="deg" val="12.724656969933163"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="36.51538665648259"/>
+    <attnum name="arc" unit="deg" val="6.739106420163757"/>
   </section>
   <section name="c51">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="24.555186199302046"/>
-    <attnum name="arc" unit="deg" val="10.018628903843473"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="41.92355241141011"/>
+    <attnum name="arc" unit="deg" val="5.808884579236725"/>
   </section>
   <section name="c52">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="37.770441354351696"/>
-    <attnum name="arc" unit="deg" val="6.704684752766723"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="75.6125446823419"/>
+    <attnum name="arc" unit="deg" val="3.4543850014147104"/>
   </section>
   <section name="c53">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="69.04793742825032"/>
-    <attnum name="arc" unit="deg" val="3.7690445527931313"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="46.89473237257675"/>
+    <attnum name="arc" unit="deg" val="5.620236566656157"/>
   </section>
   <section name="c54">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="223.22750838982483"/>
-    <attnum name="arc" unit="deg" val="1.1806103945153132"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="26.58699742237322"/>
+    <attnum name="arc" unit="deg" val="9.320645102516934"/>
   </section>
   <section name="c55">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="66.17826301638023"/>
-    <attnum name="arc" unit="deg" val="3.9856886648391354"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="13.624801141019159"/>
+    <attnum name="arc" unit="deg" val="16.15900115035463"/>
   </section>
   <section name="c56">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="53.57413925872473"/>
-    <attnum name="arc" unit="deg" val="5.102061539769208"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="7.753976356237681"/>
+    <attnum name="arc" unit="deg" val="25.6768630272399"/>
   </section>
   <section name="c57">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="222.5483635485297"/>
-    <attnum name="arc" unit="deg" val="1.2620503952050504"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="12.915622337676659"/>
+    <attnum name="arc" unit="deg" val="16.84210111744555"/>
   </section>
   <section name="c58">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="121.42673734659321"/>
-    <attnum name="arc" unit="deg" val="2.3174167107666626"/>
+    <attnum name="radius" unit="m" val="26.957590068130386"/>
+    <attnum name="arc" unit="deg" val="9.099620537911086"/>
   </section>
   <section name="c59">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="44.59416300563327"/>
-    <attnum name="arc" unit="deg" val="6.17616728633752"/>
+    <attnum name="radius" unit="m" val="56.220662739860444"/>
+    <attnum name="arc" unit="deg" val="4.65720568390538"/>
   </section>
   <section name="c60">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="47.439174606576124"/>
-    <attnum name="arc" unit="deg" val="5.7046216632320705"/>
+    <attnum name="radius" unit="m" val="159.91932657999502"/>
+    <attnum name="arc" unit="deg" val="1.6263835848320922"/>
   </section>
   <section name="c61">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="107.52792183781762"/>
-    <attnum name="arc" unit="deg" val="2.632033780661822"/>
+    <attnum name="radius" unit="m" val="81.7773724483985"/>
+    <attnum name="arc" unit="deg" val="2.963905122226207"/>
   </section>
   <section name="c62">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="67.53582905383351"/>
-    <attnum name="arc" unit="deg" val="4.220031077238568"/>
+    <attnum name="radius" unit="m" val="47.67308665485064"/>
+    <attnum name="arc" unit="deg" val="5.062309626998968"/>
   </section>
   <section name="c63">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="41.78915347201604"/>
-    <attnum name="arc" unit="deg" val="6.549449454956137"/>
+    <attnum name="radius" unit="m" val="81.13698774178502"/>
+    <attnum name="arc" unit="deg" val="3.0309629470817403"/>
   </section>
   <section name="c64">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="24.492204807568353"/>
-    <attnum name="arc" unit="deg" val="10.296465432778431"/>
+    <attnum name="radius" unit="m" val="224.77589720607583"/>
+    <attnum name="arc" unit="deg" val="1.115185011410301"/>
   </section>
   <section name="c65">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="16.765966972393414"/>
-    <attnum name="arc" unit="deg" val="13.788599673123848"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="367.7867144142312"/>
+    <attnum name="arc" unit="deg" val="0.6924566814655181"/>
   </section>
   <section name="c66">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="22.4450656523878"/>
-    <attnum name="arc" unit="deg" val="10.542946684902937"/>
+    <attnum name="radius" unit="m" val="91.48140877870343"/>
+    <attnum name="arc" unit="deg" val="2.8522701118195792"/>
   </section>
   <section name="c67">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="25.782009718005213"/>
-    <attnum name="arc" unit="deg" val="9.403772405703787"/>
+    <attnum name="radius" unit="m" val="86.20181439250733"/>
+    <attnum name="arc" unit="deg" val="3.252675712690433"/>
   </section>
   <section name="c68">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="26.04473067307112"/>
-    <attnum name="arc" unit="deg" val="9.294403610150995"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="284.6761275251372"/>
+    <attnum name="arc" unit="deg" val="1.0102824796214211"/>
   </section>
   <section name="c69">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="23.001134078445585"/>
-    <attnum name="arc" unit="deg" val="10.22739510826377"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="50.26371297161055"/>
+    <attnum name="arc" unit="deg" val="5.526388192848128"/>
   </section>
   <section name="c70">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="16.36730222606723"/>
-    <attnum name="arc" unit="deg" val="13.912075086380415"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="21.396798442002833"/>
+    <attnum name="arc" unit="deg" val="11.91534853198217"/>
   </section>
   <section name="c71">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="22.80148026904405"/>
-    <attnum name="arc" unit="deg" val="10.767441852336596"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="10.902486788961063"/>
+    <attnum name="arc" unit="deg" val="21.276329623335755"/>
   </section>
   <section name="c72">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="40.428560765959126"/>
-    <attnum name="arc" unit="deg" val="6.570267555922446"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="14.64379664898046"/>
+    <attnum name="arc" unit="deg" val="15.743610675516877"/>
   </section>
   <section name="c73">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="73.14043656439675"/>
-    <attnum name="arc" unit="deg" val="3.785309694681659"/>
+    <attstr name="type" val="rgt"/>
+    <attnum name="radius" unit="m" val="37.24551312590583"/>
+    <attnum name="arc" unit="deg" val="6.511239736929065"/>
   </section>
   <section name="c74">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="163.50575308496443"/>
-    <attnum name="arc" unit="deg" val="1.6862536421122765"/>
+    <attnum name="radius" unit="m" val="217.30529497958776"/>
+    <attnum name="arc" unit="deg" val="1.14135567385755"/>
   </section>
   <section name="c75">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="113.73044409896097"/>
-    <attnum name="arc" unit="deg" val="2.324140221895638"/>
+    <attnum name="radius" unit="m" val="26.981633707382723"/>
+    <attnum name="arc" unit="deg" val="8.976157754690274"/>
   </section>
   <section name="c76">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="71.32494731430442"/>
-    <attnum name="arc" unit="deg" val="3.727360258068111"/>
+    <attnum name="radius" unit="m" val="25.712980831983003"/>
+    <attnum name="arc" unit="deg" val="9.125774284265827"/>
   </section>
   <section name="c77">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="97.58024163464395"/>
-    <attnum name="arc" unit="deg" val="2.7615815695096364"/>
+    <attnum name="radius" unit="m" val="81.84341820890171"/>
+    <attnum name="arc" unit="deg" val="2.8981670854222896"/>
   </section>
   <section name="c78">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="144.04156413605565"/>
-    <attnum name="arc" unit="deg" val="1.8840374703274176"/>
+    <attnum name="radius" unit="m" val="54.143553100877725"/>
+    <attnum name="arc" unit="deg" val="4.415453452114624"/>
   </section>
   <section name="c79">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="255.08649932968257"/>
-    <attnum name="arc" unit="deg" val="1.0626459063842046"/>
+    <attnum name="radius" unit="m" val="40.10125117661561"/>
+    <attnum name="arc" unit="deg" val="5.984802211722494"/>
   </section>
   <section name="c80">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="188.48588429578768"/>
-    <attnum name="arc" unit="deg" val="1.4398092082547862"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="32.1154242068105"/>
+    <attnum name="arc" unit="deg" val="7.528849130947083"/>
   </section>
   <section name="c81">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="587.4632991922546"/>
-    <attnum name="arc" unit="deg" val="0.4833597528184688"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="28.78052164092655"/>
+    <attnum name="arc" unit="deg" val="8.627554400046124"/>
   </section>
   <section name="c82">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="112.77348825350134"/>
-    <attnum name="arc" unit="deg" val="2.5396524037331156"/>
+    <attnum name="radius" unit="m" val="41.70571326163737"/>
+    <attnum name="arc" unit="deg" val="6.365870516582254"/>
   </section>
   <section name="c83">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="45.51112377438396"/>
-    <attnum name="arc" unit="deg" val="6.065116506429524"/>
+    <attnum name="radius" unit="m" val="61.40467415234785"/>
+    <attnum name="arc" unit="deg" val="4.542820359503846"/>
   </section>
   <section name="c84">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="23.41089920456297"/>
-    <attnum name="arc" unit="deg" val="10.968401327854673"/>
+    <attnum name="radius" unit="m" val="86.23728639666248"/>
+    <attnum name="arc" unit="deg" val="3.3007378727502563"/>
   </section>
   <section name="c85">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="17.69008734756762"/>
-    <attnum name="arc" unit="deg" val="13.726255878321183"/>
+    <attnum name="radius" unit="m" val="116.95238518561557"/>
+    <attnum name="arc" unit="deg" val="2.4057775498892857"/>
   </section>
   <section name="c86">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="28.977871143242968"/>
-    <attnum name="arc" unit="deg" val="8.968479793858553"/>
+    <attnum name="radius" unit="m" val="302.90165641766924"/>
+    <attnum name="arc" unit="deg" val="0.8990484658002509"/>
   </section>
   <section name="c87">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="31.22175928418656"/>
-    <attnum name="arc" unit="deg" val="8.584148730605664"/>
+    <attnum name="radius" unit="m" val="165.18903598278288"/>
+    <attnum name="arc" unit="deg" val="1.6802110884188046"/>
   </section>
   <section name="c88">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="26.15073287390338"/>
-    <attnum name="arc" unit="deg" val="9.971997275627173"/>
+    <attnum name="radius" unit="m" val="73.95610096691192"/>
+    <attnum name="arc" unit="deg" val="3.7696626245753606"/>
   </section>
   <section name="c89">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="17.6825666753458"/>
-    <attnum name="arc" unit="deg" val="13.625308810193292"/>
+    <attnum name="radius" unit="m" val="44.22326358021625"/>
+    <attnum name="arc" unit="deg" val="6.188314302830493"/>
   </section>
   <section name="c90">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="10.27359979465139"/>
-    <attnum name="arc" unit="deg" val="21.603279259588433"/>
+    <attnum name="radius" unit="m" val="29.08795142325375"/>
+    <attnum name="arc" unit="deg" val="9.116470466372853"/>
   </section>
   <section name="c91">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="16.647691338336106"/>
-    <attnum name="arc" unit="deg" val="14.694829947936983"/>
+    <attnum name="radius" unit="m" val="23.208138791280497"/>
+    <attnum name="arc" unit="deg" val="11.239788983931659"/>
   </section>
   <section name="c92">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="35.41109620219407"/>
-    <attnum name="arc" unit="deg" val="7.701170856120272"/>
+    <attnum name="radius" unit="m" val="33.540652897430725"/>
+    <attnum name="arc" unit="deg" val="8.17011353100297"/>
   </section>
   <section name="c93">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="79.64531620738688"/>
-    <attnum name="arc" unit="deg" val="3.5790965784496493"/>
+    <attnum name="radius" unit="m" val="45.85499038195178"/>
+    <attnum name="arc" unit="deg" val="6.209703269151035"/>
   </section>
   <section name="c94">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="662.1318529651788"/>
-    <attnum name="arc" unit="deg" val="0.41614359350795604"/>
+    <attnum name="radius" unit="m" val="57.30209348119183"/>
+    <attnum name="arc" unit="deg" val="5.0082995804860095"/>
   </section>
   <section name="c95">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="71.52603161304201"/>
-    <attnum name="arc" unit="deg" val="3.4489638541355148"/>
+    <attnum name="radius" unit="m" val="63.79500635553187"/>
+    <attnum name="arc" unit="deg" val="4.373218217903399"/>
   </section>
   <section name="c96">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="36.62326864018308"/>
-    <attnum name="arc" unit="deg" val="6.363857543309941"/>
+    <attnum name="radius" unit="m" val="41.197438655787764"/>
+    <attnum name="arc" unit="deg" val="6.382010792166219"/>
   </section>
   <section name="c97">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="135.29620407601155"/>
-    <attnum name="arc" unit="deg" val="1.6937834798051143"/>
+    <attnum name="radius" unit="m" val="38.39262964599449"/>
+    <attnum name="arc" unit="deg" val="6.76948713518835"/>
   </section>
   <section name="c98">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="71.62807318723188"/>
-    <attnum name="arc" unit="deg" val="3.18750956405359"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="56.3955550413364"/>
+    <attnum name="arc" unit="deg" val="4.637927642372355"/>
   </section>
   <section name="c99">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="29.432301789624837"/>
-    <attnum name="arc" unit="deg" val="7.857995807483312"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="101.03156359787309"/>
+    <attnum name="arc" unit="deg" val="2.5999636275096196"/>
   </section>
   <section name="c100">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="40.882584330350795"/>
-    <attnum name="arc" unit="deg" val="6.006010920160518"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="411.09804070099443"/>
+    <attnum name="arc" unit="deg" val="0.6360858302111698"/>
   </section>
   <section name="c101">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="112.36488212869176"/>
-    <attnum name="arc" unit="deg" val="2.438175982040059"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="240.6991299205738"/>
+    <attnum name="arc" unit="deg" val="1.0694920300659345"/>
   </section>
   <section name="c102">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="67.03608926130956"/>
-    <attnum name="arc" unit="deg" val="4.250519299188221"/>
+    <attstr name="type" val="lft"/>
+    <attnum name="radius" unit="m" val="99.16125210959179"/>
+    <attnum name="arc" unit="deg" val="2.5603433446521073"/>
   </section>
   <section name="c103">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="39.558149411383475"/>
-    <attnum name="arc" unit="deg" val="6.987642234552728"/>
-  </section>
-  <section name="c104">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="21.434049238350276"/>
-    <attnum name="arc" unit="deg" val="11.776977841245428"/>
-  </section>
-  <section name="c105">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="12.919129233461309"/>
-    <attnum name="arc" unit="deg" val="17.56947897472091"/>
-  </section>
-  <section name="c106">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="18.338593738804395"/>
-    <attnum name="arc" unit="deg" val="12.731937258504528"/>
-  </section>
-  <section name="c107">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="26.206831500254"/>
-    <attnum name="arc" unit="deg" val="9.35065740772817"/>
-  </section>
-  <section name="c108">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="34.39444982387594"/>
-    <attnum name="arc" unit="deg" val="7.275471139355311"/>
-  </section>
-  <section name="c109">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="39.2675698457379"/>
-    <attnum name="arc" unit="deg" val="6.2470648120906125"/>
-  </section>
-  <section name="c110">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="25.28648903437404"/>
-    <attnum name="arc" unit="deg" val="9.197088170462408"/>
-  </section>
-  <section name="c111">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="26.831107279301737"/>
-    <attnum name="arc" unit="deg" val="8.893425754845747"/>
-  </section>
-  <section name="c112">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="45.71166243055101"/>
-    <attnum name="arc" unit="deg" val="5.452261910860303"/>
-  </section>
-  <section name="c113">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="96.71725877718578"/>
-    <attnum name="arc" unit="deg" val="2.6477564256036583"/>
-  </section>
-  <section name="c114">
     <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="236.38760877239665"/>
-    <attnum name="arc" unit="deg" val="1.0750031022353639"/>
-  </section>
-  <section name="c115">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="59.091241848733056"/>
-    <attnum name="arc" unit="deg" val="4.229125253832305"/>
-  </section>
-  <section name="c116">
-    <attstr name="type" val="rgt"/>
-    <attnum name="radius" unit="m" val="117.04160307446067"/>
-    <attnum name="arc" unit="deg" val="2.1458117752902446"/>
-  </section>
-  <section name="c117">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="274.3204435790545"/>
-    <attnum name="arc" unit="deg" val="0.9326657802553248"/>
-  </section>
-  <section name="c118">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="90.9567458792948"/>
-    <attnum name="arc" unit="deg" val="2.863456159992131"/>
-  </section>
-  <section name="c119">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="172.89839449356086"/>
-    <attnum name="arc" unit="deg" val="1.553351717214087"/>
-  </section>
-  <section name="c120">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="270.76463403548127"/>
-    <attnum name="arc" unit="deg" val="1.064377846486934"/>
-  </section>
-  <section name="c121">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="106.26715735965851"/>
-    <attnum name="arc" unit="deg" val="2.7273310698210014"/>
-  </section>
-  <section name="c122">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="59.664621090531305"/>
-    <attnum name="arc" unit="deg" val="4.728171520105197"/>
-  </section>
-  <section name="c123">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="35.886350608101864"/>
-    <attnum name="arc" unit="deg" val="7.439075731829291"/>
-  </section>
-  <section name="c124">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="59.099404800879434"/>
-    <attnum name="arc" unit="deg" val="4.409017199652996"/>
-  </section>
-  <section name="c125">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="51.504923478795"/>
-    <attnum name="arc" unit="deg" val="5.080731496665322"/>
-  </section>
-  <section name="c126">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="41.49038477076568"/>
-    <attnum name="arc" unit="deg" val="6.184393127266373"/>
-  </section>
-  <section name="c127">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="31.44869399031081"/>
-    <attnum name="arc" unit="deg" val="7.843360574665291"/>
-  </section>
-  <section name="c128">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="23.010412524342787"/>
-    <attnum name="arc" unit="deg" val="10.177199239766695"/>
-  </section>
-  <section name="c129">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="23.18625999504875"/>
-    <attnum name="arc" unit="deg" val="10.00340009388646"/>
-  </section>
-  <section name="c130">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="29.065744230409152"/>
-    <attnum name="arc" unit="deg" val="8.258445971708083"/>
-  </section>
-  <section name="c131">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="35.10635899415087"/>
-    <attnum name="arc" unit="deg" val="7.016099819871443"/>
-  </section>
-  <section name="c132">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="39.81219053728496"/>
-    <attnum name="arc" unit="deg" val="6.253133957637257"/>
-  </section>
-  <section name="c133">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="41.637768117655995"/>
-    <attnum name="arc" unit="deg" val="5.929720212657763"/>
-  </section>
-  <section name="c134">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="44.803424004785995"/>
-    <attnum name="arc" unit="deg" val="5.458768562471292"/>
-  </section>
-  <section name="c135">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="43.003279316949055"/>
-    <attnum name="arc" unit="deg" val="5.814460594420107"/>
-  </section>
-  <section name="c136">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="46.020778763634446"/>
-    <attnum name="arc" unit="deg" val="5.712149615263024"/>
-  </section>
-  <section name="c137">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="54.139220654532814"/>
-    <attnum name="arc" unit="deg" val="5.233482728035959"/>
-  </section>
-  <section name="c138">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="68.63110466633722"/>
-    <attnum name="arc" unit="deg" val="4.536440375252189"/>
-  </section>
-  <section name="c139">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="69.9298834135145"/>
-    <attnum name="arc" unit="deg" val="5.232335835670542"/>
-  </section>
-  <section name="c140">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="149.0309732541606"/>
-    <attnum name="arc" unit="deg" val="2.8113749781747743"/>
-  </section>
-  <section name="c141">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="261.4517994974177"/>
-    <attnum name="arc" unit="deg" val="1.6662345669461665"/>
-  </section>
-  <section name="c142">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="426.11745592940173"/>
-    <attnum name="arc" unit="deg" val="0.9734973694901021"/>
-  </section>
-  <section name="c143">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="960.491269900823"/>
-    <attnum name="arc" unit="deg" val="0.37076147792890796"/>
-  </section>
-  <section name="c144">
-    <attstr name="type" val="lft"/>
-    <attnum name="radius" unit="m" val="141.76023835728998"/>
-    <attnum name="arc" unit="deg" val="1.997345309664784"/>
+    <attnum name="radius" unit="m" val="146.1238572348091"/>
+    <attnum name="arc" unit="deg" val="1.7347423648188753"/>
   </section>
 </section>
 </section>
