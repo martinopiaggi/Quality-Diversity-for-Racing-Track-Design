@@ -12,7 +12,7 @@ const TRACK_SIZE = 2;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
-const OUTPUT_DIR = './tests';
+const OUTPUT_DIR = './testing/tests';
 
 // Track generation
 const seed = Math.random();

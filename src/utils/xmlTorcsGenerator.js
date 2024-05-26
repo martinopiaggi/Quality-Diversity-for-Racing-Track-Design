@@ -42,13 +42,15 @@ export function exportTrackToXML(track, startIndex = 0) {
     segmentNumber++;
     }
 
-    fs.writeFile('output.xml', XML_TRACK_HEADER + xml + CLOSING_XML, (err) => {
+    const finalTrackOutput = XML_TRACK_HEADER + xml + CLOSING_XML
+
+    fs.writeFile('output.xml', finalTrackOutput , (err) => {
         if (err) {
             console.error('Failed to save XML:', err);
-        } else {
-            console.log('The file has been saved!');
         }
     });
+
+    return finalTrackOutput;
 }
 
 function addSection(index, type, length, curv) {
