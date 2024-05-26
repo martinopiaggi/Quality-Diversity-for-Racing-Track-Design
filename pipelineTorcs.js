@@ -4,6 +4,7 @@ import * as utils from './src/utils/utils.js';
 import * as xml from './src/utils/xmlTorcsGenerator.js';
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -11,23 +12,23 @@ const TRACK_SIZE = 5;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
-const TRACKS_INFO_DIR = './tests';
+const OUTPUT_DIR = './tests';
 
 // Track generation
-const seed = 0.27443702376629964 //Math.random();
+const seed = Math.random();
 const trackGenerator = new VoronoiTrackGenerator(BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
 const splineTrack = utils.splineSmoothing(trackEdges);
 
-// Process track edges for Torcs
-processTrackEdges(splineTrack);
+// Process track edges for Torcs and get the XML string
+const trackXml = processTrackEdges(splineTrack);
 
 console.log(`SEED: ${seed}`);
 console.log(`trackSize (# cells): ${TRACK_SIZE}`);
 
 // Generate and move track files
 try {
-    const { containerId, trackgenOutput } = await generateAndMoveTrackFiles();
+    const { containerId, trackgenOutput } = await generateAndMoveTrackFiles(trackXml);
     await runRaceSimulation(containerId, seed, TRACK_SIZE, trackgenOutput);
 } catch (err) {
     console.error(`Error: ${err.message}`);
@@ -38,20 +39,33 @@ function processTrackEdges(track) {
     let minIndex = utils.findMinCurvatureSegment(track, segmentLength);
     track = track.slice(minIndex).concat(track.slice(0, minIndex));
     track.splice(0, segmentLength / 4);
-    xml.exportTrackToXML(track, 0);
+    return xml.exportTrackToXML(track, 0); // Return the XML string
 }
 
-async function generateAndMoveTrackFiles() {
+async function generateAndMoveTrackFiles(trackXml) {
+    // Create a temporary file on the host machine
+    const tmpDir = os.tmpdir();
+    const tmpFilePath = path.join(tmpDir, 'output.xml');
+    await fs.writeFile(tmpFilePath, trackXml);
+
     try {
         const containerId = await executeCommand(`docker run -d -it --memory ${MEMORY_LIMIT} ${DOCKER_IMAGE_NAME}`);
         console.log(`Docker container started with ID: ${containerId}`);
         await executeCommand(`docker exec ${containerId} mkdir -p /usr/share/games/torcs/tracks/dirt/output`);
-        await executeCommand(`docker cp "output.xml" ${containerId}:/usr/share/games/torcs/tracks/dirt/output`);
+        
+        // Copy the temporary file into the Docker container
+        await executeCommand(`docker cp ${tmpFilePath} ${containerId}:/usr/share/games/torcs/tracks/dirt/output/output.xml`);
+        
         const trackgenOutput = await executeCommand(`docker exec ${containerId} xvfb-run /usr/games/trackgen -c dirt -n output`);
         console.log(trackgenOutput);
 
+        // Clean up the temporary file
+        await fs.unlink(tmpFilePath);
+
         return { containerId, trackgenOutput };
     } catch (err) {
+        // Clean up the temporary file in case of error
+        await fs.unlink(tmpFilePath);
         throw new Error(`Failed to generate and move track files: ${err.message}`);
     }
 }
@@ -79,8 +93,8 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
 
         // Write JSON to file
         const jsonFileName = `${seed}.json`;
-        const jsonFilePath = path.join(TRACKS_INFO_DIR, jsonFileName);
-        await fs.mkdir(TRACKS_INFO_DIR, { recursive: true });
+        const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
+        await fs.mkdir(OUTPUT_DIR, { recursive: true });
         await fs.writeFile(jsonFilePath, JSON.stringify(jsonContent, null, 2));
         console.log(`JSON file saved at: ${jsonFilePath}`);
 
@@ -91,8 +105,8 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
 
 function parseTrackgenOutput(trackgenOutput) {
     const lengthMatch = trackgenOutput.match(/length\s*=\s*([\d.]+)/);
-    const deltaXMatch = trackgenOutput.match(/Delta X\s*=\s*([\d.]+)/);
-    const deltaYMatch = trackgenOutput.match(/Delta Y\s*=\s*([\d.]+)/);
+    const deltaXMatch = trackgenOutput.match(/Delta X\s*=\s*(-?[\d.]+)/);
+    const deltaYMatch = trackgenOutput.match(/Delta Y\s*=\s*(-?[\d.]+)/);
 
     return {
         length: lengthMatch ? parseFloat(lengthMatch[1]) : null,
