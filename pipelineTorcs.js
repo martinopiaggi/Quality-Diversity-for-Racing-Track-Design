@@ -8,7 +8,7 @@ import os from 'os';
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const TRACK_SIZE = 5;
+const TRACK_SIZE = 2;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
@@ -26,9 +26,12 @@ const trackXml = processTrackEdges(splineTrack);
 console.log(`SEED: ${seed}`);
 console.log(`trackSize (# cells): ${TRACK_SIZE}`);
 
+// Array to keep track of started containers
+let startedContainers = [];
+
 // Generate and move track files
 try {
-    const { containerId, trackgenOutput } = await generateAndMoveTrackFiles(trackXml);
+    const { containerId, trackgenOutput } = await generateAndMoveTrackFiles(trackXml, seed);
     await runRaceSimulation(containerId, seed, TRACK_SIZE, trackgenOutput);
 } catch (err) {
     console.error(`Error: ${err.message}`);
@@ -42,19 +45,23 @@ function processTrackEdges(track) {
     return xml.exportTrackToXML(track, 0); // Return the XML string
 }
 
-async function generateAndMoveTrackFiles(trackXml) {
-    // Create a temporary file on the host machine
+async function generateAndMoveTrackFiles(trackXml, seed) {
+    // Create a temporary file on the host machine with the seed name
     const tmpDir = os.tmpdir();
-    const tmpFilePath = path.join(tmpDir, 'output.xml');
+    const tmpFilePath = path.join(tmpDir, `${seed}.xml`);
     await fs.writeFile(tmpFilePath, trackXml);
 
     try {
         const containerId = await executeCommand(`docker run -d -it --memory ${MEMORY_LIMIT} ${DOCKER_IMAGE_NAME}`);
+        startedContainers.push(containerId); // Track the started container
         console.log(`Docker container started with ID: ${containerId}`);
         await executeCommand(`docker exec ${containerId} mkdir -p /usr/share/games/torcs/tracks/dirt/output`);
         
-        // Copy the temporary file into the Docker container
-        await executeCommand(`docker cp ${tmpFilePath} ${containerId}:/usr/share/games/torcs/tracks/dirt/output/output.xml`);
+        // Copy the temporary file into the Docker container with the seed name
+        await executeCommand(`docker cp ${tmpFilePath} ${containerId}:/usr/share/games/torcs/tracks/dirt/output/${seed}.xml`);
+        
+        // Rename the file inside the Docker container to output.xml
+        await executeCommand(`docker exec ${containerId} mv /usr/share/games/torcs/tracks/dirt/output/${seed}.xml /usr/share/games/torcs/tracks/dirt/output/output.xml`);
         
         const trackgenOutput = await executeCommand(`docker exec ${containerId} xvfb-run /usr/games/trackgen -c dirt -n output`);
         console.log(trackgenOutput);
@@ -78,6 +85,9 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
 
         await executeCommand(`docker rm --force ${containerId}`);
         console.log(`Docker container ${containerId} stopped and removed.`);
+
+        // Remove the container from the tracking array
+        startedContainers = startedContainers.filter(id => id !== containerId);
 
         // Parse the trackgenOutput
         const { length, deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
