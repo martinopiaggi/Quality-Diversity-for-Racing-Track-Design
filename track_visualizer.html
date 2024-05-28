@@ -7,6 +7,42 @@
   <script src="src/libraries/p5.js"></script>
   <script src="src/libraries/rhill-voronoi-core.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    form > label, form > input, form > select, form > button {
+      margin-bottom: 10px;
+      margin-right: 10px;
+    }
+    form > button {
+      margin-left: auto;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
   <main>
@@ -39,21 +75,21 @@
     });
 
     function generateTrack(seed, trackSize, mode) {
-      if (seed == -1) seed = Math.random();
+      if (isNaN(seed)) seed = Math.random();
       trackGenerator = TrackGeneratorFactory.createTrackGenerator(mode, BBOX, seed, trackSize);
       trackEdges = trackGenerator.trackEdges;
-      splineTrack = utils.splineSmoothing(trackEdges);  
+      splineTrack = utils.splineSmoothing(trackEdges);
       redraw();
     }
 
-    function setup() {
+    window.setup = function setup() {
       createCanvas(BBOX.xr, BBOX.yb);
       noLoop();
     }
 
-    function draw() {
+    window.draw = function draw() {
+      background(0);
       if (splineTrack) {
-        background(0);
         strokeWeight(0.5);
         noFill();
         stroke(0, 255, 0);

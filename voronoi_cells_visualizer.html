@@ -8,6 +8,43 @@
   <script src="src/libraries/p5.sound.min.js"></script>
   <script src="src/libraries/rhill-voronoi-core.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    form > label, form > input, form > select, form > button {
+      margin-bottom: 10px;
+      margin-right: 10px;
+    }
+    form > button {
+      margin-left: auto;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
+  
 </head>
 <body>
   <main>
@@ -20,12 +57,10 @@
     </form>
   </main>
   <script type="module">
-    import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
+    import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js'; 
     import * as utils from './src/utils/utils.js';
 
-    // Constants
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-
     let trackGenerator, trackEdges, dataSet, diagram, selectedCells;
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
@@ -36,12 +71,12 @@
     });
 
     function generateTrack(seed, trackSize) {
-      trackGenerator = new VoronoiTrackGenerator(BBOX, seed, trackSize);
+      if (isNaN(seed)) seed = Math.random();
+      trackGenerator = TrackGeneratorFactory.createTrackGenerator("voronoi", BBOX, seed, trackSize);
       trackEdges = trackGenerator.trackEdges;
       dataSet = trackGenerator.dataSet;
       diagram = trackGenerator.diagram;
       selectedCells = trackGenerator.selectedCells;
-      // Redraw the track with the new seed and track size
       redraw();
     }
 
@@ -59,21 +94,22 @@
     }
 
     function drawSelectedSites() {
-      fill(0, 255, 0); // Set fill color to green
+      fill(0, 255, 0);
       noStroke();
       selectedCells.forEach((cell) => {
-            let site = cell.site;
-            ellipse(site.x, site.y, 8, 8); 
+        let site = cell.site;
+        ellipse(site.x, site.y, 8, 8);
       });
     }
 
     function drawOriginalEdges() {
-      stroke(0, 255, 255); // Set stroke color to blue for debugging edges
-      strokeWeight(2); // Slightly thicker line for visibility
-      for (let i = 0; i< trackEdges.length; i++) {
-        line(trackEdges[i].x, trackEdges[i].y, trackEdges[(i+1)%trackEdges.length].x, trackEdges[(i+1)%trackEdges.length].y);
+      stroke(0, 255, 255);
+      strokeWeight(2);
+      for (let i = 0; i < trackEdges.length; i++) {
+        let nextIndex = (i + 1) % trackEdges.length;
+        line(trackEdges[i].x, trackEdges[i].y, trackEdges[nextIndex].x, trackEdges[nextIndex].y);
       }
-      strokeWeight(1); // Reset stroke weight for other drawings
+      strokeWeight(1);
     }
 
     function drawPoints() {
@@ -87,7 +123,6 @@
       diagram.edges.forEach(edge => line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y));
     }
 
-    // Make setup and draw available globally
     window.setup = setup;
     window.draw = draw;
   </script>
