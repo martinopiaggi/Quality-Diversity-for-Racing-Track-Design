@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voronoi Track Visualization</title>
+  <title>Track Generator Visualization</title>
   <script src="src/libraries/p5.js"></script>
-  <script src="src/libraries/p5.sound.min.js"></script>
   <script src="src/libraries/rhill-voronoi-core.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
@@ -16,6 +15,11 @@
       <input type="text" id="seedInput" name="seedInput">
       <label for="cellCountInput">Enter Number of Cell Tracks:</label>
       <input type="text" id="cellCountInput" name="cellCountInput">
+      <label for="modeSelect">Select Track Generator Mode:</label>
+      <select id="modeSelect" name="modeSelect">
+        <option value="voronoi">Voronoi</option>
+        <option value="convexHull">Convex Hull</option>
+      </select>
       <button type="submit">Generate Track</button>
     </form>
   </main>
@@ -23,27 +27,22 @@
     import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js';
     import * as utils from './src/utils/utils.js';
 
-    // Constants
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-    const MODE = 'convexHull'; // or 'voronoi'
-
     let trackGenerator, trackEdges, diagram, splineTrack;
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
       event.preventDefault();
       const seed = parseInt(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
-      generateTrack(seed, trackSize);
+      const mode = document.getElementById('modeSelect').value;
+      generateTrack(seed, trackSize, mode);
     });
 
-    function generateTrack(seed, trackSize) {
-      if(seed == -1) seed = Math.random();
-      const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, trackSize);
+    function generateTrack(seed, trackSize, mode) {
+      if (seed == -1) seed = Math.random();
+      trackGenerator = TrackGeneratorFactory.createTrackGenerator(mode, BBOX, seed, trackSize);
       trackEdges = trackGenerator.trackEdges;
-      //diagram = trackGenerator.diagram;
       splineTrack = utils.splineSmoothing(trackEdges);  
-
-      // Redraw the track with the new seed and track size
       redraw();
     }
 
@@ -56,17 +55,11 @@
       if (splineTrack) {
         background(0);
         strokeWeight(0.5);
-        //drawVoronoi();
         noFill();
         stroke(0, 255, 0);
         strokeWeight(3);
         drawSpline(splineTrack);
       }
-    }
-
-    function drawVoronoi() {
-      stroke(255);
-      diagram.edges.forEach(edge => line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y));
     }
 
     function drawSpline(spline) {
@@ -80,7 +73,6 @@
       endShape(CLOSE);
     }
 
-    // Make setup and draw available globally
     window.setup = setup;
     window.draw = draw;
   </script>
