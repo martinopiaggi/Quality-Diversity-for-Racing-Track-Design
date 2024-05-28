@@ -20,12 +20,12 @@
     </form>
   </main>
   <script type="module">
-    //import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
-    import { ConvexHullTrackGenerator } from './src/convexHullTrackGenerator.js';
+    import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js';
     import * as utils from './src/utils/utils.js';
 
     // Constants
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+    const MODE = 'convexHull'; // or 'voronoi'
 
     let trackGenerator, trackEdges, diagram, splineTrack;
 
@@ -37,8 +37,8 @@
     });
 
     function generateTrack(seed, trackSize) {
-      //trackGenerator = new VoronoiTrackGenerator(BBOX, seed, trackSize);
-      trackGenerator = new ConvexHullTrackGenerator(BBOX, trackSize);
+      if(seed == -1) seed = Math.random();
+      const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, trackSize);
       trackEdges = trackGenerator.trackEdges;
       //diagram = trackGenerator.diagram;
       splineTrack = utils.splineSmoothing(trackEdges);  

@@ -1,9 +1,11 @@
-import { pushApart, fixAngles, generateCatmullRomSpline } from './utils/utils.js';
+import { pushApart, fixAngles, generateCatmullRomSpline } from '../utils/utils.js';
+import { prng_alea } from '../libraries/esm-seedrandom/alea.min.mjs';
 
-export class ConvexHullTrackGenerator {
-    constructor(bbox, size) {
+export class ConvexHullTrackGenerator{
+    constructor(bbox, seed, size) {
         this.bbox = bbox;
         this.size = size;
+        this.randomGen = prng_alea(seed);
         this.dataSet = [];
         this.dataSetHull = [];
         this.trackEdges = this.generateTrack();
@@ -17,14 +19,14 @@ export class ConvexHullTrackGenerator {
             this.dataSetHull = fixAngles(this.dataSetHull);
             this.dataSetHull = pushApart(this.dataSetHull);
         }
-        return generateCatmullRomSpline(this.dataSetHull,10,0);
+        return generateCatmullRomSpline(this.dataSetHull, 10, 0);
     }
 
     generatePoints() {
         for (let i = 0; i < this.size; i++) {
             this.dataSet.push({
-                x: Math.random() * (this.bbox.xr - this.bbox.xl)/2 + this.bbox.xr/4,
-                y: Math.random() * (this.bbox.yb - this.bbox.yt)/2 + this.bbox.yb/4
+                x: this.randomGen() * (this.bbox.xr - this.bbox.xl) / 2 + this.bbox.xr / 4,
+                y: this.randomGen() * (this.bbox.yb - this.bbox.yt) / 2 + this.bbox.yb / 4
             });
         }
     }
@@ -61,8 +63,8 @@ export class ConvexHullTrackGenerator {
         let maxDisp = 5.0;
 
         for (let i = 0; i < d.length; ++i) {
-            let dispLen = Math.random() * maxDisp;
-            let angle = Math.random() * 2 * Math.PI;
+            let dispLen = this.randomGen() * maxDisp;
+            let angle = this.randomGen() * 2 * Math.PI;
             disp.x = Math.cos(angle) * dispLen;
             disp.y = Math.sin(angle) * dispLen;
 

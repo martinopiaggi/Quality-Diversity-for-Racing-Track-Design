@@ -1,5 +1,5 @@
-import Voronoi from './libraries/rhill-voronoi-core.js';
-import { prng_alea } from './libraries/esm-seedrandom/alea.min.mjs';
+import Voronoi from '../libraries/rhill-voronoi-core.js';
+import { prng_alea } from '../libraries/esm-seedrandom/alea.min.mjs';
 
 export class VoronoiTrackGenerator {
     constructor(bbox, seed,size) {

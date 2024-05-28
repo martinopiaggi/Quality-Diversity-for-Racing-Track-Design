@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { VoronoiTrackGenerator } from './src/voronoiTrackGenerator.js';
+import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js';
 import * as utils from './src/utils/utils.js';
 import * as xml from './src/utils/xmlTorcsGenerator.js';
 import { promises as fs } from 'fs';
@@ -8,7 +8,8 @@ import os from 'os';
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const TRACK_SIZE = 4;
+const MODE = 'convexHull'; // or 'voronoi'
+const TRACK_SIZE = 5;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
@@ -16,7 +17,8 @@ const OUTPUT_DIR = './testing/tests';
 
 // Track generation
 const seed = Math.random();
-const trackGenerator = new VoronoiTrackGenerator(BBOX, seed, TRACK_SIZE);
+
+const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
 const splineTrack = utils.splineSmoothing(trackEdges);
 
