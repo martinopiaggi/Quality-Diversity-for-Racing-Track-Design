@@ -1,5 +1,3 @@
 node_modules/
-
-pipeline_torcs/tracks/dirt/output/
-tests/*
+testing/tests/*
 output.xml

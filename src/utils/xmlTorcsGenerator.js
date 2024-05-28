@@ -4,7 +4,9 @@ const XML_TRACK_HEADER = fs.readFileSync("./src/utils/startTrackTemplate.xml", '
 const CLOSING_XML = "</section>\n</section>\n</params>";
 let xml = '';
 
+//return XML result and also save it in output.xml for testing purpose
 export function exportTrackToXML(track, startIndex = 0) {
+    xml = '';     
     let previousLength = 0;
     const threshold = 0.001;
     let segmentNumber = 0;
