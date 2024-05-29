@@ -26,7 +26,8 @@ const splineTrack = utils.splineSmoothing(trackEdges);
 let trackXml = processTrackEdges(splineTrack);
 
 console.log(`SEED: ${seed}`);
-console.log(`trackSize (# cells): ${TRACK_SIZE}`);
+console.log(`MODE: ${MODE}`);
+console.log(`trackSize: ${TRACK_SIZE}`);
 
 // Generate and move track files
 try {
@@ -105,17 +106,16 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 }
 
 async function addArtificialLastPoint(track, deltaX, deltaY) {
-    // Step 1: Calculate the artificial last point
+    // Step 1: Calculate the artificial last point using Bezier curve fitting
     const lastPoint = track[track.length - 1];
-    const artificialLastPoint = {
-        x: lastPoint.x - deltaX,
-        y: lastPoint.y - deltaY
-    };
+    const secondLastPoint = track[track.length - 2];
+    const thirdLastPoint = track[track.length - 3];
+    const artificialLastPoint = calculateArtificialLastPointBezier(lastPoint, secondLastPoint, thirdLastPoint, deltaX, deltaY);
 
-    // Step 2: Remove the first 1 point and the last 5 points
-    track.splice(track.length - 1, 1); //remove current last point
-    while((track.length+1)%3!=0){
-        track.pop(track.length - 1);
+    // Step 2: Remove the first point and the last points to fit the curve correctly
+    track.splice(track.length - 1, 1); // Remove current last point
+    while ((track.length + 1) % 3 !== 0) {
+        track.pop();
     }
 
     // Step 3: Add the artificial last point as the new last point
@@ -126,6 +126,36 @@ async function addArtificialLastPoint(track, deltaX, deltaY) {
     console.log('Artificial last point added and new track XML generated.');
     return modifiedTrackXml;
 }
+
+function calculateArtificialLastPointBezier(lastPoint, secondLastPoint, thirdLastPoint, deltaX, deltaY) {
+    // Calculate control points for the Bezier curve
+    const controlPoint1 = {
+        x: secondLastPoint.x + (thirdLastPoint.x - secondLastPoint.x) * 0.5,
+        y: secondLastPoint.y + (thirdLastPoint.y - secondLastPoint.y) * 0.5
+    };
+
+    const controlPoint2 = {
+        x: lastPoint.x + deltaX * 0.5,
+        y: lastPoint.y + deltaY * 0.5
+    };
+
+    // Calculate the artificial last point using the Bezier curve
+    const t = 1.0; // Parameter t at the end of the curve (1.0 for the end point)
+    const artificialLastPoint = {
+        x: (1 - t) ** 3 * lastPoint.x +
+           3 * (1 - t) ** 2 * t * controlPoint1.x +
+           3 * (1 - t) * t ** 2 * controlPoint2.x +
+           t ** 3 * (lastPoint.x - deltaX),
+
+        y: (1 - t) ** 3 * lastPoint.y +
+           3 * (1 - t) ** 2 * t * controlPoint1.y +
+           3 * (1 - t) * t ** 2 * controlPoint2.y +
+           t ** 3 * (lastPoint.y - deltaY)
+    };
+
+    return artificialLastPoint;
+}
+
 
 async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
     try {
