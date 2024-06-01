@@ -8,7 +8,7 @@ import os from 'os';
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const MODE = 'convexHull'; // or 'voronoi'
+const MODE = 'voronoi'; // 'voronoi' or 'convexHull'
 const TRACK_SIZE = 5;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
@@ -16,14 +16,17 @@ const MEMORY_LIMIT = '24m';
 const OUTPUT_DIR = './testing/tests';
 
 // Track generation
-const seed = Math.random();
+const seed = 23 //Math.random();
 
 const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
-const splineTrack = utils.splineSmoothing(trackEdges);
+let splineTrack = utils.splineSmoothing(trackEdges);
+
+
+splineTrack = processTrackEdges(splineTrack);
 
 // Initial XML parsing
-let trackXml = processTrackEdges(splineTrack);
+let trackXml = xml.exportTrackToXML(splineTrack, 0); // Return the XML string
 
 console.log(`SEED: ${seed}`);
 console.log(`MODE: ${MODE}`);
@@ -39,7 +42,7 @@ try {
     let { deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
 
     // Modify the track by adding an artificial last point
-    if((Math.abs(deltaX) > 1)&&(Math.abs(deltaY) > 1)){
+    if(true){
         let modifiedTrackXml = await addArtificialLastPoints(splineTrack, deltaX, deltaY, seed);
         // Process the modified track
         trackgenOutput = await generateAndMoveTrackFiles(containerId, modifiedTrackXml, seed);
@@ -58,8 +61,7 @@ try {
 function processTrackEdges(track) {
     const segmentLength = 10;
     let minIndex = utils.findMaxCurveBeforeStraight(track, segmentLength);
-    track = track.slice(minIndex).concat(track.slice(0, minIndex));
-    return xml.exportTrackToXML(track, 0); // Return the XML string
+    return track.slice(minIndex).concat(track.slice(0, minIndex)); 
 }
 
 async function startDockerContainer() {
@@ -106,19 +108,28 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 }
 
 async function addArtificialLastPoints(track, deltaX, deltaY) {
-    // Step 1: Determine the number of points to adjust (e.g., last 3 points)
-    const pointsToAdjust = 3;
+    // Step 1: Calculate the corrected endpoint
+    const correctedEndPoint = {
+        x: track[track.length - 1].x - deltaX,
+        y: track[track.length - 1].y - deltaY
+    };
+
+    // Step 2: Remove the last 10 points
     const trackLength = track.length;
-    const adjustedTrack = track.slice(0, trackLength - pointsToAdjust);
+    const adjustedTrack = track.slice(0, trackLength - 5);
 
-    // Step 2: Calculate control points for Bezier curve fitting
-    const controlPoints = calculateControlPoints(track.slice(trackLength - pointsToAdjust), deltaX, deltaY);
+    // Step 3: Generate control points for the Bezier curve fitting
+    const controlPoints = calculateControlPoints(adjustedTrack, correctedEndPoint);
 
-    // Step 3: Generate the adjusted points using Bezier curves
+    // Step 4: Generate the adjusted points using Bezier curves
     const adjustedPoints = generateBezierPoints(controlPoints);
 
-    // Step 4: Add the adjusted points back to the track
+    // Step 5: Add the adjusted points back to the track
     adjustedTrack.push(...adjustedPoints);
+
+    // Step 6: Add a straight segment if necessary
+    //const finalSegment = generateStraightSegment(adjustedPoints[adjustedPoints.length - 1], correctedEndPoint);
+    //adjustedTrack.push(...finalSegment);
 
     // Export the modified track to XML
     const modifiedTrackXml = xml.exportTrackToXML(adjustedTrack, 0);
@@ -126,24 +137,28 @@ async function addArtificialLastPoints(track, deltaX, deltaY) {
     return modifiedTrackXml;
 }
 
-function calculateControlPoints(points, deltaX, deltaY) {
-    const [thirdLast, secondLast, last] = points;
+function calculateControlPoints(adjustedTrack, correctedEndPoint) {
+    // Use the first 5 points of the adjusted track to determine the starting vector direction
+    const firstFivePoints = adjustedTrack.slice(0, 5);
+    const directionVector = {
+        x: (firstFivePoints[4].x - firstFivePoints[0].x) / 4,
+        y: (firstFivePoints[4].y - firstFivePoints[0].y) / 4
+    };
 
-    // Calculate the first control point based on the curve before the straight line
+    // Calculate control points for the Bezier curve
+    const lastPoint = adjustedTrack[adjustedTrack.length - 1];
     const controlPoint1 = {
-        x: secondLast.x + (thirdLast.x - secondLast.x) * 0.5,
-        y: secondLast.y + (thirdLast.y - secondLast.y) * 0.5
+        x: lastPoint.x + directionVector.x,
+        y: lastPoint.y + directionVector.y
     };
-
-    // Calculate the second control point influenced by delta values
     const controlPoint2 = {
-        x: last.x + deltaX * 0.5,
-        y: last.y + deltaY * 0.5
+        x: (lastPoint.x + correctedEndPoint.x) / 2,
+        y: (lastPoint.y + correctedEndPoint.y) / 2
     };
 
-    // Return control points along with the end point adjusted by delta
-    return [thirdLast, controlPoint1, controlPoint2, { x: last.x - deltaX, y: last.y - deltaY }];
+    return [lastPoint, controlPoint1, controlPoint2, correctedEndPoint];
 }
+
 
 function generateBezierPoints(controlPoints) {
     const [p0, p1, p2, p3] = controlPoints;
