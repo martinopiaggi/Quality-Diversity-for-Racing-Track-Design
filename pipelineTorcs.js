@@ -8,7 +8,7 @@ import os from 'os';
 
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const MODE = 'convexHull'; // or 'voronoi'
+const MODE = 'voronoi'; // or 'voronoi'
 const TRACK_SIZE = 5;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
@@ -16,14 +16,16 @@ const MEMORY_LIMIT = '24m';
 const OUTPUT_DIR = './testing/tests';
 
 // Track generation
-const seed = Math.random();
+const seed = 0.49730750266396795 //Math.random();
 
 const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
-const splineTrack = utils.splineSmoothing(trackEdges);
+let splineTrack = utils.splineSmoothing(trackEdges);
 
-// Initial XML parsing
-let trackXml = processTrackEdges(splineTrack);
+splineTrack= processTrackEdges(splineTrack);
+
+let trackXml = xml.exportTrackToXML(splineTrack, 0);
+
 
 console.log(`SEED: ${seed}`);
 console.log(`MODE: ${MODE}`);
@@ -39,7 +41,7 @@ try {
     let { deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
 
     // Modify the track by adding an artificial last point
-    if((Math.abs(deltaX) > 1)&&(Math.abs(deltaY) > 1)){
+    if(false){
         let modifiedTrackXml = await addArtificialLastPoints(splineTrack, deltaX, deltaY, seed);
         // Process the modified track
         trackgenOutput = await generateAndMoveTrackFiles(containerId, modifiedTrackXml, seed);
@@ -59,7 +61,7 @@ function processTrackEdges(track) {
     const segmentLength = 10;
     let minIndex = utils.findMaxCurveBeforeStraight(track, segmentLength);
     track = track.slice(minIndex).concat(track.slice(0, minIndex));
-    return xml.exportTrackToXML(track, 0); // Return the XML string
+    return track;
 }
 
 async function startDockerContainer() {
