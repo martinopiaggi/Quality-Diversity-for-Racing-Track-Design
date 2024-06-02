@@ -9,7 +9,7 @@ import os from 'os';
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
 const MODE = 'voronoi'; // or 'voronoi'
-const TRACK_SIZE = 5;
+const TRACK_SIZE = 2;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
@@ -33,7 +33,7 @@ console.log(`trackSize: ${TRACK_SIZE}`);
 
 // Generate and move track files
 try {
-    // Start the Docker container
+    // Start the Docker container       
     const containerId = await startDockerContainer();
 
     // Process initial track
@@ -41,7 +41,7 @@ try {
     let { deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
 
     // Modify the track by adding an artificial last point
-    if(true){
+    if(false){
         let modifiedTrackXml = await addArtificialLastPoints(splineTrack, deltaX, deltaY, seed);
         // Process the modified track
         trackgenOutput = await generateAndMoveTrackFiles(containerId, modifiedTrackXml, seed);
@@ -139,12 +139,12 @@ function calculateControlPoints(points, deltaX, deltaY) {
 
     // Calculate the second control point influenced by delta values
     const controlPoint2 = {
-        x: last.x + deltaX * 0.5,
-        y: last.y + deltaY * 0.5
+        x: last.x - deltaX * 0.5,
+        y: last.y - deltaY * 0.5
     };
 
     // Return control points along with the end point adjusted by delta
-    return [thirdLast, controlPoint1, controlPoint2, { x: last.x + deltaX, y: last.y + deltaY }];
+    return [thirdLast, controlPoint1, controlPoint2, { x: last.x - deltaX, y: last.y - deltaY }];
 }
 
 function generateBezierPoints(controlPoints) {
@@ -172,6 +172,7 @@ function generateBezierPoints(controlPoints) {
 
 
 
+
 async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
     try {
         await executeCommand(`docker cp ${MAPELITE_PATH} ${containerId}:/usr/share/games/torcs/config/raceman/mapelite.xml`);
@@ -179,7 +180,7 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
         console.log(`Race simulation completed inside Docker container ${containerId}`);
 
         // Parse the trackgenOutput
-        const { length, deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
+        const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackgenOutput);
 
         // Create JSON structure
         const jsonContent = {
@@ -187,7 +188,8 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
             trackSize,
             length,
             deltaX,
-            deltaY
+            deltaY,
+            deltaAngleDegrees
         };
 
         // Write JSON to file
@@ -206,13 +208,17 @@ function parseTrackgenOutput(trackgenOutput) {
     const lengthMatch = trackgenOutput.match(/length\s*=\s*([\d.]+)/);
     const deltaXMatch = trackgenOutput.match(/Delta X\s*=\s*(-?[\d.]+)/);
     const deltaYMatch = trackgenOutput.match(/Delta Y\s*=\s*(-?[\d.]+)/);
+    const deltaAngleMatch = trackgenOutput.match(/Delta Ang\s*=\s*(-?[\d.]+)\s*\((-?[\d.]+)\)/);
 
     return {
         length: lengthMatch ? parseFloat(lengthMatch[1]) : null,
         deltaX: deltaXMatch ? parseFloat(deltaXMatch[1]) : null,
-        deltaY: deltaYMatch ? parseFloat(deltaYMatch[1]) : null
+        deltaY: deltaYMatch ? parseFloat(deltaYMatch[1]) : null,
+        deltaAngle: deltaAngleMatch ? parseFloat(deltaAngleMatch[1]) : null,
+        deltaAngleDegrees: deltaAngleMatch ? parseFloat(deltaAngleMatch[2]) : null
     };
 }
+
 
 function executeCommand(command) {
     return new Promise((resolve, reject) => {
