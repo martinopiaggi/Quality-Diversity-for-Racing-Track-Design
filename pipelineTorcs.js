@@ -41,7 +41,7 @@ try {
     let { deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
 
     // Modify the track by adding an artificial last point
-    if(false){
+    if(true){
         let modifiedTrackXml = await addArtificialLastPoints(splineTrack, deltaX, deltaY, seed);
         // Process the modified track
         trackgenOutput = await generateAndMoveTrackFiles(containerId, modifiedTrackXml, seed);
@@ -109,7 +109,7 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 
 async function addArtificialLastPoints(track, deltaX, deltaY) {
     // Step 1: Determine the number of points to adjust (e.g., last 3 points)
-    const pointsToAdjust = 3;
+    const pointsToAdjust = 5;
     const trackLength = track.length;
     const adjustedTrack = track.slice(0, trackLength - pointsToAdjust);
 
@@ -129,7 +129,10 @@ async function addArtificialLastPoints(track, deltaX, deltaY) {
 }
 
 function calculateControlPoints(points, deltaX, deltaY) {
-    const [thirdLast, secondLast, last] = points;
+    console.log(points.length)
+    const thirdLast = points[0];
+    const secondLast = points[Math.floor(points.length/2)];
+    const last = points[points.length-1];
 
     // Calculate the first control point based on the curve before the straight line
     const controlPoint1 = {
@@ -139,12 +142,12 @@ function calculateControlPoints(points, deltaX, deltaY) {
 
     // Calculate the second control point influenced by delta values
     const controlPoint2 = {
-        x: last.x + deltaX * 0.5,
-        y: last.y + deltaY * 0.5
+        x: last.x + deltaX*0.5,
+        y: last.y + deltaY*0.5
     };
 
     // Return control points along with the end point adjusted by delta
-    return [thirdLast, controlPoint1, controlPoint2, { x: last.x - deltaX, y: last.y - deltaY }];
+    return [thirdLast, controlPoint1, controlPoint2, { x: last.x + deltaX, y: last.y + deltaY }];
 }
 
 function generateBezierPoints(controlPoints) {
