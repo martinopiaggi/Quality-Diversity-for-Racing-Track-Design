@@ -19,11 +19,11 @@ export function exportTrackToXML(track, startIndex = 0) {
         const current = track[i];
         const next = track[i_next];
         const nextNext = track[i_nextnext];
-        const segment = utils.calculateSegment(current, next);
+        const segmentLength = utils.calculateSegment(current, next);
 
         curvature = utils.calculateCurvature(track, i);
         if (curvature < threshold) {
-            previousLength += segment.length;
+            previousLength += segmentLength;
         } else {
             if (previousLength > 0) {
                 addSection(segmentNumber, 'straight', previousLength, null);
@@ -32,16 +32,16 @@ export function exportTrackToXML(track, startIndex = 0) {
             }
             const curv = utils.calculateCurve(current, next, nextNext);
             if (curv) {
-                addSection(segmentNumber, 'curve', segment.length, curv);
+                addSection(segmentNumber, 'curve', 0, curv);
                 segmentNumber++;
                 index++;
             }
         }
     }
-
+    console.log(previousLength)
     if (previousLength > 0) {
         addSection(segmentNumber, 'straight', previousLength, null);
-    segmentNumber++;
+        segmentNumber++;
     }
 
     const finalTrackOutput = XML_TRACK_HEADER + xml + CLOSING_XML
