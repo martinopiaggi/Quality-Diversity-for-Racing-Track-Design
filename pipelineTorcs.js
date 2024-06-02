@@ -16,7 +16,7 @@ const MEMORY_LIMIT = '24m';
 const OUTPUT_DIR = './testing/tests';
 
 // Track generation
-const seed = 0.49730750266396795 //Math.random();
+const seed = Math.random();
 
 const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
 const trackEdges = trackGenerator.trackEdges;
@@ -41,7 +41,7 @@ try {
     let { deltaX, deltaY } = parseTrackgenOutput(trackgenOutput);
 
     // Modify the track by adding an artificial last point
-    if(false){
+    if(true){
         let modifiedTrackXml = await addArtificialLastPoints(splineTrack, deltaX, deltaY, seed);
         // Process the modified track
         trackgenOutput = await generateAndMoveTrackFiles(containerId, modifiedTrackXml, seed);
@@ -144,7 +144,7 @@ function calculateControlPoints(points, deltaX, deltaY) {
     };
 
     // Return control points along with the end point adjusted by delta
-    return [thirdLast, controlPoint1, controlPoint2, { x: last.x - deltaX, y: last.y - deltaY }];
+    return [thirdLast, controlPoint1, controlPoint2, { x: last.x + deltaX, y: last.y + deltaY }];
 }
 
 function generateBezierPoints(controlPoints) {
