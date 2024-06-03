@@ -4,8 +4,8 @@ export function splineSmoothing(spline) {
         spline = pushApart(spline, 20);
         spline = fixAngles(spline);
     }
-    spline = generateCatmullRomSpline(spline, 10, 0);
-    spline = pushApart(spline, 1);
+    spline = generateCatmullRomSpline(spline, 20, 0);
+    spline = pushApart(spline, 0.1);
     return spline;
 }
 
