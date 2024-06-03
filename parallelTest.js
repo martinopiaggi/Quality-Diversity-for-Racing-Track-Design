@@ -2,9 +2,9 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 
 const execPromise = promisify(exec);
-const TIMEOUT = 10000; // milliseconds timeout
+const TIMEOUT = 14000; // milliseconds timeout
 const TOTAL_SIMULATIONS = 100;
-const CONCURRENCY_LIMIT = 10; // Number of parallel simulations
+const CONCURRENCY_LIMIT = 25; // Number of parallel simulations
 
 async function runSimulation(simulationIndex) {
     let containerId = null;
