@@ -16,6 +16,10 @@ async function collectData() {
         let sumOfSquaresDeltaX = 0;
         let sumOfSquaresDeltaY = 0;
         let sumOfSquaresDeltaAngleDegrees = 0;
+        let perfectTrackCount = 0;
+        let veryBadTrackCount = 0;
+        let perfectTracks = [];
+        let veryBadTracks = [];
 
         for (const file of jsonFiles) {
             const filePath = path.join(JSON_DIR, file);
@@ -25,6 +29,25 @@ async function collectData() {
             totalDeltaY += data.deltaY;
             totalLength += data.length;
             totalDeltaAngleDegrees += data.deltaAngleDegrees;
+
+            if (Math.abs(data.deltaX) < 1 && Math.abs(data.deltaY) < 1 && Math.abs(data.deltaAngleDegrees) < 10) {
+                perfectTrackCount++;
+                perfectTracks.push({
+                    seed: data.seed,
+                    trackSize: data.trackSize,
+                    mode: data.MODE,
+                });
+            }
+
+            if ((Math.abs(data.deltaX) > 3 && Math.abs(data.deltaY) > 3) || Math.abs(data.deltaAngleDegrees) > 30) {
+                veryBadTrackCount++;
+                veryBadTracks.push({
+                    seed: data.seed,
+                    trackSize: data.trackSize,
+                    mode: data.MODE,
+                });
+            }
+
             count++;
         }
 
@@ -54,6 +77,23 @@ async function collectData() {
         console.log(`Variance deltaX: ${varianceDeltaX}`);
         console.log(`Variance deltaY: ${varianceDeltaY}`);
         console.log(`Variance deltaAngleDegrees: ${varianceDeltaAngleDegrees}`);
+        console.log(`Number of perfect tracks: ${perfectTrackCount}`);
+
+        if (perfectTrackCount > 0) {
+            console.log('Perfect tracks details:');
+            perfectTracks.forEach(track => {
+                console.log(`Seed: ${track.seed}, Track Size: ${track.trackSize}, Mode: ${track.mode}`);
+            });
+        }
+
+        console.log(`Number of very bad tracks: ${veryBadTrackCount}`);
+
+        if (veryBadTrackCount > 0) {
+            console.log('Very bad tracks details:');
+            veryBadTracks.forEach(track => {
+                console.log(`Seed: ${track.seed}, Track Size: ${track.trackSize}, Mode: ${track.mode}`);
+            });
+        }
 
     } catch (err) {
         console.error(`Error: ${err.message}`);
