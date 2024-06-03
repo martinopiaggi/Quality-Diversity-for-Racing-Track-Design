@@ -39,12 +39,15 @@ async function collectData() {
                 });
             }
 
-            if ((Math.abs(data.deltaX) > 3 && Math.abs(data.deltaY) > 3) || Math.abs(data.deltaAngleDegrees) > 30) {
+            if ((Math.abs(data.deltaX) + Math.abs(data.deltaY) > 6)) {
                 veryBadTrackCount++;
                 veryBadTracks.push({
                     seed: data.seed,
                     trackSize: data.trackSize,
                     mode: data.MODE,
+                    deltaX: data.deltaX,
+                    deltaY: data.deltaY,
+                    deltaAngleDegrees: data.deltaAngleDegrees
                 });
             }
 
@@ -91,7 +94,7 @@ async function collectData() {
         if (veryBadTrackCount > 0) {
             console.log('Very bad tracks details:');
             veryBadTracks.forEach(track => {
-                console.log(`Seed: ${track.seed}, Track Size: ${track.trackSize}, Mode: ${track.mode}`);
+                console.log(`Seed: ${track.seed}, Track Size: ${track.trackSize}, Mode: ${track.mode}, deltaX: ${track.deltaX}, deltaY: ${track.deltaY}, deltaAngleDegrees: ${track.deltaAngleDegrees}`);
             });
         }
 
