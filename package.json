@@ -5,12 +5,13 @@
     "main": "server.js",
     "type": "module",
     "scripts": {
-        "start": "node server.js"
+      "start": "node server.js",
+      "build": "mkdir -p public && cp -r src public/ && cp -r testing public/ && cp track_visualizer.html public/ && cp voronoi_cells_visualizer.html public/ && cp pipelineTorcs.js public/ && cp parallelTest.js public/"
     },
     "dependencies": {
         "express": "^4.19.2",
         "serve-index": "^1.9.1"
     },
-    "author": "",
+    "author": "Martino Piaggi",
     "license": ""
 }
