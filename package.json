@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
       "start": "node server.js",
-      "build": "mkdir -p public && cp -r src public/ && cp -r testing public/ && cp track_visualizer.html public/ && cp voronoi_cells_visualizer.html public/ && cp pipelineTorcs.js public/ && cp parallelTest.js public/"
+      "build": "mkdir -p public && cp -r src public/ && cp -r testing public/ && cp track_visualizer.html public/ && cp voronoi_cells_visualizer.html public/ && cp pipelineTorcs.js public/ && cp parallelTest.js public/ && node index.js"
     },
     "dependencies": {
         "express": "^4.19.2",
