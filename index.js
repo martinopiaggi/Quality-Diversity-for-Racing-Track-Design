@@ -8,7 +8,7 @@ function generateIndexHtml(dir) {
   const fileList = files.map(file => {
     const filePath = path.join(dir, file);
     const relativePath = path.relative(baseDir, filePath);
-    return `<li><a href="${relativePath}">${file}</a></li>`;
+    return `<li><a href="/${relativePath}">${file}</a></li>`;
   }).join('');
 
   const indexHtml = `
