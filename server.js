@@ -1,17 +1,19 @@
 import express from 'express';
-import { promises as fs } from 'fs';
+import serveIndex from 'serve-index';
 import path from 'path';
+import { promises as fs } from 'fs';
 
 const app = express();
 const __dirname = path.resolve();
 const TESTS_DIR = path.join(__dirname, 'testing/tests');
 
-// Middleware to serve static files
+// Middleware to serve static files and directory listing
 app.use(express.static(__dirname));
+app.use(serveIndex(__dirname, { icons: true }));
 
-// Serve the gallery.html file on the root route
+// Serve the track_visualizer.html file on the root route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'gallery.html'));
+  res.sendFile(path.join(__dirname, 'track_visualizer.html'));
 });
 
 app.get('/load-track-data', async (req, res) => {
