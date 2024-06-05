@@ -8,7 +8,9 @@ function generateIndexHtml(dir) {
   const fileList = files.map(file => {
     const filePath = path.join(dir, file);
     const relativePath = path.relative(baseDir, filePath).replace(/\\/g, '/');
-    return `<li><a href="/${relativePath}">${file}</a></li>`;
+    const isJsonFile = file.endsWith('.json');
+    const dataAttr = isJsonFile ? ` data-json-file="/${relativePath}"` : '';
+    return `<li><a href="/${relativePath}"${dataAttr}>${file}</a></li>`;
   }).join('');
 
   const indexHtml = `
