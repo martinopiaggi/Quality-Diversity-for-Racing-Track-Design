@@ -1,5 +1,5 @@
 [build]
-  publish = "public"
+  publish = "."
   command = "npm run build"
 [dev]
   framework = "#custom"
