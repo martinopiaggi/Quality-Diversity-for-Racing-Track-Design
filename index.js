@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const baseDir = path.resolve('public');
+const baseDir = path.resolve('.');
 
 function generateIndexHtml(dir) {
   const files = fs.readdirSync(dir);
