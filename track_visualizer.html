@@ -90,11 +90,16 @@
 
     async function loadTrackData() {
       try {
-        const response = await fetch('/load-track-data');
+        const response = await fetch('/testing/tests/index.html');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const links = doc.querySelectorAll('a[data-json-file]');
+        const dataPromises = Array.from(links).map(link => fetch(link.getAttribute('data-json-file')).then(resp => resp.json()));
+        const data = await Promise.all(dataPromises);
         return data;
       } catch (error) {
         console.error('Error loading track data:', error);
