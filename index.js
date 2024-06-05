@@ -7,7 +7,7 @@ function generateIndexHtml(dir) {
   const files = fs.readdirSync(dir);
   const fileList = files.map(file => {
     const filePath = path.join(dir, file);
-    const relativePath = path.relative(baseDir, filePath);
+    const relativePath = path.relative(baseDir, filePath).replace(/\\/g, '/');
     return `<li><a href="/${relativePath}">${file}</a></li>`;
   }).join('');
 
@@ -20,7 +20,7 @@ function generateIndexHtml(dir) {
     <title>Directory Listing</title>
   </head>
   <body>
-    <h1>Directory Listing for ${path.relative(baseDir, dir)}</h1>
+    <h1>Directory Listing for ${path.relative(baseDir, dir).replace(/\\/g, '/')}</h1>
     <ul>${fileList}</ul>
   </body>
   </html>
