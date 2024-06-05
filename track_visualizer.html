@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Track Generator Visualization</title>
+  <title>Track Gallery Visualization</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'">
   <script src="src/libraries/p5.js"></script>
-  <script src="src/libraries/rhill-voronoi-core.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
   <style>
     body {
@@ -17,27 +17,25 @@
       margin: 0;
       padding: 20px;
     }
-    main {
+    .gallery-container {
       display: flex;
       flex-direction: column;
       align-items: center;
+      width: 80%;
+      margin-top: 20px;
+    }
+    .track-container {
       margin-bottom: 20px;
+      text-align: center;
     }
-    form {
+    .navigation {
       display: flex;
-      flex-direction: row;
-      align-items: center;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
     }
-    form > label, form > input, form > select, form > button {
-      margin-bottom: 10px;
-      margin-right: 10px;
-    }
-    form > button {
-      margin-left: auto;
+    .stats {
+      margin-top: 20px;
     }
     canvas {
       border: 1px solid #ccc;
@@ -45,7 +43,7 @@
   </style>
 </head>
 <body>
-  <main>
+  <div class="gallery-container">
     <form id="trackForm">
       <label for="seedInput">Enter Seed:</label>
       <input type="text" id="seedInput" name="seedInput">
@@ -58,21 +56,75 @@
       </select>
       <button type="submit">Generate Track</button>
     </form>
-  </main>
+    <div id="track-container" class="track-container"></div>
+    <div class="navigation">
+      <button id="prev-track">Previous</button>
+      <button id="next-track">Next</button>
+    </div>
+    <div id="stats-container" class="stats"></div>
+  </div>
   <script type="module">
     import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js';
     import * as utils from './src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+    let currentTrackIndex = 0;
+    let tracks = [];
     let trackGenerator, trackEdges, diagram, splineTrack;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      tracks = await loadTrackData();
+      displayTrack(currentTrackIndex);
+
+      document.getElementById('prev-track').addEventListener('click', () => navigateTrack(-1));
+      document.getElementById('next-track').addEventListener('click', () => navigateTrack(1));
+    });
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
       event.preventDefault();
-      const seed = parseInt(document.getElementById('seedInput').value);
+      const seed = parseFloat(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
       const mode = document.getElementById('modeSelect').value;
       generateTrack(seed, trackSize, mode);
     });
+
+    async function loadTrackData() {
+      try {
+        const response = await fetch('/load-track-data');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error loading track data:', error);
+        return [];
+      }
+    }
+
+    function displayTrack(index) {
+      const track = tracks[index];
+      if (!track) return;
+
+      const trackContainer = document.getElementById('track-container');
+      const statsContainer = document.getElementById('stats-container');
+
+      trackContainer.innerHTML = '';
+      statsContainer.innerHTML = '';
+
+      generateTrack(track.seed, track.trackSize, track.MODE);
+
+      const stats = `
+        <p>Seed: ${track.seed}</p>
+        <p>Mode: ${track.MODE}</p>
+        <p>Track Size: ${track.trackSize}</p>
+        <p>Length: ${track.length}</p>
+        <p>Delta X: ${track.deltaX}</p>
+        <p>Delta Y: ${track.deltaY}</p>
+        <p>Delta Angle (Degrees): ${track.deltaAngleDegrees}</p>
+      `;
+      statsContainer.innerHTML = stats;
+    }
 
     function generateTrack(seed, trackSize, mode) {
       if (isNaN(seed)) seed = Math.random();
@@ -107,6 +159,16 @@
         point(spline[i].x, spline[i].y);
       }
       endShape(CLOSE);
+    }
+
+    function navigateTrack(direction) {
+      currentTrackIndex += direction;
+      if (currentTrackIndex < 0) {
+        currentTrackIndex = tracks.length - 1;
+      } else if (currentTrackIndex >= tracks.length) {
+        currentTrackIndex = 0;
+      }
+      displayTrack(currentTrackIndex);
     }
 
     window.setup = setup;

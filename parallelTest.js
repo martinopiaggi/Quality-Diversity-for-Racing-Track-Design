@@ -3,7 +3,7 @@ import { promisify } from 'util';
 
 const execPromise = promisify(exec);
 const TIMEOUT = 14000; // milliseconds timeout
-const TOTAL_SIMULATIONS = 100;
+const TOTAL_SIMULATIONS = 1000;
 const CONCURRENCY_LIMIT = 25; // Number of parallel simulations
 
 async function runSimulation(simulationIndex) {
