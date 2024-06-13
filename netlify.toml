@@ -1,6 +1,8 @@
 [build]
-  publish = "."
+  base = "web"
+  publish = "web/public"
   command = "npm run build"
+
 [dev]
   framework = "#custom"
   command = "npm start"

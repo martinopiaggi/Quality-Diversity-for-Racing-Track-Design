@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
-import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js';
-import * as utils from './src/utils/utils.js';
-import * as xml from './src/utils/xmlTorcsGenerator.js';
+import { TrackGeneratorFactory } from '../trackGen/trackGeneratorFactory.js';
+import * as utils from '../utils/utils.js';
+import * as xml from '../utils/xmlTorcsGenerator.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -13,11 +13,11 @@ const TRACK_SIZE = 5 //Math.floor(Math.random() * (5 - 2 + 1)) + 2;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = './src/utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
-const OUTPUT_DIR = './testing/tests';
+const OUTPUT_DIR = './data/tests';
 
 // Main function to execute the process
 async function main() {
-    const seed = 0.18749833956747186 //Math.random();
+    const seed = 0.017520808384704045 //Math.random();
     const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
     let splineTrack = utils.splineSmoothing(trackGenerator.trackEdges);
     splineTrack = processTrackEdges(splineTrack);
