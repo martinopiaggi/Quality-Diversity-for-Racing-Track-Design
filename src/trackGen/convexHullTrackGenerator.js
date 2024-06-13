@@ -1,5 +1,5 @@
 import { pushApart, fixAngles, generateCatmullRomSpline } from '../utils/utils.js';
-import { prng_alea } from '../libraries/esm-seedrandom/alea.min.mjs';
+import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class ConvexHullTrackGenerator{
     constructor(bbox, seed, size) {
