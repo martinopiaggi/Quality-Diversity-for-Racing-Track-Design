@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
-import { TrackGeneratorFactory } from './src/trackGen/trackGeneratorFactory.js';
-import * as utils from './src/utils/utils.js';
-import * as xml from './src/utils/xmlTorcsGenerator.js';
+import { TrackGeneratorFactory } from '../trackGen/trackGeneratorFactory.js';
+import * as utils from '../utils/utils.js';
+import * as xml from '../utils/xmlTorcsGenerator.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
