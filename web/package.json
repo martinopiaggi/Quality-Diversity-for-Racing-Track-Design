@@ -5,7 +5,7 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "build": "cd .. && node web/index.js",
+        "build": "node index.js",
         "start": "node server.js"
       },
     "dependencies": {
