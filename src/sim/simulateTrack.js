@@ -1,6 +1,5 @@
 import { exec } from 'child_process';
-import { TrackGeneratorFactory } from '../trackGen/trackGeneratorFactory.js';
-import * as utils from '../utils/utils.js';
+import { generateTrack } from '../trackGen/trackGenerator.js';
 import * as xml from '../utils/xmlTorcsGenerator.js';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -17,10 +16,10 @@ const OUTPUT_DIR = '../../data/tests';
 
 // Main function to execute the process
 async function main() {
+
     const seed = Math.random();
-    const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
-    let splineTrack = utils.splineSmoothing(trackGenerator.trackEdges);
-    splineTrack = processTrackEdges(splineTrack);
+    const splineTrack = generateTrack(MODE, BBOX, seed, TRACK_SIZE);
+
     const trackXml = xml.exportTrackToXML(splineTrack, 0);
 
     console.log(`SEED: ${seed}`);
@@ -72,14 +71,6 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
         await fs.unlink(tmpFilePath);
         throw new Error(`Failed to generate and move track files: ${err.message}`);
     }
-}
-
-// Track processing
-function processTrackEdges(track) {
-
-    const segmentLength = 10;
-    const minIndex = utils.findMaxCurveBeforeStraight(track, segmentLength);
-    return track.slice(minIndex).concat(track.slice(0, minIndex));
 }
 
 

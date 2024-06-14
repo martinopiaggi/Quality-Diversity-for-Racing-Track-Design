@@ -63,14 +63,14 @@
     </div>
     <div id="stats-container" class="stats"></div>
   </div>
-  <script type="module">
-    import { TrackGeneratorFactory } from '/src/trackGen/trackGeneratorFactory.js';
-    import * as utils from '/src/utils/utils.js';
 
+  <script type="module">
+    
+    import { generateTrack } from '../src/trackGen/trackGenerator.js';
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
     let currentTrackIndex = 0;
     let tracks = [];
-    let trackGenerator, trackEdges, diagram, splineTrack;
+    let splineTrack; 
 
     document.addEventListener('DOMContentLoaded', async () => {
       tracks = await loadTrackData();
@@ -85,7 +85,7 @@
       const seed = parseFloat(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
       const mode = document.getElementById('modeSelect').value;
-      generateTrack(seed, trackSize, mode);
+      genTrack(seed, trackSize, mode);
     });
 
     async function loadTrackData() {
@@ -117,7 +117,7 @@
       trackContainer.innerHTML = '';
       statsContainer.innerHTML = '';
 
-      generateTrack(track.seed, track.trackSize, track.MODE);
+      genTrack(track.seed, track.trackSize, track.MODE);
 
       const stats = `
         <p>Seed: ${track.seed}</p>
@@ -131,11 +131,10 @@
       statsContainer.innerHTML = stats;
     }
 
-    function generateTrack(seed, trackSize, mode) {
-      if (isNaN(seed)) seed = Math.random();
-      trackGenerator = TrackGeneratorFactory.createTrackGenerator(mode, BBOX, seed, trackSize);
-      trackEdges = trackGenerator.trackEdges;
-      splineTrack = utils.splineSmoothing(trackEdges);
+    function genTrack(seed, trackSize, mode) {
+      
+      splineTrack = generateTrack(mode, BBOX, seed, trackSize);
+      
       redraw();
     }
 
