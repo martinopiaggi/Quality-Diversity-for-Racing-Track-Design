@@ -5,3 +5,4 @@ output.xml
 # used for Netlify serving 
 web/src 
 web/data
+data/tests/*
