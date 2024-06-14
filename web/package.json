@@ -1,17 +1,10 @@
 {
-    "name": "track-gallery",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "type": "module",
     "scripts": {
-        "build": "node index.js",
-        "start": "node server.js"
-      },
+        "start": "node server.js",
+        "build": "node generateTrackIndex.js && cp -R ../src ./src && cp -R ../data ./data"
+    },
     "dependencies": {
         "express": "^4.19.2",
-        "serve-index": "^1.9.1"
-    },
-    "author": "Martino Piaggi",
-    "license": ""
+        "serverless-http": "^3.2.0"
+    }
 }
