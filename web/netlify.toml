@@ -1,6 +1,8 @@
 [build]
+  base = "."
+  publish = "web/public"
   command = "npm run build"
-  ignore = "git diff --quiet HEAD^ HEAD web/public/"
+
 [dev]
   framework = "#custom"
   command = "npm start"

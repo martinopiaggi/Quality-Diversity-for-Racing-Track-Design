@@ -5,9 +5,9 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "start": "node server.js",
-        "build": "node index.js"
-    },
+        "build": "cd .. && node web/index.js",
+        "start": "node server.js"
+      },
     "dependencies": {
         "express": "^4.19.2",
         "serve-index": "^1.9.1"
