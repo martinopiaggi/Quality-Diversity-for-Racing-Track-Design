@@ -1,9 +1,0 @@
-[build]
-  base = "web"
-  publish = "public"
-  command = "npm run build"
-
-[dev]
-  framework = "#custom"
-  command = "npm start"
-  targetPort = 3000

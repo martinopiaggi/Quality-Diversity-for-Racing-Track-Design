@@ -1,4 +1,7 @@
 node_modules/
 output.xml
-web/index.html
-web/public
+# Local Netlify folder
+.netlify
+# used for Netlify serving 
+web/src 
+web/data
