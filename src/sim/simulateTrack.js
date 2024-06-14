@@ -9,15 +9,15 @@ import os from 'os';
 // Constants
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
 const MODE = 'voronoi'; // or convexHull
-const TRACK_SIZE = 5 //Math.floor(Math.random() * (5 - 2 + 1)) + 2;
+const TRACK_SIZE = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
 const DOCKER_IMAGE_NAME = 'torcs';
-const MAPELITE_PATH = './src/utils/mapelite.xml';
+const MAPELITE_PATH = '../utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
-const OUTPUT_DIR = './data/tests';
+const OUTPUT_DIR = '../../data/tests';
 
 // Main function to execute the process
 async function main() {
-    const seed = 0.017520808384704045 //Math.random();
+    const seed = Math.random();
     const trackGenerator = TrackGeneratorFactory.createTrackGenerator(MODE, BBOX, seed, TRACK_SIZE);
     let splineTrack = utils.splineSmoothing(trackGenerator.trackEdges);
     splineTrack = processTrackEdges(splineTrack);

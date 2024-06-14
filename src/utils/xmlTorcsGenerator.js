@@ -1,6 +1,12 @@
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import * as utils from './utils.js';
-const XML_TRACK_HEADER = fs.readFileSync("./src/utils/startTrackTemplate.xml", 'utf8');
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const XML_TRACK_HEADER = fs.readFileSync(path.join(__dirname, 'startTrackTemplate.xml'), 'utf8');
 const CLOSING_XML = "</section>\n</section>\n</params>";
 let xml = '';
 
