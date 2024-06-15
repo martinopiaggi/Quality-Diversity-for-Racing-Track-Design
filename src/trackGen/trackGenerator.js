@@ -2,7 +2,7 @@ import { VoronoiTrackGenerator } from '../trackGen/voronoiTrackGenerator.js';
 import { ConvexHullTrackGenerator } from '../trackGen/convexHullTrackGenerator.js';
 import * as utils from '../utils/utils.js';
 
-export function generateTrack(mode, bbox, seed, trackSize) {
+export function generateTrack(mode, bbox, seed, trackSize, returnPoints = false) {
     if (isNaN(seed)) seed = Math.random();
 
     let trackGenerator;
@@ -19,9 +19,15 @@ export function generateTrack(mode, bbox, seed, trackSize) {
 
     let splineTrack = utils.splineSmoothing(trackGenerator.trackEdges);
 
+    //process to reduce the approximation error using "findMaxCurveBeforeStraight" heuristic
     const segmentLength = 10;
     const minIndex = utils.findMaxCurveBeforeStraight(splineTrack, segmentLength);
-    const track = splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
+    splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
+    
 
-    return track;
+    if (returnPoints && mode === 'voronoi') {
+        return { track: splineTrack, points: trackGenerator.dataSet};
+    } else {
+        return track;
+    }
 }
