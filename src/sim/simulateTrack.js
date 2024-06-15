@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { generateTrack } from '../trackGen/trackGenerator.js';
 import * as xml from '../utils/xmlTorcsGenerator.js';
+import {saveFitnessToJson} from '../utils/jsonUtils.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -12,16 +13,13 @@ const TRACK_SIZE = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
 const DOCKER_IMAGE_NAME = 'torcs';
 const MAPELITE_PATH = '../utils/mapelite.xml';
 const MEMORY_LIMIT = '24m';
-const OUTPUT_DIR = '../../data/tests';
 
 // Main function to execute the process
 async function main() {
     const seed = Math.random();
-    const result = generateTrack(MODE, BBOX, seed, TRACK_SIZE, true);
-    const splineTrack = result.track;
-    const dataSetPoints = result.points;
+    const splineTrack = generateTrack(MODE, BBOX, seed, TRACK_SIZE, true);
 
-    const trackXml = xml.exportTrackToXML(splineTrack, 0);
+    const trackXml = xml.exportTrackToXML(splineTrack);
 
     console.log(`SEED: ${seed}`);
     console.log(`MODE: ${MODE}`);
@@ -31,7 +29,7 @@ async function main() {
         const containerId = await startDockerContainer();
         const trackgenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
         
-        await runRaceSimulation(containerId, seed, TRACK_SIZE, trackgenOutput,dataSetPoints);
+        await runRaceSimulation(containerId, seed, TRACK_SIZE, trackgenOutput);
         await stopDockerContainer(containerId);
     } catch (err) {
         console.error(`Error: ${err.message}`);
@@ -76,7 +74,7 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 
 
 // Simulation and output
-async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput,dataSetPoints) {
+async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
     try {
         await executeCommand(`docker cp ${MAPELITE_PATH} ${containerId}:/usr/share/games/torcs/config/raceman/mapelite.xml`);
         await executeCommand(`docker exec ${containerId} /usr/games/torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`);
@@ -84,41 +82,8 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput,da
 
         const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackgenOutput);
 
-        const jsonFileName = `${seed}.json`;
-        const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
-
-        let jsonContent;
-        try {
-            jsonContent = JSON.parse(await fs.readFile(jsonFilePath, 'utf8'));
-            jsonContent.fitness = {
-                length,
-                deltaX,
-                deltaY,
-                deltaAngleDegrees
-            };
-            jsonContent.points = dataSetPoints || [];
-        } catch (err) {
-            jsonContent = {
-                id: seed,
-                mode: MODE,
-                trackSize,
-                parents: {
-                    parent1: null,
-                    parent2: null
-                },
-                fitness: {
-                    length,
-                    deltaX,
-                    deltaY,
-                    deltaAngleDegrees
-                },
-                points: dataSetPoints || []
-            };
-        }
-
-        await fs.mkdir(OUTPUT_DIR, { recursive: true });
-        await fs.writeFile(jsonFilePath, JSON.stringify(jsonContent, null, 2));
-        console.log(`JSON file saved at: ${jsonFilePath}`);
+        await saveFitnessToJson(seed, MODE, trackSize, length, deltaX, deltaY, deltaAngleDegrees);
+    
     } catch (err) {
         throw new Error(`Failed to run race simulation: ${err.message}`);
     }

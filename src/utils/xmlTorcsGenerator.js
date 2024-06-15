@@ -10,8 +10,9 @@ const XML_TRACK_HEADER = fs.readFileSync(path.join(__dirname, 'startTrackTemplat
 const CLOSING_XML = "</section>\n</section>\n</params>";
 let xml = '';
 
-//return XML result and also save it in output.xml for testing purpose
-export function exportTrackToXML(track, startIndex = 0) {
+//return XML data ready for trackGen parsing  
+// saveXMLalsoLocally is used for testing, it prints at local level the XML as "output.xml"
+export function exportTrackToXML(track, startIndex = 0, saveXMLalsoLocally = false) {
     xml = '';     
     let previousLength = 0;
     const threshold = 0.001;
@@ -52,12 +53,14 @@ export function exportTrackToXML(track, startIndex = 0) {
 
     const finalTrackOutput = XML_TRACK_HEADER + xml + CLOSING_XML
 
-    fs.writeFile('output.xml', finalTrackOutput , (err) => {
-        if (err) {
-            console.error('Failed to save XML:', err);
-        }
-    });
-
+    if(saveXMLalsoLocally){
+        fs.writeFile('output.xml', finalTrackOutput , (err) => {
+            if (err) {
+                console.error('Failed to save XML:', err);
+            }
+        });
+    }
+    
     return finalTrackOutput;
 }
 
