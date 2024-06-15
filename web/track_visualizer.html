@@ -100,11 +100,11 @@
         );
         const data = await Promise.all(dataPromises);
         return data;
-    } catch (error) {
+      } catch (error) {
         console.error('Error loading track data:', error);
         return [];
+      }
     }
-}
 
 
     function displayTrack(index) {
@@ -134,7 +134,7 @@
     function genTrack(seed, trackSize, mode) {
       
       splineTrack = generateTrack(mode, BBOX, seed, trackSize);
-      
+
       redraw();
     }
 

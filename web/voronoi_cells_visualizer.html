@@ -56,8 +56,8 @@
     </form>
   </main>
   <script type="module">
-    import { TrackGeneratorFactory } from '/src/trackGen/trackGeneratorFactory.js'; 
-    import * as utils from '/src/utils/utils.js';
+    import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
+    import * as utils from '../src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
     let trackGenerator, trackEdges, dataSet, diagram, selectedCells;
@@ -66,12 +66,13 @@
       event.preventDefault();
       const seed = parseInt(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
-      generateTrack(seed, trackSize);
+      genTrack(seed, trackSize);
     });
 
-    function generateTrack(seed, trackSize) {
+    function genTrack(seed, trackSize) {
       if (isNaN(seed)) seed = Math.random();
-      trackGenerator = TrackGeneratorFactory.createTrackGenerator("voronoi", BBOX, seed, trackSize);
+      generateTrack("voronoi", BBOX, seed, trackSize);
+      trackGenerator = getGenerator()
       trackEdges = trackGenerator.trackEdges;
       dataSet = trackGenerator.dataSet;
       diagram = trackGenerator.diagram;
