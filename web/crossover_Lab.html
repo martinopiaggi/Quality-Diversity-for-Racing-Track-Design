@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crossover Lab</title>
+  <script src="/src/lib/p5.js"></script>
+  <script src="/src/lib/rhill-voronoi-core.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    form > label, form > input, form > select, form > button {
+      margin-bottom: 10px;
+      margin-right: 10px;
+    }
+    form > button {
+      margin-left: auto;
+    }
+    .canvas-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <form id="trackForm">
+      <label for="seedInput1">Enter Seed for Parent 1:</label>
+      <input type="text" id="seedInput1" name="seedInput1">
+      <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
+      <input type="text" id="cellCountInput1" name="cellCountInput1">
+      
+      <label for="seedInput2">Enter Seed for Parent 2:</label>
+      <input type="text" id="seedInput2" name="seedInput2">
+      <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
+      <input type="text" id="cellCountInput2" name="cellCountInput2">
+      
+      <label for="seedInput3">Enter Seed for Crossover:</label>
+      <input type="text" id="seedInput3" name="seedInput3">
+      <label for="cellCountInput3">Enter Number of Cell Tracks for Crossover:</label>
+      <input type="text" id="cellCountInput3" name="cellCountInput3">
+
+      <button type="submit">Generate Tracks</button>
+    </form>
+     <div class="canvas-container">
+      <div id="parent1"></div>
+      <div id="parent2"></div>
+      <div id="crossover"></div>
+    </div>
+  </main>
+  <script type="module">
+    import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
+    import * as utils from '../src/utils/utils.js';
+
+    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+
+    let trackGenerators = {
+      parent1: null,
+      parent2: null,
+      crossover: null
+    };
+
+    let p5Instances = {};
+
+    document.getElementById('trackForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const seed1 = parseInt(document.getElementById('seedInput1').value);
+      const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
+
+      const seed2 = parseInt(document.getElementById('seedInput2').value);
+      const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
+
+      const seed3 = parseInt(document.getElementById('seedInput3').value);
+      const trackSize3 = parseInt(document.getElementById('cellCountInput3').value);
+
+      // Clear existing canvases
+      clearCanvases();
+
+      // Generate tracks for each canvas
+      genTrack('parent1', seed1, trackSize1);
+      genTrack('parent2', seed2, trackSize2);
+      genTrack('crossover', seed3, trackSize3);
+    });
+
+    async function genTrack(canvasId, seed, trackSize) {
+        if (isNaN(seed)) seed = Math.random();
+        const splineTrack = generateTrack("voronoi", BBOX, seed, trackSize);
+        const trackGenerator = getGenerator();
+        setupCanvas(canvasId, trackGenerator, splineTrack);
+    }   
+
+    function setupCanvas(containerId, trackGenerator, splineTrack) {
+      p5Instances[containerId] = new p5((sketch) => {
+        sketch.setup = () => {
+          sketch.createCanvas(BBOX.xr, BBOX.yb).parent(containerId);
+          sketch.noLoop();
+          drawCanvas(sketch, trackGenerator, splineTrack);
+        };
+      });
+    }
+
+    function drawCanvas(sketch, trackGenerator, splineTrack) {
+      sketch.background(0); // Set the background
+      sketch.strokeWeight(1);
+
+      const { diagram, trackEdges, dataSet, selectedCells } = trackGenerator;
+
+      drawVoronoi(sketch, diagram, 150);
+      drawPoints(sketch, dataSet, 150);
+      drawOriginalEdges(sketch, trackEdges, 150);
+      drawSelectedSites(sketch, selectedCells, 150);
+      drawSpline(sketch, splineTrack);
+    }
+
+    function drawVoronoi(sketch, diagram, opacity) {
+      if (!diagram) return;
+      sketch.stroke(255, 255, 255, opacity); // White with reduced opacity
+      diagram.edges.forEach(edge => {
+        sketch.line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+      });
+    }
+
+    function drawPoints(sketch, dataSet, opacity) {
+      if (!dataSet) return;
+      sketch.fill(255, 255, 255, opacity); // White with reduced opacity
+      sketch.noStroke();
+      dataSet.forEach(pt => sketch.ellipse(pt.x, pt.y, 5, 5));
+    }
+
+    function drawOriginalEdges(sketch, trackEdges, opacity) {
+      if (!trackEdges) return;
+      sketch.stroke(0, 255, 255, opacity); // Cyan with reduced opacity
+      sketch.strokeWeight(2);
+      for (let i = 0; i < trackEdges.length; i++) {
+        let nextIndex = (i + 1) % trackEdges.length;
+        sketch.line(trackEdges[i].x, trackEdges[i].y, trackEdges[nextIndex].x, trackEdges[nextIndex].y);
+      }
+      sketch.strokeWeight(1);
+    }
+
+    function drawSelectedSites(sketch, selectedCells, opacity) {
+      if (!selectedCells) return;
+      sketch.fill(0, 255, 0, opacity); // Green with reduced opacity
+      sketch.noStroke();
+      selectedCells.forEach((cell) => {
+        let site = cell.site;
+        sketch.ellipse(site.x, site.y, 8, 8);
+      });
+    }
+
+    function drawSpline(sketch, spline) {
+      if (!spline) return;
+      sketch.strokeWeight(3);
+      sketch.beginShape();
+      let startColor = sketch.color(0, 255, 255);
+      let endColor = sketch.color(255, 0, 255);
+      for (let i = 0; i < spline.length; i++) {
+        sketch.stroke(sketch.lerpColor(startColor, endColor, i / spline.length));
+        sketch.point(spline[i].x, spline[i].y);
+      }
+      sketch.endShape(sketch.CLOSE);
+    }
+
+    function clearCanvases() {
+      Object.keys(p5Instances).forEach(instance => {
+        p5Instances[instance].remove();
+      });
+      p5Instances = {};
+      document.getElementById('parent1').innerHTML = '';
+      document.getElementById('parent2').innerHTML = '';
+      document.getElementById('crossover').innerHTML = '';
+    }
+  </script>
+</body>
+</html>
