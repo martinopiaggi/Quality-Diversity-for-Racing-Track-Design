@@ -6,30 +6,26 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
-// Constants
-const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const MODE = 'voronoi'; // or convexHull
-const TRACK_SIZE = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
-const DOCKER_IMAGE_NAME = 'torcs';
-const MAPELITE_PATH = '../utils/mapelite.xml';
-const MEMORY_LIMIT = '24m';
+import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT } from '../utils/constants.js';
 
-// Main function to execute the process
-async function main() {
+// Main function to simulate a track using Docker torcs
+async function simulate(mode = MODE, trackSize = 0, dataSet = [], voronoiCells = []) {
+    if(trackSize == 0) trackSize = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
+    
     const seed = Math.random();
-    const splineTrack = generateTrack(MODE, BBOX, seed, TRACK_SIZE, true);
+    const splineTrack = generateTrack(mode, BBOX, seed, trackSize, true, dataSet, voronoiCells);
 
     const trackXml = xml.exportTrackToXML(splineTrack);
 
     console.log(`SEED: ${seed}`);
-    console.log(`MODE: ${MODE}`);
-    console.log(`trackSize: ${TRACK_SIZE}`);
+    console.log(`MODE: ${mode}`);
+    console.log(`trackSize: ${trackSize}`);
 
     try {
         const containerId = await startDockerContainer();
         const trackgenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
         
-        await runRaceSimulation(containerId, seed, TRACK_SIZE, trackgenOutput);
+        await runRaceSimulation(containerId, seed, trackSize, trackgenOutput);
         await stopDockerContainer(containerId);
     } catch (err) {
         console.error(`Error: ${err.message}`);
@@ -122,5 +118,5 @@ function executeCommand(command) {
 }
 
 // Execute the main function
-main().catch(err => console.error(`Unhandled error: ${err.message}`));
+simulate().catch(err => console.error(`Unhandled error: ${err.message}`));
 

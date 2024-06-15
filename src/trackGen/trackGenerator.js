@@ -3,13 +3,13 @@ import { ConvexHullTrackGenerator } from '../trackGen/convexHullTrackGenerator.j
 import * as utils from '../utils/utils.js';
 import { savePointsToJson } from '../utils/jsonUtils.js';
 
-export function generateTrack(mode, bbox, seed, trackSize, saveJSON = false) {
+export function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selectedVoronoiCells = []) {
     if (isNaN(seed)) seed = Math.random();
 
     let trackGenerator;
     switch (mode) {
         case 'voronoi':
-            trackGenerator = new VoronoiTrackGenerator(bbox, seed, trackSize);
+            trackGenerator = new VoronoiTrackGenerator(bbox, seed, trackSize, dataSet,selectedVoronoiCells);
             break;
         case 'convexHull':
             trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize);
@@ -26,7 +26,7 @@ export function generateTrack(mode, bbox, seed, trackSize, saveJSON = false) {
     splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
     
     if (saveJSON && mode === 'voronoi') {
-        savePointsToJson(seed, trackGenerator.dataSet);
+        savePointsToJson(seed, trackGenerator.dataSet, trackGenerator.selectedCells.map(cell => cell.site.voronoiId));
         return splineTrack;
     } else {
         return splineTrack;
