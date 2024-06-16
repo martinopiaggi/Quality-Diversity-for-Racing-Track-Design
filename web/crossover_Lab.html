@@ -94,6 +94,8 @@
       voronoiId2: []
     };
 
+    let lineParameters;
+
     let p5Instances = {};
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
@@ -126,6 +128,8 @@
         const result = crossover(parent1, parent2);
         const crossoverDataSet = result.ds; 
         const selectedCells = result.sel;
+        lineParameters = result.lineParameters; 
+   
         splineTrack = generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet , selectedCells);
 
       } else {
@@ -160,6 +164,10 @@
       drawOriginalEdges(sketch, trackEdges, 150);
       drawSelectedSites(sketch, selectedCells, 150);
       drawSpline(sketch, splineTrack);
+      if(lineParameters!=null){
+        drawSeparationLine(sketch,lineParameters);
+      }
+      
     }
 
     function drawVoronoi(sketch, diagram, opacity) {
@@ -210,6 +218,17 @@
       sketch.endShape(sketch.CLOSE);
     }
 
+    function drawSeparationLine(sketch, lineParameters) {
+      const { slope, intercept } = lineParameters;
+      const x1 = 0;
+      const y1 = slope * x1 + intercept;
+      const x2 = sketch.width;
+      const y2 = slope * x2 + intercept;
+      sketch.strokeWeight(2);
+      sketch.stroke(255, 0, 0); // Red color
+      sketch.line(x1, y1, x2, y2);
+    }
+        
     function clearCanvases() {
       Object.keys(p5Instances).forEach(instance => {
         p5Instances[instance].remove();
@@ -219,6 +238,7 @@
       document.getElementById('parent2').innerHTML = '';
       document.getElementById('crossover').innerHTML = '';
     }
+    
   </script>
 </body>
 </html>

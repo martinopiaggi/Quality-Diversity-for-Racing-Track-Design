@@ -3,19 +3,18 @@ export function crossover(parent1, parent2) {
   const dataSet1 = parent1.dataSet;
   const dataSet2 = parent2.dataSet;
 
-  // Calculate the geometric centers for each parent's selected cells
-  const center1 = calculateGeometricCenter(parent1.selectedCells);
-  const center2 = calculateGeometricCenter(parent2.selectedCells);
+  // Extract the vertex information from the selected cells
+  const selectedVertices1 = getSelectedVertices(parent1.selectedCells);
+  const selectedVertices2 = getSelectedVertices(parent2.selectedCells);
 
-  // Calculate the slope and y-intercept of the separation line
-  const slope = (center2.y - center1.y) / (center2.x - center1.x);
-  const yIntercept = center1.y - slope * center1.x;
+  // Perform ordinary least squares regression to find the best separation line
+  const { slope, intercept } = ordinaryLeastSquares(selectedVertices1, selectedVertices2);
 
   // Determine which half of the dataset to use for each parent based on the separation line
-  const halfDataSet1 = dataSet1.filter(data => data.y <= slope * data.x + yIntercept);
-  const halfDataSet2 = dataSet2.filter(data => data.y > slope * data.x + yIntercept);
+  const halfDataSet1 = dataSet1.filter(data => data.y <= slope * data.x + intercept);
+  const halfDataSet2 = dataSet2.filter(data => data.y > slope * data.x + intercept);
 
-  // Combine the selected halves
+  // Combine the datasets
   const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
 
   // Combine the selected cells from both parents
@@ -23,21 +22,55 @@ export function crossover(parent1, parent2) {
 
   // Extract the site information from the selected cells
   combinedSelectedCells = combinedSelectedCells.map(cell => cell.site);
+
+  const selected1 = combinedSelectedCells.filter(data => data.y <= slope * data.x + intercept);
+  const selected2 = combinedSelectedCells.filter(data => data.y > slope * data.x + intercept);
   
-  // Ensure that the selected cells are present in the combined dataset
-  combinedSelectedCells.forEach(site => {
-    const { x, y } = site;
-    if (!combinedDataSet.some(data => data.x === x && data.y === y)) {
-      combinedDataSet.push({ x, y});
-    }
-  });
-  
-  return { ds: combinedDataSet, sel: combinedSelectedCells };
+  combinedSelectedCells = [...selected1, ...selected2];
+ 
+
+  return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
 }
 
-function calculateGeometricCenter(selectedCells) {
-  const sumX = selectedCells.reduce((acc, cell) => acc + cell.site.x, 0);
-  const sumY = selectedCells.reduce((acc, cell) => acc + cell.site.y, 0);
-  const count = selectedCells.length;
-  return { x: sumX / count, y: sumY / count };
+function getSelectedVertices(selectedCells) {
+  const vertices = [];
+  selectedCells.forEach(cell => {
+    cell.halfedges.forEach(halfedge => {
+      const va = halfedge.edge.va ;
+      const vb  = halfedge.edge.vb ;
+      vertices.push(va);
+      vertices.push(vb);
+    });
+  });
+  return vertices;
+}
+
+function ordinaryLeastSquares(vertices1, vertices2) {
+  // Combine the vertices
+  const combinedVertices = [...vertices1, ...vertices2];
+
+  // Calculate the means of x and y coordinates
+  const meanX = combinedVertices.reduce((acc, vertex) => acc + vertex.x, 0) / combinedVertices.length;
+  const meanY = combinedVertices.reduce((acc, vertex) => acc + vertex.y, 0) / combinedVertices.length;
+
+  // Calculate the variance and covariance
+  let varX = 0;
+  let varY = 0;
+  let covXY = 0;
+  for (const vertex of combinedVertices) {
+    const dx = vertex.x - meanX;
+    const dy = vertex.y - meanY;
+    varX += dx * dx;
+    varY += dy * dy;
+    covXY += dx * dy;
+  }
+  varX /= combinedVertices.length;
+  varY /= combinedVertices.length;
+  covXY /= combinedVertices.length;
+
+  // Calculate the slope and intercept of the OLS regression line
+  const slope = covXY / varX;
+  const intercept = meanY - slope * meanX;
+
+  return { slope, intercept };
 }
