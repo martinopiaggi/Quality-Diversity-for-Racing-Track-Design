@@ -65,11 +65,6 @@
       <input type="text" id="seedInput2" name="seedInput2">
       <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
       <input type="text" id="cellCountInput2" name="cellCountInput2">
-      
-      <label for="seedInput3">Enter Seed for Crossover:</label>
-      <input type="text" id="seedInput3" name="seedInput3">
-      <label for="cellCountInput3">Enter Number of Cell Tracks for Crossover:</label>
-      <input type="text" id="cellCountInput3" name="cellCountInput3">
 
       <button type="submit">Generate Tracks</button>
     </form>
@@ -81,6 +76,7 @@
   </main>
   <script type="module">
     import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
+    const { crossover } = await import('../src/genetic/crossover.js');
     import * as utils from '../src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -89,6 +85,13 @@
       parent1: null,
       parent2: null,
       crossover: null
+    };
+
+    let crossover_data = {
+      dataset1: [],
+      voronoiId1: [],
+      dataset2: [],
+      voronoiId2: []
     };
 
     let p5Instances = {};
@@ -101,24 +104,39 @@
       const seed2 = parseInt(document.getElementById('seedInput2').value);
       const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
 
-      const seed3 = parseInt(document.getElementById('seedInput3').value);
-      const trackSize3 = parseInt(document.getElementById('cellCountInput3').value);
-
       // Clear existing canvases
       clearCanvases();
 
       // Generate tracks for each canvas
       genTrack('parent1', seed1, trackSize1);
       genTrack('parent2', seed2, trackSize2);
-      genTrack('crossover', seed3, trackSize3);
+      genTrack('crossover', 42, 3);
     });
 
     async function genTrack(canvasId, seed, trackSize) {
-        if (isNaN(seed)) seed = Math.random();
-        const splineTrack = generateTrack("voronoi", BBOX, seed, trackSize);
-        const trackGenerator = getGenerator();
-        setupCanvas(canvasId, trackGenerator, splineTrack);
-    }   
+      if (isNaN(seed)) seed = Math.random();
+      
+      let splineTrack;
+      if (canvasId === 'crossover') {
+        // Get the parent tracks
+        const parent1 = trackGenerators.parent1;
+        const parent2 = trackGenerators.parent2;
+        
+        // Generate the crossover track
+        const crossoverDataSet = crossover(parent1, parent2);
+        console.log(crossoverDataSet.length)
+        splineTrack = generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet );
+
+      } else {
+        splineTrack = generateTrack("voronoi", BBOX, seed, trackSize);
+      }
+      
+      const trackGenerator = getGenerator();
+      setupCanvas(canvasId, trackGenerator, splineTrack);
+      
+      // Store the trackGenerator for later use
+      trackGenerators[canvasId] = trackGenerator;
+    } 
 
     function setupCanvas(containerId, trackGenerator, splineTrack) {
       p5Instances[containerId] = new p5((sketch) => {
