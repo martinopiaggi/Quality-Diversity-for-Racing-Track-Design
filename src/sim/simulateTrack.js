@@ -13,7 +13,7 @@ async function simulate(mode = MODE, trackSize = 0, dataSet = [], voronoiCells =
     if(trackSize == 0) trackSize = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
     
     const seed = Math.random();
-    const splineTrack = generateTrack(mode, BBOX, seed, trackSize, true, dataSet, voronoiCells);
+    const splineTrack = await generateTrack(mode, BBOX, seed, trackSize, true, dataSet, voronoiCells);
 
     const trackXml = xml.exportTrackToXML(splineTrack);
 

@@ -2,15 +2,14 @@ import Voronoi from '../lib/rhill-voronoi-core.js';
 import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class VoronoiTrackGenerator {
-    constructor(bbox, seed, size, dataSet = [], selectedVoronoiIds = []) {
+    constructor(bbox, seed, size, dataSet = [], selectedVoronoiSites = []) {
         this.bbox = bbox;
         this.randomGen = prng_alea(seed);
         this.dataSet = dataSet.length > 0 ? dataSet : this.generatePoints();
         this.voronoi = new Voronoi();
         this.diagram = this.voronoi.compute(this.dataSet, this.bbox);
-        this.selectedCells = selectedVoronoiIds.length > 0 ?  
-            selectedVoronoiIds.map(id => this.diagram.cells[id]) 
-            : this.selectCellsForTrack(size);
+        this.selectedCells = selectedVoronoiSites.length > 0 ?  
+            this.sitesFromInput(selectedVoronoiSites) : this.selectCellsForTrack(size);
         this.trackEdges = this.findTrackEdges();
     }
 
@@ -23,6 +22,30 @@ export class VoronoiTrackGenerator {
             });
         }
         return points;
+    }
+
+
+    sitesFromInput(points) {
+        let selectedCells = [];
+        console.log(points)
+        points.forEach(p => {
+            let cell = this.findCellByCoordinates(p.x, p.y);
+            if (cell) {
+                selectedCells.push(cell);
+            }
+        });
+    
+        return selectedCells;
+    }
+    
+    findCellByCoordinates(x, y) {
+        for (let cell of this.diagram.cells) {
+            let site = cell.site;
+            if (site.x === x && site.y === y) {
+                return cell;
+            }
+        }
+        return null;
     }
 
     selectCellsForTrack(numCells) {

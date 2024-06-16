@@ -4,14 +4,15 @@ import * as utils from '../utils/utils.js';
 
 let trackGenerator;
 let savePointsToJson;
+
 async function importJsonUtils() {
     if (typeof window === 'undefined') {
       const module = await import('../utils/jsonUtils.js');
       savePointsToJson = module.savePointsToJson;
     }
-  }
+}
   
-export function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selectedVoronoiCells = []) {
+export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selectedVoronoiCells = []) {
     if (isNaN(seed)) seed = Math.random();
 
     switch (mode) {
@@ -33,7 +34,8 @@ export function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dat
     splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
     
     if (saveJSON && mode === 'voronoi') {
-        savePointsToJson(seed, trackGenerator.dataSet, trackGenerator.selectedCells.map(cell => cell.site.voronoiId));
+        await importJsonUtils();
+        savePointsToJson(seed, trackGenerator.dataSet, trackGenerator.selectedCells.map(cell => cell.site));
         return splineTrack;
     } else {
         return splineTrack;

@@ -110,7 +110,7 @@
       // Generate tracks for each canvas
       genTrack('parent1', seed1, trackSize1);
       genTrack('parent2', seed2, trackSize2);
-      genTrack('crossover', 42, 3);
+      genTrack('crossover', -1, -1);
     });
 
     async function genTrack(canvasId, seed, trackSize) {
@@ -123,9 +123,10 @@
         const parent2 = trackGenerators.parent2;
         
         // Generate the crossover track
-        const crossoverDataSet = crossover(parent1, parent2);
-        console.log(crossoverDataSet.length)
-        splineTrack = generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet );
+        const result = crossover(parent1, parent2);
+        const crossoverDataSet = result.ds; 
+        const selectedCells = result.sel;
+        splineTrack = generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet , selectedCells);
 
       } else {
         splineTrack = generateTrack("voronoi", BBOX, seed, trackSize);
@@ -198,7 +199,6 @@
     }
 
     function drawSpline(sketch, spline) {
-      if (!spline) return;
       sketch.strokeWeight(3);
       sketch.beginShape();
       let startColor = sketch.color(0, 255, 255);
