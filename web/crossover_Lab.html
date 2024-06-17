@@ -76,7 +76,7 @@
   </main>
   <script type="module">
     import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
-    const { crossover } = await import('../src/genetic/crossover.js');
+    const { crossover , crossover2 } = await import('../src/genetic/crossover.js');
     import * as utils from '../src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -110,14 +110,13 @@
       clearCanvases();
 
       // Generate tracks for each canvas
-      genTrack('parent1', seed1, trackSize1);
-      genTrack('parent2', seed2, trackSize2);
+      genTrack('parent1', isNaN(seed1) ? Math.random() : seed1 ,  isNaN(trackSize1) ? 3 : trackSize1);
+      genTrack('parent2', isNaN(seed2) ? Math.random() : seed2 ,  isNaN(trackSize2) ? 3 : trackSize2);
       genTrack('crossover', -1, -1);
     });
 
     async function genTrack(canvasId, seed, trackSize) {
-      if (isNaN(seed)) seed = Math.random();
-      
+
       let splineTrack;
       if (canvasId === 'crossover') {
         // Get the parent tracks
@@ -125,11 +124,10 @@
         const parent2 = trackGenerators.parent2;
         
         // Generate the crossover track
-        const result = crossover(parent1, parent2);
+        const result = crossover2(parent1, parent2);
         const crossoverDataSet = result.ds; 
         const selectedCells = result.sel;
         lineParameters = result.lineParameters; 
-   
         splineTrack = generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet , selectedCells);
 
       } else {

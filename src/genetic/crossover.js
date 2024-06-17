@@ -74,3 +74,102 @@ function ordinaryLeastSquares(vertices1, vertices2) {
 
   return { slope, intercept };
 }
+
+
+
+// ---
+
+export function crossover2(parent1, parent2) {
+  const selectedCellSites = [];
+  const combinedDataSet = [];
+  const parentSelected1 = [...parent1.selectedCells];
+  const parentSelected2 = [...parent2.selectedCells];
+
+  const farPoint1 = parentSelected1.shift();
+  const centerPoint2 = parentSelected2.shift();
+
+  let remappedUniquePoints2 =  getUniquePointsNearSites(parentSelected2).flat();
+  
+  remappedUniquePoints2 = remapPoints(centerPoint2.site,remappedUniquePoints2,farPoint1.site);
+  
+  combinedDataSet.push(...remappedUniquePoints2)
+  combinedDataSet.push(...getUniquePointsNearSites(parentSelected1).flat())
+
+  //remember that this function readds centerPoint2 to remappedSelectedParent2 !!
+  const remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),farPoint1.site);
+
+  selectedCellSites.push(...parentSelected1.map(cell => cell.site),...remappedSelectedParent2)
+  
+  const borderPoints1 = sortByDistance(parent1.dataSet,farPoint1.site);
+  const borderPoints2 = sortByDistance(parent2.dataSet,farPoint1.site);
+  let i = Math.min(borderPoints1.length,borderPoints2.length);
+  while(combinedDataSet.length<50 && i>=0){
+    if(i<borderPoints1.length)combinedDataSet.push(borderPoints1[i])
+    if(i<borderPoints2.length)combinedDataSet.push(borderPoints2[i])
+    i--;
+  }
+
+  return { ds: combinedDataSet, sel: selectedCellSites };
+}
+
+
+function remapPoints(initPoint, points,  remapPoint){
+  let relativeDistances = points.map(point => ({
+    x: point.x - initPoint.x,
+    y: point.y - initPoint.y
+  }));
+
+  
+  relativeDistances = relativeDistances.filter(cell => (cell.x != 0) && (cell.y != 0) );
+  relativeDistances.push({x:0,y:0});
+  const remappedPoints = relativeDistances.map(distance => ({
+    x: remapPoint.x + distance.x,
+    y: remapPoint.y + distance.y
+  }));
+
+  return remappedPoints;
+
+}
+
+function getUniquePointsNearSites(objects) {
+  const uniquePointsPerSite = objects.map(obj => {
+    const uniquePoints = new Set();
+
+    obj.halfedges.forEach(halfedge => {
+      const { lSite, rSite } = halfedge.edge;
+      uniquePoints.add(JSON.stringify(lSite));
+      uniquePoints.add(JSON.stringify(rSite));
+    });
+
+    return Array.from(uniquePoints).map(JSON.parse);
+  });
+
+  return uniquePointsPerSite;
+}
+
+function sortByDistance(dataSet, center) {
+  return dataSet.sort((a, b) => {
+    const distA = calculateDistance(a, center);
+    const distB = calculateDistance(b, center);
+    return distA - distB;
+  });
+}
+
+function calculateDistance(point, center) {
+  const dx = point.x - center.x;
+  const dy = point.y - center.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function calculateGeometricCenter(points) {
+  const sumX = points.reduce((sum, point) => sum + point.x, 0);
+  const sumY = points.reduce((sum, point) => sum + point.y, 0);
+  const count = points.length;
+
+  return {
+    x: sumX / count,
+    y: sumY / count
+  };
+}
+
+
