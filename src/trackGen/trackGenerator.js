@@ -14,7 +14,7 @@ async function importJsonUtils() {
   
 export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selectedVoronoiCells = []) {
     if (isNaN(seed)) seed = Math.random();
-
+    
     switch (mode) {
         case 'voronoi':
             trackGenerator = new VoronoiTrackGenerator(bbox, seed, trackSize, dataSet,selectedVoronoiCells);

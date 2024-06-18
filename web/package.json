@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "start": "node server.js",
+        "start": "node generateTrackIndex.js && node server.js",
         "build": "node generateTrackIndex.js && cp -R ../src ./src && cp -R ../data ./data"
     },
     "dependencies": {

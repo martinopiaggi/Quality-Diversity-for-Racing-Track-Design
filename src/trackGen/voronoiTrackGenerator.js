@@ -27,7 +27,6 @@ export class VoronoiTrackGenerator {
 
     sitesFromInput(points) {
         let selectedCells = [];
-        console.log(points)
         points.forEach(p => {
             let cell = this.findCellByCoordinates(p.x, p.y);
             if (cell) {
@@ -40,8 +39,7 @@ export class VoronoiTrackGenerator {
     
     findCellByCoordinates(x, y) {
         for (let cell of this.diagram.cells) {
-            let site = cell.site;
-            if (site.x === x && site.y === y) {
+            if (this.comparePoints(cell.site,{x: x, y: y})) {
                 return cell;
             }
         }
