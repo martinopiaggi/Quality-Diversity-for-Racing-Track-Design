@@ -19,18 +19,20 @@ async function writeJsonFile(jsonFilePath, jsonContent) {
     console.log(`JSON file saved at: ${jsonFilePath}`);
 }
 
-export async function savePointsToJson(seed, points, voronoiIds) {
+export async function savePointsToJson(seed, points, selectedCells) {
     const jsonFileName = `${seed}.json`;
     const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
     
     let jsonContent = await readJsonFile(jsonFilePath);
     
     if (jsonContent) {
-        jsonContent.voronoiIds = voronoiIds;
+        jsonContent.selectedCells = selectedCells.map(point => ({
+            x: point.x,
+            y: point.y
+        }));
         jsonContent.points = points.map(point => ({
             x: point.x,
-            y: point.y,
-            voronoiId: point.voronoiId
+            y: point.y
         }));
     } else {
         jsonContent = {
@@ -42,11 +44,13 @@ export async function savePointsToJson(seed, points, voronoiIds) {
                 parent2: null
             },
             fitness: null,
-            voronoiIds: voronoiIds,
+            selectedCells: selectedCells.map(point => ({
+                x: point.x,
+                y: point.y
+            })),
             points: points.map(point => ({
                 x: point.x,
-                y: point.y,
-                voronoiId: point.voronoiId
+                y: point.y
             }))
         };
     }
