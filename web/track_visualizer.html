@@ -113,7 +113,10 @@
       trackContainer.innerHTML = '';
       statsContainer.innerHTML = '';
 
-      genTrack(track.seed, track.trackSize, track.mode);
+      //for now if in data/tests there aren't genetic modified tracks is ok
+      //otherwise refactor this passing selectedCells and dataset
+      //TODO
+      genTrack(track.id, track.trackSize, track.mode);
 
       const stats = `
         <p>Seed: ${track.id}</p>
