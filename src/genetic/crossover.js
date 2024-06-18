@@ -115,7 +115,6 @@ export function crossover2(parent1, parent2) {
   }
 
 
-  console.log(combinedDataSet,selectedCellSites)
   return { ds: combinedDataSet, sel: selectedCellSites };
 }
 
