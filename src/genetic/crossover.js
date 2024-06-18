@@ -84,36 +84,45 @@ export function crossover2(parent1, parent2) {
   const combinedDataSet = [];
   const parentSelected1 = [...parent1.selectedCells];
   const parentSelected2 = [...parent2.selectedCells];
-
+  
   const farPoint1 = parentSelected1.shift();
   const centerPoint2 = parentSelected2.shift();
-
-  let remappedUniquePoints2 =  getUniquePointsNearSites(parentSelected2).flat();
+  console.log(farPoint1)
+  let remappedUniquePoints2 =  getUniquePointsNearSites(parentSelected2).flat().filter(point => point != null);
   
   remappedUniquePoints2 = remapPoints(centerPoint2.site,remappedUniquePoints2,farPoint1.site);
   
   combinedDataSet.push(...remappedUniquePoints2)
-  combinedDataSet.push(...getUniquePointsNearSites(parentSelected1).flat())
+  
+  combinedDataSet.push(...getUniquePointsNearSites(parentSelected1).flat().filter(point => point != null))
 
   //remember that this function readds centerPoint2 to remappedSelectedParent2 !!
   const remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),farPoint1.site);
 
   selectedCellSites.push(...parentSelected1.map(cell => cell.site),...remappedSelectedParent2)
-  
-  const borderPoints1 = sortByDistance(parent1.dataSet,farPoint1.site);
-  const borderPoints2 = sortByDistance(parent2.dataSet,farPoint1.site);
-  let i = Math.min(borderPoints1.length,borderPoints2.length);
-  while(combinedDataSet.length<50 && i>=0){
-    if(i<borderPoints1.length)combinedDataSet.push(borderPoints1[i])
-    if(i<borderPoints2.length)combinedDataSet.push(borderPoints2[i])
+
+  const borderPoints1 = sortByDistance(parent1.dataSet,farPoint1.site).filter(point => point != null);
+  const borderPoints2 = sortByDistance(parent2.dataSet,farPoint1.site).filter(point => point != null);
+  let i = Math.min(borderPoints1.length, borderPoints2.length) - 1;
+  while (combinedDataSet.length < 50 && i >= 0) {
+    if (i < borderPoints1.length) {
+      combinedDataSet.push(borderPoints1[i]);
+    }
+    if (i < borderPoints2.length && combinedDataSet.length < 50 ) {
+      combinedDataSet.push(borderPoints2[i]);
+    }
     i--;
   }
 
+
+  console.log(combinedDataSet,selectedCellSites)
   return { ds: combinedDataSet, sel: selectedCellSites };
 }
 
 
 function remapPoints(initPoint, points,  remapPoint){
+  console.log(initPoint)
+  console.log(points)
   let relativeDistances = points.map(point => ({
     x: point.x - initPoint.x,
     y: point.y - initPoint.y
