@@ -5,7 +5,7 @@ export class VoronoiTrackGenerator {
     constructor(bbox, seed, size, dataSet = [], selectedVoronoiSites = []) {
         this.bbox = bbox;
         this.randomGen = prng_alea(seed);
-        this.dataSet = dataSet.length > 0 ? dataSet : this.generatePoints();
+        this.dataSet = dataSet.length > 0 ? [...dataSet,...selectedVoronoiSites] : this.generatePoints();
         this.voronoi = new Voronoi();
         this.diagram = this.voronoi.compute(this.dataSet, this.bbox);
         this.selectedCells = selectedVoronoiSites.length > 0 ?  
@@ -33,7 +33,6 @@ export class VoronoiTrackGenerator {
                 selectedCells.push(cell);
             }
         });
-    
         return selectedCells;
     }
     

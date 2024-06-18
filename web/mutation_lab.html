@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Mutation Visualization</title>
+  <script src="/src/lib/p5.js"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    .gallery-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 80%;
+      margin-top: 20px;
+    }
+    .track-container {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .stats {
+      margin-top: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="gallery-container">
+    <form id="trackForm">
+      <label for="seedInput">Enter Seed:</label>
+      <input type="text" id="seedInput" name="seedInput">
+      <label for="cellCountInput">Enter Number of Cell Tracks:</label>
+      <input type="text" id="cellCountInput" name="cellCountInput">
+      <label for="cellCountInput">Intensity mutation:</label>
+      <input type="text" id="intensityInput" name="intensityInput">
+      <label for="modeSelect">Select Track Generator Mode:</label>
+      <select id="modeSelect" name="modeSelect">
+        <option value="voronoi">Voronoi</option>
+        <option value="convexHull">Convex Hull</option>
+      </select>
+      <button type="submit">Generate Track</button>
+    </form>
+    <div id="track-container" class="track-container"></div>
+  </div>
+
+  <script type="module">
+    import { generateTrack,getGenerator } from '../src/trackGen/trackGenerator.js';
+    import { mutation } from "../src/genetic/mutation.js"
+    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+    let splineTrack; 
+
+    document.getElementById('trackForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const seed = parseFloat(document.getElementById('seedInput').value);
+      const trackSize = parseInt(document.getElementById('cellCountInput').value);
+      const mode = document.getElementById('modeSelect').value;
+      const intensity = parseInt(document.getElementById('intensityInput').value);
+      genTrack(seed, trackSize, mode,intensity);
+    });
+
+    let generator = null; 
+
+    function drawVoronoi() {
+      strokeWeight(1);
+      const diagram = generator.diagram;
+      if (!diagram) return;
+      stroke(255, 255, 255, 255); // White with reduced opacity
+      diagram.edges.forEach(edge => {
+      line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+      });
+    }
+
+    function drawPoints() {
+      strokeWeight(1);
+      const dataSet = generator.dataSet;
+      if (!dataSet) return;
+      fill(255, 255, 255, 255); // White with reduced opacity
+      noStroke();
+      dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
+    }
+
+
+    async function genTrack(seed, trackSize, mode, intensityMutation) {
+      splineTrack = generateTrack(mode, BBOX, seed, trackSize);
+      const trackGenerator = getGenerator();
+      const mutatedVoronoiSites = mutation(trackGenerator,intensityMutation);
+      const sameDataset = []
+      trackGenerator.dataSet.forEach(element => {
+        sameDataset.push({x: element.x , y:element.y});
+      });
+      splineTrack = generateTrack(mode, BBOX, seed, trackSize, false, sameDataset,mutatedVoronoiSites);
+      generator = getGenerator();
+      redraw();
+    }
+
+    window.setup = function setup() {
+      createCanvas(BBOX.xr, BBOX.yb);
+      noLoop();
+    }
+
+    window.draw = function draw() {
+      background(0);
+
+      if (splineTrack) {
+        drawVoronoi();
+        drawPoints();
+        strokeWeight(0.5);
+        noFill();
+        stroke(0, 255, 0);
+        strokeWeight(3);
+        drawSpline(splineTrack);
+      }
+    }
+
+    async function drawSpline(spline) {
+      const resolvedSpline = await spline;
+      beginShape();
+      let startColor = color(0, 255, 255);
+      let endColor = color(255, 0, 255);
+      for (let i = 0; i < resolvedSpline.length; i++) {
+        stroke(lerpColor(startColor, endColor, i / resolvedSpline.length));
+        point(resolvedSpline[i].x, resolvedSpline[i].y);
+      }
+      endShape(CLOSE);
+    }
+
+    window.setup = setup;
+    window.draw = draw;
+  </script>
+</body>
+</html>
