@@ -76,7 +76,7 @@
   </main>
   <script type="module">
     import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
-    const { crossover , crossover2 } = await import('../src/genetic/crossover.js');
+    const { crossover , crossover2 , crossover3} = await import('../src/genetic/crossover.js');
     import * as utils from '../src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -124,7 +124,7 @@
         const parent2 = trackGenerators.parent2;
         
         // Generate the crossover track
-        const result = crossover2(parent1, parent2);
+        const result = crossover3(parent1, parent2);
         const crossoverDataSet = result.ds; 
         const selectedCells = result.sel;
         lineParameters = result.lineParameters; 
