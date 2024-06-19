@@ -7,3 +7,4 @@ web/src
 web/data
 data/tests/*
 data/tests/
+.vscode/

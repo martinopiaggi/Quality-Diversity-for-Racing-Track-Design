@@ -25,11 +25,14 @@ export function crossover(parent1, parent2) {
     const centerX = combinedVertices.reduce((acc, vertex) => acc + vertex.x, 0) / combinedVertices.length;
     const centerY = combinedVertices.reduce((acc, vertex) => acc + vertex.y, 0) / combinedVertices.length;
   
-    // Generate a random slope
-    const slope = Math.random() * 2 - 1; // Random slope between -1 and 1
+      // Generate a random angle in radians between -π/2 and π/2
+      const angle = Math.random() * Math.PI - Math.PI / 2;
+
+      // Calculate the slope using the tangent of the angle
+      const slope = Math.tan(angle);
   
     // Calculate the intercept based on the center coordinates and slope
     const intercept = centerY - slope * centerX;
-  
+
     return { slope, intercept };
   }

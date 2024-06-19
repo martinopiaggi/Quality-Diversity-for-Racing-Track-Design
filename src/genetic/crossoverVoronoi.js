@@ -1,48 +1,41 @@
 export function crossover(parent1, parent2) {
   // Extract dataset from each parent
-  const dataSet1 = parent1.dataSet;
-  const dataSet2 = parent2.dataSet;
+  let dataSet1 = parent1.dataSet;
+  let dataSet2 = parent2.dataSet;
+  let halfDataSet1  = []
+  let halfDataSet2  = []
 
-  // Extract the vertex information from the selected cells
-  const selectedVertices1 = getSelectedVertices(parent1.selectedCells);
-  const selectedVertices2 = getSelectedVertices(parent2.selectedCells);
 
-  // Perform ordinary least squares regression to find the best separation line
-  const { slope, intercept } = randomSlopeThroughCenter(selectedVertices1, selectedVertices2);
+  let parent1selected = parent1.selectedCells.map(cell => cell.site)
+  let parent2selected = parent2.selectedCells.map(cell => cell.site)
+  
+  const { slope, intercept } = randomSlopeThroughCenter(parent1selected, parent2selected);
 
-  // Determine which half of the dataset to use for each parent based on the separation line
-  const halfDataSet1 = dataSet1.filter(data => data.y <= slope * data.x + intercept);
-  const halfDataSet2 = dataSet2.filter(data => data.y > slope * data.x + intercept);
+  const criteria = (data) => data.y <= slope * data.x + intercept;
 
-  // Combine the datasets
+  // If the line is not steep, separate based on the y-coordinate
+  let selected1 = parent1selected.filter(data => criteria(data));
+  let selected2 = parent2selected.filter(data => !criteria(data));
+
+  //in case the separation line gives us an half set without selected cells 
+  //we swap the conditions 
+  if((selected1.length || selected2.length) == 0 ){
+    selected1 = parent1selected.filter(data => !criteria(data));
+    selected2 = parent2selected.filter(data => criteria(data));
+
+    halfDataSet1 = dataSet1.filter(data => !criteria(data));
+    halfDataSet2 = dataSet2.filter(data => criteria(data));
+  }
+  else{
+    halfDataSet1 = dataSet1.filter(data => criteria(data));
+    halfDataSet2 = dataSet2.filter(data => !criteria(data));
+  }
+  
+  // Combine the corresponding halves 
+  const combinedSelectedCells = [...selected1, ...selected2];
   const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
 
-  // Combine the selected cells from both parents
-  let combinedSelectedCells = [...parent1.selectedCells, ...parent2.selectedCells];
-
-  // Extract the site information from the selected cells
-  combinedSelectedCells = combinedSelectedCells.map(cell => cell.site);
-
-  const selected1 = combinedSelectedCells.filter(data => data.y <= slope * data.x + intercept);
-  const selected2 = combinedSelectedCells.filter(data => data.y > slope * data.x + intercept);
-  
-  combinedSelectedCells = [...selected1, ...selected2];
- 
-
   return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
-}
-
-function getSelectedVertices(selectedCells) {
-  const vertices = [];
-  selectedCells.forEach(cell => {
-    cell.halfedges.forEach(halfedge => {
-      const va = halfedge.edge.va ;
-      const vb  = halfedge.edge.vb ;
-      vertices.push(va);
-      vertices.push(vb);
-    });
-  });
-  return vertices;
 }
 
 function randomSlopeThroughCenter(vertices1, vertices2) {
@@ -53,16 +46,16 @@ function randomSlopeThroughCenter(vertices1, vertices2) {
   const centerX = combinedVertices.reduce((acc, vertex) => acc + vertex.x, 0) / combinedVertices.length;
   const centerY = combinedVertices.reduce((acc, vertex) => acc + vertex.y, 0) / combinedVertices.length;
 
-  // Generate a random slope or a vertical line
-  const isVertical = Math.random() < 0.1; // 10% chance of generating a vertical line
+    // Generate a random angle in radians between -π/2 and π/2
+    const angle = Math.random() * Math.PI - Math.PI / 2;
 
-  if (isVertical) {
-    return { isVertical: true, x: centerX };
-  } else {
-    const slope = Math.random() * 2 - 1; // Random slope between -1 and 1
-    const intercept = centerY - slope * centerX;
-    return { isVertical: false, slope, intercept };
-  }
+    // Calculate the slope using the tangent of the angle
+    const slope = Math.tan(angle);
+
+  // Calculate the intercept based on the center coordinates and slope
+  const intercept = centerY - slope * centerX;
+
+  return { slope, intercept };
 }
 
 
@@ -77,7 +70,7 @@ export function crossover2(parent1, parent2) {
   
   const farPoint1 = parentSelected1.shift();
   const centerPoint2 = parentSelected2.shift();
-  console.log(farPoint1)
+
   let remappedUniquePoints2 =  getUniquePointsNearSites(parentSelected2).flat().filter(point => point != null);
   
   remappedUniquePoints2 = remapPoints(centerPoint2.site,remappedUniquePoints2,farPoint1.site);
@@ -110,8 +103,6 @@ export function crossover2(parent1, parent2) {
 
 
 function remapPoints(initPoint, points,  remapPoint){
-  console.log(initPoint)
-  console.log(points)
   let relativeDistances = points.map(point => ({
     x: point.x - initPoint.x,
     y: point.y - initPoint.y
@@ -223,7 +214,6 @@ export function crossover3(parent1, parent2) {
   }
 
 
-  console.log(combinedDataSet, selectedCellSites);
   return { ds: combinedDataSet, sel: selectedCellSites };
 }
 

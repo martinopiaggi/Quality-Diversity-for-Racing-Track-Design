@@ -37,7 +37,7 @@
   </main>
   <script type="module">
     import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
-    const { crossover , crossover2 , crossover3} = await import('../src/genetic/crossover.js');
+    const { crossover , crossover2 , crossover3} = await import('../src/genetic/crossoverVoronoi.js');
     import * as utils from '../src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -80,7 +80,6 @@
 
     document.getElementById('toggle-spline').addEventListener('click', () => {
       showSpline = !showSpline;
-      redraw();
     });
 
 async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
