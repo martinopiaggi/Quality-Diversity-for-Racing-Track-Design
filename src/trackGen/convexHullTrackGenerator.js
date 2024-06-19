@@ -64,8 +64,8 @@ export class ConvexHullTrackGenerator{
         for (let i = 0; i < d.length; ++i) {
             let dispLen = this.randomGen() * maxDisp;
             let angle = this.randomGen() * 2 * Math.PI;
-            disp.x = Math.cos(100*angle) * dispLen;
-            disp.y = Math.sin(100*angle) * dispLen;
+            disp.x = Math.cos(angle) * dispLen;
+            disp.y = Math.sin(angle) * dispLen;
 
             rSet[i * 2] = { ...d[i] };
 
