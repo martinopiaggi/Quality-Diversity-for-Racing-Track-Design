@@ -2,18 +2,16 @@ import { pushApart, fixAngles, generateCatmullRomSpline } from '../utils/utils.j
 import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class ConvexHullTrackGenerator{
-    constructor(bbox, seed, size) {
+    constructor(bbox, seed, size,dataSet = []) {
         this.bbox = bbox;
         this.size = size;
         this.randomGen = prng_alea(seed);
-        this.dataSet = [];
-        this.dataSetHull = [];
+        this.dataSet = dataSet.length > 0 ? dataSet : this.generatePoints()
+        this.dataSetHull = this.computeConvexHull()
         this.trackEdges = this.generateTrack();
     }
 
     generateTrack() {
-        this.generatePoints();
-        this.computeConvexHull();
         for (let i = 0; i < 3; i++) {
             this.dataSetHull = this.expandAndDisplaceDataSet(this.dataSetHull);
             this.dataSetHull = fixAngles(this.dataSetHull);
@@ -23,12 +21,14 @@ export class ConvexHullTrackGenerator{
     }
 
     generatePoints() {
+        const dataSet = [];
         for (let i = 0; i < this.size; i++) {
-            this.dataSet.push({
+            dataSet.push({
                 x: this.randomGen() * (this.bbox.xr - this.bbox.xl) / 2 + this.bbox.xr / 4,
                 y: this.randomGen() * (this.bbox.yb - this.bbox.yt) / 2 + this.bbox.yb / 4
             });
         }
+        return dataSet;
     }
 
     computeConvexHull() {
@@ -38,7 +38,7 @@ export class ConvexHullTrackGenerator{
         let upper = this.convexHullHalf(this.dataSet.slice().reverse());
         upper.pop();
         lower.pop();
-        this.dataSetHull = lower.concat(upper);
+        return lower.concat(upper);
     }
 
     convexHullHalf(points) {
@@ -59,14 +59,13 @@ export class ConvexHullTrackGenerator{
     expandAndDisplaceDataSet(d) {
         let rSet = new Array(d.length * 2);
         let disp = { x: 0, y: 1 };
-        let difficulty = 10.0;
-        let maxDisp = 5.0;
+        let maxDisp = 3.0;
 
         for (let i = 0; i < d.length; ++i) {
             let dispLen = this.randomGen() * maxDisp;
             let angle = this.randomGen() * 2 * Math.PI;
-            disp.x = Math.cos(angle) * dispLen;
-            disp.y = Math.sin(angle) * dispLen;
+            disp.x = Math.cos(100*angle) * dispLen;
+            disp.y = Math.sin(100*angle) * dispLen;
 
             rSet[i * 2] = { ...d[i] };
 

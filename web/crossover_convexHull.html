@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Crossover convexHull</title>
+  <script src="/src/lib/p5.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <form id="trackForm">
+      <label for="seedInput1">Seed Parent 1:</label>
+      <input type="text" id="seedInput1" name="seedInput1">
+      <label for="cellCountInput1"># points for hull of Parent 1 (default 25):</label>
+      <input type="text" id="cellCountInput1" name="cellCountInput1">
+      
+      <label for="seedInput2">Seed Parent 2:</label>
+      <input type="text" id="seedInput2" name="seedInput2">
+      <label for="cellCountInput2"># points for hull of Parent 2 (default 25):</label>
+      <input type="text" id="cellCountInput2" name="cellCountInput2">
+
+      <label for="crossoverMethod">Crossover Method:</label>
+  <button type="submit">Generate Tracks</button>
+</form>
+<div class="canvas-container">
+  <div id="parent1"></div>
+  <div id="parent2"></div>
+  <div id="crossover"></div>
+</div>
+  </main>
+  <script type="module">
+    import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
+    const { crossover } = await import('../src/genetic/crossoverConvexHull.js');
+    import * as utils from '../src/utils/utils.js';
+
+    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+
+    let trackGenerators = {
+      parent1: null,
+      parent2: null,
+      crossover: null
+    };
+
+    let crossover_data = {
+      dataset1: [],
+      dataset2: [],
+    };
+
+    let lineParameters;
+    let showSpline = false;
+    let p5Instances = {};
+
+    document.getElementById('trackForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const seed1 = parseInt(document.getElementById('seedInput1').value);
+      const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
+
+      const seed2 = parseInt(document.getElementById('seedInput2').value);
+      const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
+
+      // Clear existing canvases
+      clearCanvases();
+
+      // Generate tracks for each canvas
+      genTrack('parent1', isNaN(seed1) ? Math.random() : seed1 ,  isNaN(trackSize1) ? 25 : trackSize1);
+      genTrack('parent2', isNaN(seed2) ? Math.random() : seed2 ,  isNaN(trackSize2) ? 25 : trackSize2);
+      genTrack('crossover', -1, -1);
+    });
+
+async function genTrack(canvasId, seed, trackSize) {
+  let splineTrack;
+  if (canvasId === 'crossover') {
+    // Get the parent tracks
+    const parent1 = trackGenerators.parent1;
+    const parent2 = trackGenerators.parent2;
+    
+    // Generate the crossover track based on the selected method
+    let result = crossover(parent1, parent2);
+    
+    const crossoverDataSet = result.ds; 
+    lineParameters = result.lineParameters; 
+    splineTrack = generateTrack("convexHull", BBOX, seed, trackSize,false,crossoverDataSet);
+  } else {
+    splineTrack = generateTrack("convexHull", BBOX, seed, trackSize);
+  }
+
+  const trackGenerator = getGenerator();
+  setupCanvas(canvasId, trackGenerator, splineTrack);
+  
+  // Store the trackGenerator for later use
+  trackGenerators[canvasId] = trackGenerator;
+}
+
+    function setupCanvas(containerId, trackGenerator, splineTrack) {
+      p5Instances[containerId] = new p5((sketch) => {
+        sketch.setup = () => {
+          sketch.createCanvas(BBOX.xr, BBOX.yb).parent(containerId);
+          sketch.noLoop();
+          drawCanvas(sketch, trackGenerator, splineTrack);
+        };
+      });
+    }
+
+    function drawCanvas(sketch, trackGenerator, splineTrack) {
+      sketch.background(0); // Set the background
+      sketch.strokeWeight(1);
+
+      const { dataSet } = trackGenerator;
+
+
+      drawPoints(sketch, dataSet, 255);
+
+      drawSpline(sketch, splineTrack);
+      
+      if(lineParameters!=null){
+        drawSeparationLine(sketch,lineParameters);
+        lineParameters = null;
+      }
+      
+    }
+
+
+    function drawPoints(sketch, dataSet, opacity) {
+      if (!dataSet) return;
+      sketch.fill(255, 255, 255, opacity); // White with reduced opacity
+      sketch.noStroke();
+      dataSet.forEach(pt => sketch.ellipse(pt.x, pt.y, 5, 5));
+    }
+
+    async function drawSpline(sketch, spline) {
+      const resolvedSpline = await spline;
+      sketch.strokeWeight(3);
+      sketch.beginShape();
+      let startColor = sketch.color(0, 255, 255);
+      let endColor = sketch.color(255, 0, 255);
+      for (let i = 0; i < resolvedSpline.length; i++) {
+        sketch.stroke(sketch.lerpColor(startColor, endColor, i / resolvedSpline.length));
+        sketch.point(resolvedSpline[i].x, resolvedSpline[i].y);
+      }
+      sketch.endShape(sketch.CLOSE);
+    }
+
+    function drawSeparationLine(sketch, lineParameters) {
+      const { slope, intercept } = lineParameters;
+      const x1 = 0;
+      const y1 = slope * x1 + intercept;
+      const x2 = sketch.width;
+      const y2 = slope * x2 + intercept;
+      sketch.strokeWeight(2);
+      sketch.stroke(255, 0, 0); // Red color
+      sketch.line(x1, y1, x2, y2);
+    }
+        
+    function clearCanvases() {
+      Object.keys(p5Instances).forEach(instance => {
+        p5Instances[instance].remove();
+      });
+      p5Instances = {};
+      document.getElementById('parent1').innerHTML = '';
+      document.getElementById('parent2').innerHTML = '';
+      document.getElementById('crossover').innerHTML = '';
+    }
+  
+    
+  </script>
+</body>
+</html>

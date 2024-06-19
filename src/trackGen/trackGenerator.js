@@ -20,7 +20,7 @@ export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = fals
             trackGenerator = new VoronoiTrackGenerator(bbox, seed, trackSize, dataSet,selectedVoronoiCells);
             break;
         case 'convexHull':
-            trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize);
+            trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize, dataSet);
             break;
         default:
             throw new Error('Invalid track generator mode');
