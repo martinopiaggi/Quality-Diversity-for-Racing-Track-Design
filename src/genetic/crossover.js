@@ -53,13 +53,16 @@ function randomSlopeThroughCenter(vertices1, vertices2) {
   const centerX = combinedVertices.reduce((acc, vertex) => acc + vertex.x, 0) / combinedVertices.length;
   const centerY = combinedVertices.reduce((acc, vertex) => acc + vertex.y, 0) / combinedVertices.length;
 
-  // Generate a random slope
-  const slope = Math.random() * 2 - 1; // Random slope between -1 and 1
+  // Generate a random slope or a vertical line
+  const isVertical = Math.random() < 0.1; // 10% chance of generating a vertical line
 
-  // Calculate the intercept based on the center coordinates and slope
-  const intercept = centerY - slope * centerX;
-
-  return { slope, intercept };
+  if (isVertical) {
+    return { isVertical: true, x: centerX };
+  } else {
+    const slope = Math.random() * 2 - 1; // Random slope between -1 and 1
+    const intercept = centerY - slope * centerX;
+    return { isVertical: false, slope, intercept };
+  }
 }
 
 

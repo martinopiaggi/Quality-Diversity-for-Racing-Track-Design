@@ -12,15 +12,17 @@ async function importJsonUtils() {
     }
 }
   
-export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selectedVoronoiCells = []) {
+export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selected = []) {
     if (isNaN(seed)) seed = Math.random();
     
     switch (mode) {
         case 'voronoi':
-            trackGenerator = new VoronoiTrackGenerator(bbox, seed, trackSize, dataSet,selectedVoronoiCells);
+            //in case of Voronoi select -> selected Voronoi cells
+            trackGenerator = new VoronoiTrackGenerator(bbox, seed, trackSize, dataSet,selected);
             break;
         case 'convexHull':
-            trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize, dataSet);
+            //in case of convexHull, selected -> selected points from dataset which makes the hull
+            trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize, dataSet,selected);
             break;
         default:
             throw new Error('Invalid track generator mode');

@@ -2,12 +2,12 @@ import { pushApart, fixAngles, generateCatmullRomSpline } from '../utils/utils.j
 import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class ConvexHullTrackGenerator{
-    constructor(bbox, seed, size,dataSet = []) {
+    constructor(bbox, seed, size,dataSet = [], selected = []) {
         this.bbox = bbox;
         this.size = size;
         this.randomGen = prng_alea(seed);
         this.dataSet = dataSet.length > 0 ? dataSet : this.generatePoints()
-        this.dataSetHull = this.computeConvexHull()
+        this.dataSetHull = selected.length > 0 ? this.useSelected(selected) : this.computeConvexHull()
         this.trackEdges = this.generateTrack();
     }
 
@@ -29,6 +29,26 @@ export class ConvexHullTrackGenerator{
             });
         }
         return dataSet;
+    }
+
+    //this function not only sets selected as selected points to make the convexHull
+    //but clean out from original datasets the convexHull points and add the new selected ones
+    //this procedure is useful when mutation over external points is done from external genetic mutation operator
+    useSelected(selected) {
+        const convexHullFromDataset = this.computeConvexHull();
+        
+        // Remove points in convexHullFromDataset from this.dataSet
+        this.dataSet = this.dataSet.filter(point => 
+            !convexHullFromDataset.some(hullPoint => 
+                hullPoint.x === point.x && hullPoint.y === point.y
+            )
+        );
+        
+        // Add selected points to this.dataSet
+        this.dataSet.push(...selected);
+        
+        // Return selected points
+        return selected;
     }
 
     computeConvexHull() {

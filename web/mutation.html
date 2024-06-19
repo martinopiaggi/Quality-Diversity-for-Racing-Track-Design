@@ -26,17 +26,18 @@
 
   <script type="module">
     import { generateTrack,getGenerator } from '../src/trackGen/trackGenerator.js';
-    import { mutation } from "../src/genetic/mutation.js"
+    import { mutation, mutationConvexHull} from "../src/genetic/mutation.js"
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
     let splineTrack; 
+    let mode;
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
       event.preventDefault();
       const seed = parseFloat(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
-      const mode = document.getElementById('modeSelect').value;
+      mode = document.getElementById('modeSelect').value;
       const intensity = parseFloat(document.getElementById('intensityInput').value);
-      genTrack(seed, trackSize, mode,intensity);
+      genTrack(seed, trackSize, intensity);
     });
 
     let generator = null; 
@@ -61,15 +62,17 @@
     }
 
 
-    async function genTrack(seed, trackSize, mode, intensityMutation) {
+    async function genTrack(seed, trackSize, intensityMutation) {
       splineTrack = generateTrack(mode, BBOX, seed, trackSize);
       const trackGenerator = getGenerator();
-      const mutatedVoronoiSites = mutation(trackGenerator,intensityMutation);
-      const sameDataset = []
-      trackGenerator.dataSet.forEach(element => {
-        sameDataset.push({x: element.x , y:element.y});
-      });
-      splineTrack = generateTrack(mode, BBOX, seed, trackSize, false, sameDataset,mutatedVoronoiSites);
+      if(mode=="voronoi"){
+        const mutatedVoronoiSites = mutation(trackGenerator,intensityMutation);
+        splineTrack = generateTrack(mode, BBOX, seed, trackSize, false, trackGenerator.dataSet,mutatedVoronoiSites);
+      }
+      else{
+        const mutatedDataSetHull = mutationConvexHull(trackGenerator.dataSetHull,intensityMutation);
+        splineTrack = generateTrack(mode, BBOX, seed, trackSize, false,trackGenerator.dataSet, mutatedDataSetHull);
+      }      
       generator = getGenerator();
       redraw();
     }
@@ -83,8 +86,10 @@
       background(0);
 
       if (splineTrack) {
-        drawVoronoi();
-        drawPoints();
+        if(mode=="voronoi"){
+          drawVoronoi();
+          drawPoints();
+        }
         strokeWeight(0.5);
         noFill();
         stroke(0, 255, 0);
