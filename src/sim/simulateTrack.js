@@ -15,6 +15,9 @@ async function simulate(mode = MODE, trackSize = 0, dataSet = [], voronoiCells =
     const seed = Math.random();
     const splineTrack = await generateTrack(mode, BBOX, seed, trackSize, true, dataSet, voronoiCells);
 
+    //uncomment this if you want to save the "output.xml" inside current folder for local Torcs test
+    //const trackXml = xml.exportTrackToXML(splineTrack,0, true);
+
     const trackXml = xml.exportTrackToXML(splineTrack);
 
     console.log(`SEED: ${seed}`);
@@ -32,7 +35,12 @@ async function simulate(mode = MODE, trackSize = 0, dataSet = [], voronoiCells =
     }
 }
 
+
+
+
+
 // Docker container management
+
 async function startDockerContainer() {
     const containerId = await executeCommand(`docker run -d -it --memory ${MEMORY_LIMIT} ${DOCKER_IMAGE_NAME}`);
     console.log(`Docker container started with ID: ${containerId}`);

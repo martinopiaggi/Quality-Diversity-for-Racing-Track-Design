@@ -19,18 +19,22 @@ async function writeJsonFile(jsonFilePath, jsonContent) {
     console.log(`JSON file saved at: ${jsonFilePath}`);
 }
 
-export async function savePointsToJson(seed, points, selectedCells) {
+export async function savePointsToJson(seed, dataSet, selectedCells = []) {
     const jsonFileName = `${seed}.json`;
     const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
     
     let jsonContent = await readJsonFile(jsonFilePath);
     
     if (jsonContent) {
-        jsonContent.selectedCells = selectedCells.map(point => ({
-            x: point.x,
-            y: point.y
-        }));
-        jsonContent.points = points.map(point => ({
+        if (selectedCells.length > 0) {
+            jsonContent.selectedCells = selectedCells.map(point => ({
+                x: point.x,
+                y: point.y
+            }));
+        } else {
+            delete jsonContent.selectedCells;
+        }
+        jsonContent.dataSet = dataSet.map(point => ({
             x: point.x,
             y: point.y
         }));
@@ -44,15 +48,18 @@ export async function savePointsToJson(seed, points, selectedCells) {
                 parent2: null
             },
             fitness: null,
-            selectedCells: selectedCells.map(point => ({
-                x: point.x,
-                y: point.y
-            })),
-            points: points.map(point => ({
+            dataSet: dataSet.map(point => ({
                 x: point.x,
                 y: point.y
             }))
         };
+        
+        if (selectedCells.length > 0) {
+            jsonContent.selectedCells = selectedCells.map(point => ({
+                x: point.x,
+                y: point.y
+            }));
+        }
     }
     
     await writeJsonFile(jsonFilePath, jsonContent);
@@ -89,7 +96,7 @@ export async function saveFitnessToJson(seed, mode, trackSize, length, deltaX, d
                 deltaY,
                 deltaAngleDegrees
             },
-            points: []
+            dataSet: []
         };
     }
     
