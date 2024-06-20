@@ -1,3 +1,5 @@
+import {BBOX } from "../utils/constants.js"
+
 export function crossover(parent1, parent2) {
   // Extract dataset from each parent
   let dataSet1 = parent1.dataSet;
@@ -64,7 +66,8 @@ function randomSlopeThroughCenter(vertices1, vertices2) {
 
 export function crossover2(parent1, parent2) {
   const selectedCellSites = [];
-  const combinedDataSet = [];
+  const distanceThreshold = BBOX.xr*0.02;
+  let combinedDataSet = [];
   const parentSelected1 = [...parent1.selectedCells];
   const parentSelected2 = [...parent2.selectedCells];
   
@@ -79,13 +82,43 @@ export function crossover2(parent1, parent2) {
   
   combinedDataSet.push(...getUniquePointsNearSites(parentSelected1).flat().filter(point => point != null))
 
-  //remember that this function readds centerPoint2 to remappedSelectedParent2 !!
-  const remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),farPoint1.site);
+  //remember that this function reads centerPoint2 to remappedSelectedParent2 !!
+  let remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),farPoint1.site);
+  
+  const tempParent1Selected= parentSelected1.map(cell => cell.site);
 
+  remappedSelectedParent2 = remappedSelectedParent2.filter(point => {
+    for (const site of tempParent1Selected) {
+      const distance = calculateDistance(point, site);
+      console.log(distance)
+      if (distance <= distanceThreshold) {
+        console.log("removed")
+        return false;
+        
+      }
+    }
+    return true;
+    });
+
+  
+  //push to selectedCellSites
   selectedCellSites.push(...parentSelected1.map(cell => cell.site),...remappedSelectedParent2)
 
-  const borderPoints1 = sortByDistance(parent1.dataSet,farPoint1.site).filter(point => point != null);
-  const borderPoints2 = sortByDistance(parent2.dataSet,farPoint1.site).filter(point => point != null);
+  //remove points in the combinedDataset that are too close to the selectedCellSites 
+  combinedDataSet = combinedDataSet.filter(point => {
+  for (const site of selectedCellSites) {
+    const distance = calculateDistance(point, site);
+    if (distance <= distanceThreshold) {
+      return false;
+    }
+  }
+  return true;
+  });
+
+  const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
+  console.log(centerOfCanvas)
+  const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
+  const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
   let i = Math.min(borderPoints1.length, borderPoints2.length) - 1;
   while (combinedDataSet.length < 50 && i >= 0) {
     if (i < borderPoints1.length) {
