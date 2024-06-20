@@ -92,7 +92,6 @@ export function crossover2(parent1, parent2) {
   remappedSelectedParent2 = remappedSelectedParent2.filter(point => {
     for (const site of parentSelected1.map(cell => cell.site)) {
       const distance = calculateDistance(point, site);
-      console.log(distance)
       if (distance <= distanceThreshold) {
         return false;
       }
@@ -155,7 +154,6 @@ function remapPoints(initPoint, points,  remapPoint){
 function getUniquePointsNearSites(objects) {
   const uniquePointsPerSite = objects.map(obj => {
     const uniquePoints = new Set();
-
     obj.halfedges.forEach(halfedge => {
       const { lSite, rSite } = halfedge.edge;
       uniquePoints.add(JSON.stringify(lSite));
@@ -186,49 +184,53 @@ function calculateDistance(point, center) {
 // --- crossover 3 "middle point"
 
 export function crossover3(parent1, parent2) {
-  const selectedCellSites = [];
-  const combinedDataSet = [];
   const parentSelected1 = [...parent1.selectedCells];
   const parentSelected2 = [...parent2.selectedCells];
-  
-  const maxSelected = parentSelected1.length >  parentSelected2.length ? 
-    parentSelected1 : parentSelected2 ;
+  const selected = [];
 
-  const minSelected = parentSelected1.length <=  parentSelected2.length ? 
-  parentSelected1 : parentSelected2 ;
-  
-  // For each cell in parentSelected1, find the nearest point in parentSelected2
-  // and add the middle point to mergedSelectedSites
-  
-  const mergedSelectedSites = [];
-  for (let i = 0; i < maxSelected.length; i++) {
-    const cell1 = maxSelected[i];
-    const cell2 = findNearestPoint(cell1.site, minSelected);
-    const middlePoint = getMiddlePoint(cell1.site, cell2);
-    mergedSelectedSites.push(middlePoint);
+  for (let i = 0; i < Math.ceil(parentSelected1.length/2); i++) {
+    const point1 = parentSelected1[i].site;
+    const point2 = findNearestPoint(point1, parent2.dataSet);
+    const middlePoint = getMiddlePoint(point1, point2);
+    if (!isPointAlreadyInSet(middlePoint, selected)) {
+      selected.push(middlePoint);
+    }
+  }
+
+  for (let i = 0; i < Math.ceil(parentSelected2.length/2); i++) {
+    const point1 = parentSelected2[i].site;
+    const point2 = findNearestPoint(point1, parent1.dataSet);
+    const middlePoint = getMiddlePoint(point1, point2);
+    if (!isPointAlreadyInSet(middlePoint, selected)) {
+      selected.push(middlePoint);
+    }
   }
   
-    // Combine the selected cell sites
-    selectedCellSites.push(...mergedSelectedSites);
-
-  // For each point in relevantPoints1, find the nearest point in relevantPoints2
-  // and add the middle point to mergedPoints
-  const mergedPoints = [];
+  // For each cell in parentSelected1, find the nearest point in parent2.dataSet
+  // and add the middle point to mergedSelectedSites  
   const relevantPoints1 = getUniquePointsNearSites(parentSelected1).flat().filter(point => point != null);
   const relevantPoints2 = getUniquePointsNearSites(parentSelected2).flat().filter(point => point != null);
-  const minRelevantLength = Math.min(relevantPoints1.length, relevantPoints2.length);
-  
-  for (let i = 0; i < minRelevantLength; i++) {
+  let combinedDataSet = []
+
+  for (let i = 0; i < Math.ceil(relevantPoints1.length/2); i++) {
     const point1 = relevantPoints1[i];
-    const point2 = findNearestPoint(point1, relevantPoints2);
-    relevantPoints2.pop(point2)
+    const point2 = findNearestPoint(point1, parent2.dataSet);
     const middlePoint = getMiddlePoint(point1, point2);
-    mergedPoints.push(middlePoint);
+    if (!isPointAlreadyInSet(middlePoint, combinedDataSet)) {
+      combinedDataSet.push(middlePoint);
+    }
   }
   
-  // Combine the merged points and relevant points
-  combinedDataSet.push(...mergedPoints,...selectedCellSites);
-  
+  for (let i = 0; i < Math.ceil(relevantPoints2.length/2); i++) {
+    const point1 = relevantPoints2[i];
+    const point2 = findNearestPoint(point1, parent1.dataSet);
+    const middlePoint = getMiddlePoint(point1, point2);
+    if (!isPointAlreadyInSet(middlePoint, combinedDataSet)) {
+      combinedDataSet.push(middlePoint);
+    }
+  }
+
+
   const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
   const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
   const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
@@ -243,8 +245,7 @@ export function crossover3(parent1, parent2) {
     i--;
   }
 
-
-  return { ds: combinedDataSet, sel: selectedCellSites };
+  return { ds: combinedDataSet, sel: selected };
 }
 
 // Helper function to find the nearest point in an array of points
@@ -263,6 +264,14 @@ function findNearestPoint(point, points) {
   
   return nearestPoint;
 }
+
+function isPointAlreadyInSet(point, set) {
+  return set.some(existingPoint => 
+    Math.abs(existingPoint.x - point.x) < 1e-6 && 
+    Math.abs(existingPoint.y - point.y) < 1e-6
+  );
+}
+
 
 // Helper function to calculate the middle point between two points
 function getMiddlePoint(point1, point2) {
