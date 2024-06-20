@@ -71,30 +71,30 @@ export function crossover2(parent1, parent2) {
   const parentSelected1 = [...parent1.selectedCells];
   const parentSelected2 = [...parent2.selectedCells];
   
-  const farPoint1 = parentSelected1.shift();
+
+  const centerPoint1 = parentSelected1.shift();
   const centerPoint2 = parentSelected2.shift();
+
+  //parentSelected1.pop();  to regularize and reduce ? 
+  //parentSelected2.pop();  to regularize and reduce ? 
 
   let remappedUniquePoints2 =  getUniquePointsNearSites(parentSelected2).flat().filter(point => point != null);
   
-  remappedUniquePoints2 = remapPoints(centerPoint2.site,remappedUniquePoints2,farPoint1.site);
+  remappedUniquePoints2 = remapPoints(centerPoint2.site,remappedUniquePoints2,centerPoint1.site);
   
   combinedDataSet.push(...remappedUniquePoints2)
   
   combinedDataSet.push(...getUniquePointsNearSites(parentSelected1).flat().filter(point => point != null))
 
   //remember that this function reads centerPoint2 to remappedSelectedParent2 !!
-  let remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),farPoint1.site);
+  let remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),centerPoint1.site);
   
-  const tempParent1Selected= parentSelected1.map(cell => cell.site);
-
   remappedSelectedParent2 = remappedSelectedParent2.filter(point => {
-    for (const site of tempParent1Selected) {
+    for (const site of parentSelected1.map(cell => cell.site)) {
       const distance = calculateDistance(point, site);
       console.log(distance)
       if (distance <= distanceThreshold) {
-        console.log("removed")
         return false;
-        
       }
     }
     return true;
@@ -116,7 +116,6 @@ export function crossover2(parent1, parent2) {
   });
 
   const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
-  console.log(centerOfCanvas)
   const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
   const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
   let i = Math.min(borderPoints1.length, borderPoints2.length) - 1;
@@ -186,7 +185,6 @@ function calculateDistance(point, center) {
 
 // --- crossover 3 "middle point"
 
-
 export function crossover3(parent1, parent2) {
   const selectedCellSites = [];
   const combinedDataSet = [];
@@ -228,13 +226,12 @@ export function crossover3(parent1, parent2) {
     mergedPoints.push(middlePoint);
   }
   
-
   // Combine the merged points and relevant points
   combinedDataSet.push(...mergedPoints,...selectedCellSites);
   
-
-  const borderPoints1 = sortByDistance(parent1.dataSet,selectedCellSites[0]).filter(point => point != null);
-  const borderPoints2 = sortByDistance(parent2.dataSet,selectedCellSites[0]).filter(point => point != null);
+  const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
+  const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
+  const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
   let i = Math.min(borderPoints1.length, borderPoints2.length) - 1;
   while (combinedDataSet.length < 50 && i >= 0) {
     if (i < borderPoints1.length) {
