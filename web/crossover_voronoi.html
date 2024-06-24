@@ -132,12 +132,12 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
       sketch.background(0); // Set the background
       sketch.strokeWeight(1);
 
-      const { diagram, trackEdges, dataSet, selectedCells } = trackGenerator;
+      const { diagram, trackEdges, dataSet, selectedCells, patchPath} = trackGenerator;
 
       drawVoronoi(sketch, diagram, 150);
       drawPoints(sketch, dataSet, 150);
       drawOriginalEdges(sketch, trackEdges, 150);
-      drawSelectedSites(sketch, selectedCells, 150);
+      drawSelectedSites(sketch, selectedCells, patchPath, 150);
       if(showSpline)drawSpline(sketch, splineTrack);
       if(lineParameters!=null){
         drawSeparationLine(sketch,lineParameters);
@@ -172,7 +172,7 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
       sketch.strokeWeight(1);
     }
 
-    function drawSelectedSites(sketch, selectedCells, opacity) {
+    function drawSelectedSites(sketch, selectedCells, patchPath, opacity) {
       if (!selectedCells) return;
       sketch.fill(0, 255, 0, opacity); // Green with reduced opacity
       sketch.noStroke();
@@ -180,6 +180,12 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
         let site = cell.site;
         sketch.ellipse(site.x, site.y, 8, 8);
       });
+      sketch.fill(255, 0, 0, opacity); // Red with reduced opacity
+      patchPath.forEach((cell) => {
+        let site = cell.site;
+        sketch.ellipse(site.x, site.y, 8, 8);
+      });
+      sketch.fill(0, 255, 0, opacity); // Green with reduced opacity
     }
 
     async function drawSpline(sketch, spline) {
