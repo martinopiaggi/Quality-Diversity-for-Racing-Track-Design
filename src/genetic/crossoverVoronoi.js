@@ -32,13 +32,71 @@ export function crossover(parent1, parent2) {
     halfDataSet1 = dataSet1.filter(data => criteria(data));
     halfDataSet2 = dataSet2.filter(data => !criteria(data));
   }
-  
+
   // Combine the corresponding halves 
-  const combinedSelectedCells = [...selected1, ...selected2];
+  let combinedSelectedCells = [...selected1, ...selected2];
   const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
 
+
+  //PATCH / HEURISTIC to select cells to fix cases where the cells are not linked
+  const selectableCell = checkForSelectableCellBetweenClosestPair(selected1,selected2,combinedDataSet);
+  if(selectableCell){
+    combinedSelectedCells.push(...selectableCell)
+  }
+
+  //in case to reduce number of cells:
+  //const lengthOrig = Math.ceil((parent1selected.length + parent2selected.length)/2);
+  //while(combinedSelectedCells.length>lengthOrig)combinedSelectedCells.pop();
+  
   return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
 }
+
+export function checkForSelectableCellBetweenClosestPair(set1, set2, allCells) {
+  let closestPair = findClosestPair(set1, set2);
+  console.log(set1)
+  console.log(set2)
+  if (!closestPair) return false;
+
+  return selectableCellBetween(closestPair.cell1, closestPair.cell2, allCells);
+}
+
+function findClosestPair(set1, set2) {
+  let minDistance = Infinity;
+  let closestPair = null;
+
+  for (const cell1 of set1) {
+    for (const cell2 of set2) {
+        const distance = calculateDistance(cell1, cell2);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestPair = { cell1, cell2 };
+        }
+    }
+  }
+  console.log(closestPair)
+  return closestPair;
+}
+
+function selectableCellBetween(cell1, cell2, allCells) {
+  // Define the area between the two points
+  const halo = 10;
+  const minX = Math.min(cell1.x, cell2.x) - halo;
+  const maxX = Math.max(cell1.x, cell2.x) + halo;
+  const minY = Math.min(cell1.y, cell2.y) - halo;
+  const maxY = Math.max(cell1.y, cell2.y)+ halo;
+
+  console.log(minX,maxX,minY,maxY)
+  console.log(allCells)
+  // Filter cells within the area
+  const cellsBetween = allCells.filter(cell => 
+    cell.x > minX && cell.x < maxX &&
+    cell.y > minY && cell.y < maxY &&
+    cell !== cell1 && cell !== cell2
+  );
+  console.log(cellsBetween)
+  return cellsBetween;
+}
+
 
 function randomSlopeThroughCenter(vertices1, vertices2) {
   // Combine the vertices
