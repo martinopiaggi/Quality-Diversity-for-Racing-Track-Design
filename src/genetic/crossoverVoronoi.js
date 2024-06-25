@@ -90,6 +90,21 @@ export function crossover2(parent1, parent2) {
   
   combinedDataSet.push(...getUniquePointsNearSites(parentSelected1).flat().filter(point => point != null))
 
+  //some points are repeated, use this to filter out repeated points
+  const uniquePoints = [];
+  const seenCoordinates = new Set();  
+  combinedDataSet = combinedDataSet.filter(point => {
+      const coordKey = `${point.x},${point.y}`;
+      if (!seenCoordinates.has(coordKey)) {
+          seenCoordinates.add(coordKey);
+          uniquePoints.push(point);
+          return true;
+      }
+      return false;
+  });
+  combinedDataSet = uniquePoints;
+
+  
   //remember that this function reads centerPoint2 to remappedSelectedParent2 !!
   let remappedSelectedParent2 = remapPoints(centerPoint2.site,parentSelected2.map(cell => cell.site),centerPoint1.site);
   
@@ -121,7 +136,7 @@ export function crossover2(parent1, parent2) {
   const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
   const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
   const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
-  let i = Math.min(borderPoints1.length, borderPoints2.length) - 1;
+  let i = 35; //arbitrary value: still giving priority to most far points but not at the borders
   while (combinedDataSet.length < 50 && i >= 0) {
     if (i < borderPoints1.length) {
       combinedDataSet.push(borderPoints1[i]);
