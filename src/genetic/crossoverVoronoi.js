@@ -49,9 +49,11 @@ export function crossover(parent1, parent2, regularize = false) {
   let combinedSelectedCells = [...selected1, ...selected2];
   const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
 
-  //in case to reduce number of cells:
-  //const lengthOrig = Math.ceil((parent1selected.length + parent2selected.length)/2);
-  //while(combinedSelectedCells.length>lengthOrig)combinedSelectedCells.pop();
+  if(regularize){
+    //in case to reduce number of cells:
+    const lengthOrig = Math.floor((parent1selected.length + parent2selected.length)/2);
+    while(combinedSelectedCells.length>lengthOrig)combinedSelectedCells.pop();
+  }
   
   return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
 }
@@ -80,7 +82,7 @@ function randomSlopeThroughCenter(vertices1, vertices2) {
 
 // ---
 
-export function crossover2(parent1, parent2) {
+export function crossover2(parent1, parent2,regularize=false) {
   const selectedCellSites = [];
   const distanceThreshold = BBOX.xr*0.02;
   let combinedDataSet = [];
@@ -91,8 +93,18 @@ export function crossover2(parent1, parent2) {
   const centerPoint1 = parentSelected1.shift();
   const centerPoint2 = parentSelected2.shift();
 
-  //parentSelected1.pop();  to regularize and reduce ? 
-  //parentSelected2.pop();  to regularize and reduce ? 
+  if (regularize) {
+    //+ 2 because with shift() we just removed 2 cells
+    const averageLength = Math.floor((parentSelected1.length + parentSelected2.length + 2) / 2);
+
+    while (parentSelected1.length + parentSelected2.length > averageLength) {
+      if (parentSelected1.length > parentSelected2.length) {
+        parentSelected1.pop();
+      } else {
+        parentSelected2.pop();
+      }
+    }
+  }
 
   let remappedUniquePoints2 =  getUniquePointsNearSites(parentSelected2).flat().filter(point => point != null);
   
