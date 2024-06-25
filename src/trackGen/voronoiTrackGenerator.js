@@ -2,12 +2,14 @@ import Voronoi from '../lib/rhill-voronoi-core.js';
 import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class VoronoiTrackGenerator {
-    constructor(bbox, seed, size, dataSet = [], selectedVoronoiSites = []) {
+constructor(bbox, seed, size, dataSet = [], selectedVoronoiSites = []) {
         this.bbox = bbox;
         this.randomGen = prng_alea(seed);
-        this.dataSet = dataSet.length > 0 ? [...dataSet,...selectedVoronoiSites] : this.generatePoints();
         this.voronoi = new Voronoi();
+        
+        this.dataSet = dataSet.length > 0 ? [...dataSet, ...selectedVoronoiSites] : this.generatePoints();
         this.diagram = this.voronoi.compute(this.dataSet, this.bbox);
+        
         this.patchPath = [];
         this.selectedCells = selectedVoronoiSites.length > 0 ?  
             this.sitesFromInput(selectedVoronoiSites) : this.selectCellsForTrack(size);
@@ -15,27 +17,17 @@ export class VoronoiTrackGenerator {
     }
 
     generatePoints() {
-        let points = [];
-        for (let i = 0; i < 50; i++) {
-            points.push({
-                x: this.randomGen() * this.bbox.xr,
-                y: this.randomGen() * this.bbox.yb
-            });
-        }
-        return points;
+        return Array.from({length: 50}, () => ({
+            x: this.randomGen() * this.bbox.xr,
+            y: this.randomGen() * this.bbox.yb
+        }));
     }
 
-
     sitesFromInput(points) {
-        let selectedCells = [];
-        points.forEach(p => {
-            let cell = this.findCellByCoordinates(p.x, p.y);
-            if (cell) {
-                selectedCells.push(cell);
-            }
-        });
+        const selectedCells = points
+            .map(p => VoronoiDiagramHelper.findCellByCoordinates(p.x, p.y, this.diagram.cells))
+            .filter(cell => cell);
 
-        // Check if cells are connected and connect them if not
         this.ensureConnectedCells(selectedCells);
 
         return selectedCells;
@@ -46,7 +38,7 @@ export class VoronoiTrackGenerator {
 
         // Union adjacent cells
         for (let cell of selectedCells) {
-            const neighbors = this.getNeighborCells(cell);
+            const neighbors = VoronoiDiagramHelper.getNeighborCells(cell, this.diagram);
             for (let neighbor of neighbors) {
                 if (selectedCells.includes(neighbor)) {
                     disjointSet.union(cell, neighbor);
@@ -65,17 +57,15 @@ export class VoronoiTrackGenerator {
         }
 
         // If more than one component, connect them
-        console.log(components.size)
         if (components.size > 1) {
             const componentRoots = Array.from(components.keys());
             for (let i = 1; i < componentRoots.length; i++) {
-                const path = this.findShortestPath(componentRoots[i-1], componentRoots[i]);
+                const path = PathFinder.findShortestPath(componentRoots[i-1], componentRoots[i], this.diagram);
                 if (path) {
                     for (let cell of path) {
-                        //if not present add it
-                        if (!selectedCells.some(c => this.comparePoints(c.site, cell.site))) {
-                            selectedCells.push(cell); //add necessary cells to selectedCells
-                            this.patchPath.push(cell); //this is just for visualization/debug purposes
+                        if (!selectedCells.some(c => VoronoiDiagramHelper.comparePoints(c.site, cell.site))) {
+                            selectedCells.push(cell);
+                            this.patchPath.push(cell);
                         }
                     }
                 }
@@ -83,131 +73,66 @@ export class VoronoiTrackGenerator {
         }
     }
 
-    getNeighborCells(cell) {
-        const neighbors = [];
-        for (let halfedge of cell.halfedges) {
-            const neighborSite = halfedge.edge.lSite !== cell.site ? halfedge.edge.lSite : halfedge.edge.rSite;
-            if (neighborSite) {
-                neighbors.push(this.diagram.cells[neighborSite.voronoiId]);
-            }
-        }
-        return neighbors;
-    }
-
-    findShortestPath(startCell, endCell) {
-        const queue = [[startCell]];
-        const visited = new Set();
-
-        while (queue.length > 0) {
-            const path = queue.shift();
-            const currentCell = path[path.length - 1];
-
-            if (currentCell === endCell) {
-                return path;
-            }
-
-            if (!visited.has(currentCell)) {
-                visited.add(currentCell);
-                const neighbors = this.getNeighborCells(currentCell);
-                for (const neighbor of neighbors) {
-                    if (!visited.has(neighbor)) {
-                        queue.push([...path, neighbor]);
-                    }
-                }
-            }
-        }
-
-        return null; // No path found
-    }
-
-    
-
-    
-    findCellByCoordinates(x, y) {
-        for (let cell of this.diagram.cells) {
-            if (this.comparePoints(cell.site,{x: x, y: y})) {
-                return cell;
-            }
-        }
-        return null;
-    }
-
     selectCellsForTrack(numCells) {
-        let bboxCenter = { x: (this.bbox.xr + this.bbox.xl) / 2, y: (this.bbox.yb + this.bbox.yt) / 2 };
-        let minDist = Infinity;
-        let startCellIndex = -1;
-        let selectedCells = [];
+        const bboxCenter = { 
+            x: (this.bbox.xr + this.bbox.xl) / 2, 
+            y: (this.bbox.yb + this.bbox.yt) / 2 
+        };
 
-        this.diagram.cells.forEach((cell, index) => {
-            let site = cell.site;
-            let dist = (site.x - bboxCenter.x) ** 2 + (site.y - bboxCenter.y) ** 2;
-            if (dist < minDist) {
-                minDist = dist;
-                startCellIndex = index;
-            }
-        });
+        const startCell = this.diagram.cells.reduce((closest, cell) => {
+            const dist = (cell.site.x - bboxCenter.x) ** 2 + (cell.site.y - bboxCenter.y) ** 2;
+            return dist < closest.dist ? { cell, dist } : closest;
+        }, { cell: null, dist: Infinity }).cell;
 
-        if (startCellIndex !== -1) {
-            let currentCell = this.diagram.cells[startCellIndex];
-            while (selectedCells.length < numCells && currentCell) {
-                if (!selectedCells.includes(currentCell)) {
-                    selectedCells.push(currentCell);
-                }
-                currentCell = this.getNextCell(currentCell);
+        const selectedCells = [];
+        let currentCell = startCell;
+
+        while (selectedCells.length < numCells && currentCell) {
+            if (!selectedCells.includes(currentCell)) {
+                selectedCells.push(currentCell);
             }
+            currentCell = this.getNextCell(currentCell);
         }
+
         return selectedCells;
     }
 
     getNextCell(cell) {
-        let neighbors = [];
-        for (let edge of cell.halfedges) {
-            let twin = edge.edge.lSite !== cell.site ? edge.edge.lSite : edge.edge.rSite;
-            if (twin) {
-                neighbors.push(this.diagram.cells[twin.voronoiId]);
-            }
-        }
+        const neighbors = VoronoiDiagramHelper.getNeighborCells(cell, this.diagram);
         return neighbors.length > 0 ? neighbors[Math.floor(this.randomGen() * neighbors.length)] : null;
     }
 
     findTrackEdges() {
-        let trackPoints = [];
-        let edgeMap = new Map();
-        this.selectedCells.flatMap(cell => cell.halfedges.map(halfedge => halfedge.edge)).forEach(edge => edgeMap.set(edge, (edgeMap.get(edge) || 0) + 1));
-        let externalEdges = Array.from(edgeMap).filter(([_, count]) => count === 1).map(([edge, _]) => edge);
-
-        let currentEdge = externalEdges[0];
+        const edgeMap = new Map();
+        this.selectedCells.flatMap(cell => cell.halfedges.map(halfedge => halfedge.edge))
+            .forEach(edge => edgeMap.set(edge, (edgeMap.get(edge) || 0) + 1));
+        
+        let externalEdges = Array.from(edgeMap)
+            .filter(([_, count]) => count === 1)
+            .map(([edge, _]) => edge);
+    
+        const trackPoints = [];
+        let currentEdge = externalEdges[Math.floor(externalEdges.length/2)];
         let currentVertex = currentEdge.vb;
-
+    
         while (externalEdges.length > 0) {
             trackPoints.push(currentVertex);
             externalEdges = externalEdges.filter(edge => edge !== currentEdge);
-
-            let found = false;
-            for (let i = 0; i < externalEdges.length; i++) {
-                if (this.comparePoints(externalEdges[i].vb, currentVertex)) {
-                    currentEdge = externalEdges[i];
-                    currentVertex = currentEdge.va;
-                    found = true;
-                    break;
-                }
-                if (this.comparePoints(externalEdges[i].va, currentVertex)) {
-                    currentEdge = externalEdges[i];
-                    currentVertex = currentEdge.vb;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) break;
+    
+            const nextEdge = externalEdges.find(edge => 
+                VoronoiDiagramHelper.comparePoints(edge.vb, currentVertex) || 
+                VoronoiDiagramHelper.comparePoints(edge.va, currentVertex)
+            );
+    
+            if (!nextEdge) break;
+    
+            currentEdge = nextEdge;
+            currentVertex = VoronoiDiagramHelper.comparePoints(nextEdge.vb, currentVertex) ? nextEdge.va : nextEdge.vb;
         }
+    
         return trackPoints;
     }
-
-    comparePoints(point1, point2) {
-        return point1.x === point2.x && point1.y === point2.y;
-    }
 }
-
 
 class DisjointSet {
     constructor(elements) {
@@ -235,5 +160,52 @@ class DisjointSet {
             this.parent.set(yRoot, xRoot);
             this.rank.set(xRoot, this.rank.get(xRoot) + 1);
         }
+    }
+}
+
+
+
+class VoronoiDiagramHelper {
+    static getNeighborCells(cell, diagram) {
+        return cell.halfedges
+            .map(halfedge => halfedge.edge.lSite !== cell.site ? halfedge.edge.lSite : halfedge.edge.rSite)
+            .filter(site => site)
+            .map(site => diagram.cells[site.voronoiId]);
+    }
+
+    static comparePoints(point1, point2) {
+        return point1.x === point2.x && point1.y === point2.y;
+    }
+
+    static findCellByCoordinates(x, y, cells) {
+        return cells.find(cell => VoronoiDiagramHelper.comparePoints(cell.site, {x, y}));
+    }
+}
+
+class PathFinder {
+    static findShortestPath(startCell, endCell, diagram) {
+        const queue = [[startCell]];
+        const visited = new Set();
+
+        while (queue.length > 0) {
+            const path = queue.shift();
+            const currentCell = path[path.length - 1];
+
+            if (currentCell === endCell) {
+                return path;
+            }
+
+            if (!visited.has(currentCell)) {
+                visited.add(currentCell);
+                const neighbors = VoronoiDiagramHelper.getNeighborCells(currentCell, diagram);
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor)) {
+                        queue.push([...path, neighbor]);
+                    }
+                }
+            }
+        }
+
+        return null; // No path found
     }
 }
