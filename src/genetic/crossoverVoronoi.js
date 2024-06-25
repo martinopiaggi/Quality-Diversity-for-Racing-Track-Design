@@ -1,12 +1,11 @@
 import {BBOX } from "../utils/constants.js"
 
-export function crossover(parent1, parent2) {
+export function crossover(parent1, parent2, regularize = false) {
   // Extract dataset from each parent
   let dataSet1 = parent1.dataSet;
   let dataSet2 = parent2.dataSet;
   let halfDataSet1  = []
   let halfDataSet2  = []
-
 
   let parent1selected = parent1.selectedCells.map(cell => cell.site)
   let parent2selected = parent2.selectedCells.map(cell => cell.site)
@@ -15,20 +14,33 @@ export function crossover(parent1, parent2) {
 
   const criteria = (data) => data.y <= slope * data.x + intercept;
 
-  // If the line is not steep, separate based on the y-coordinate
-  let selected1 = parent1selected.filter(data => criteria(data));
-  let selected2 = parent2selected.filter(data => !criteria(data));
+  // Calculate selections for both possible divisions
+  const division1 = {
+    selected1: parent1selected.filter(data => criteria(data)),
+    selected2: parent2selected.filter(data => !criteria(data)),
+  };
 
-  //in case the separation line gives us an half set without selected cells 
-  //we swap the conditions 
-  if((selected1.length || selected2.length) == 0 ){
-    selected1 = parent1selected.filter(data => !criteria(data));
-    selected2 = parent2selected.filter(data => criteria(data));
+  const division2 = {
+    selected1: parent1selected.filter(data => !criteria(data)),
+    selected2: parent2selected.filter(data => criteria(data)),
+  };
 
+  // Choose the division that maximizes the minimum number of selected points
+  const minDivision1 = Math.min(division1.selected1.length, division1.selected2.length);
+  const minDivision2 = Math.min(division2.selected1.length, division2.selected2.length);
+
+  let selected1, selected2;
+
+  if (minDivision2 > minDivision1) {
+    // Use division2
+    selected1 = division2.selected1;
+    selected2 = division2.selected2;
     halfDataSet1 = dataSet1.filter(data => !criteria(data));
     halfDataSet2 = dataSet2.filter(data => criteria(data));
-  }
-  else{
+  } else {
+    // Use division1 (this includes the case where they're equal)
+    selected1 = division1.selected1;
+    selected2 = division1.selected2;
     halfDataSet1 = dataSet1.filter(data => criteria(data));
     halfDataSet2 = dataSet2.filter(data => !criteria(data));
   }
