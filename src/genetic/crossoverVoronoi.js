@@ -45,16 +45,23 @@ export function crossover(parent1, parent2, regularize = false) {
     halfDataSet2 = dataSet2.filter(data => !criteria(data));
   }
 
-  // Combine the corresponding halves 
-  let combinedSelectedCells = [...selected1, ...selected2];
-  const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
 
   if(regularize){
     //in case to reduce number of cells:
     const lengthOrig = Math.floor((parent1selected.length + parent2selected.length)/2);
-    while(combinedSelectedCells.length>lengthOrig)combinedSelectedCells.pop();
+    while ((selected1.length + selected2.length) > lengthOrig) {
+      if (selected1.length > selected2.length) {
+        selected1.pop();
+      } else {
+        selected2.pop();
+      }
+    }
   }
   
+    // Combine the corresponding halves 
+  let combinedSelectedCells = [...selected1, ...selected2];
+  const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
+
   return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
 }
 
@@ -95,23 +102,14 @@ export function crossover2(parent1, parent2,regularize=false) {
 
   if (regularize) {
     //+ 2 because with shift() we just removed 2 cells
-    console.log(parentSelected1.length + parentSelected2.length + 2)
     const averageLength = Math.floor((parentSelected1.length + parentSelected2.length + 1) / 2);
 
     while ((parentSelected1.length + parentSelected2.length) > averageLength) {
       if (parentSelected1.length > parentSelected2.length) {
-        console.log("removed 1")
         parentSelected1.pop();
       } else {
-        console.log("removed 2")
-        console.log(parentSelected2.length)
         parentSelected2.pop();
-        console.log(parentSelected2.length)
       }
-      console.log(parentSelected1.length)
-      console.log(parentSelected2.length)
-      console.log(averageLength)
-      console.log((parentSelected1.length + parentSelected2.length) > averageLength)
     }
   }
 
