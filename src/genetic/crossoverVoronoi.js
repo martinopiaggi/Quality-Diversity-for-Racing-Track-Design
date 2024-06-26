@@ -95,14 +95,23 @@ export function crossover2(parent1, parent2,regularize=false) {
 
   if (regularize) {
     //+ 2 because with shift() we just removed 2 cells
-    const averageLength = Math.floor((parentSelected1.length + parentSelected2.length + 2) / 2);
+    console.log(parentSelected1.length + parentSelected2.length + 2)
+    const averageLength = Math.floor((parentSelected1.length + parentSelected2.length + 1) / 2);
 
-    while (parentSelected1.length + parentSelected2.length > averageLength) {
+    while ((parentSelected1.length + parentSelected2.length) > averageLength) {
       if (parentSelected1.length > parentSelected2.length) {
+        console.log("removed 1")
         parentSelected1.pop();
       } else {
+        console.log("removed 2")
+        console.log(parentSelected2.length)
         parentSelected2.pop();
+        console.log(parentSelected2.length)
       }
+      console.log(parentSelected1.length)
+      console.log(parentSelected2.length)
+      console.log(averageLength)
+      console.log((parentSelected1.length + parentSelected2.length) > averageLength)
     }
   }
 
