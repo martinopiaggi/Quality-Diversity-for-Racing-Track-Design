@@ -6,17 +6,27 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
+//todo I have to rename MAPELITE_PATH since misleading 
 import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT } from '../utils/constants.js';
 
 // Main function to simulate a track using Docker torcs
-async function simulate(mode = MODE, trackSize = 0, dataSet = [], voronoiCells = []) {
-    if(trackSize == 0) trackSize = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
+export async function simulate(mode = MODE, trackSize = 0, 
+    dataSet = [], selected = [], seed = null, saveJson = true) {
     
-    const seed = Math.random();
-    const splineTrack = await generateTrack(mode, BBOX, seed, trackSize, true, dataSet, voronoiCells);
+    
+    if(trackSize == 0){
+        if(mode=='voronoi'){
+            //between 5 cells and 2
+            trackSize = Math.ceil(Math.random() * 4 ) + 1; 
+        }
+        else{
+            trackSize = 50;
+        }
+    }
 
-    //uncomment this if you want to save the "output.xml" inside current folder for local Torcs test
-    //const trackXml = xml.exportTrackToXML(splineTrack,0, true);
+    if(seed === null) seed = Math.random();
+    
+    const splineTrack = await generateTrack(mode, BBOX, seed, trackSize, saveJson, dataSet, selected);
 
     const trackXml = xml.exportTrackToXML(splineTrack);
 
@@ -28,16 +38,19 @@ async function simulate(mode = MODE, trackSize = 0, dataSet = [], voronoiCells =
         const containerId = await startDockerContainer();
         const trackgenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
         
-        await runRaceSimulation(containerId, seed, trackSize, trackgenOutput);
+        const fitness = await runRaceSimulation(containerId, seed, trackSize, trackgenOutput);
         await stopDockerContainer(containerId);
+
+        if (saveJson) {
+            await saveFitnessToJson(seed, mode, trackSize, fitness.length, fitness.deltaX, fitness.deltaY, fitness.deltaAngleDegrees);
+        }
+
+        return fitness;
     } catch (err) {
         console.error(`Error: ${err.message}`);
+        throw err;
     }
 }
-
-
-
-
 
 // Docker container management
 
@@ -85,9 +98,8 @@ async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
         console.log(`Race simulation completed inside Docker container ${containerId}`);
 
         const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackgenOutput);
-
-        await saveFitnessToJson(seed, MODE, trackSize, length, deltaX, deltaY, deltaAngleDegrees);
     
+        return { length, deltaX, deltaY, deltaAngleDegrees };
     } catch (err) {
         throw new Error(`Failed to run race simulation: ${err.message}`);
     }
@@ -125,6 +137,4 @@ function executeCommand(command) {
     });
 }
 
-// Execute the main function
 simulate().catch(err => console.error(`Unhandled error: ${err.message}`));
-
