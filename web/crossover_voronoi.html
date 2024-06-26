@@ -28,7 +28,7 @@
 
   <button type="submit">Generate Tracks</button>
   <button id="toggle-spline">Toggle Spline</button>
-  <input type="checkbox" id="regularize" class="toggle-input">
+  <input type="checkbox" id="regularize" class="toggle-input" checked="false">
   <label for="regularize" class="toggle-label">Regularize</label>
 </form>
 <div class="canvas-container">
@@ -59,7 +59,7 @@
 
     let lineParameters;
     let showSpline = false;
-    let regularize = false;
+    let regularize = document.getElementById('regularize').checked;
     let p5Instances = {};
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
