@@ -25,7 +25,7 @@
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
       event.preventDefault();
-      const seed = parseInt(document.getElementById('seedInput').value);
+      const seed = parseFloat(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
       genTrack(seed, trackSize);
     });

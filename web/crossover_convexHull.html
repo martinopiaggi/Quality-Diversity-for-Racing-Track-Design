@@ -51,10 +51,10 @@
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
       event.preventDefault();
-      const seed1 = parseInt(document.getElementById('seedInput1').value);
+      const seed1 = parseFloat(document.getElementById('seedInput1').value);
       const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
 
-      const seed2 = parseInt(document.getElementById('seedInput2').value);
+      const seed2 = parseFloat(document.getElementById('seedInput2').value);
       const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
 
       // Clear existing canvases
