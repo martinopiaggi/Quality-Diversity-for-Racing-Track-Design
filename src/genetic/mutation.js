@@ -8,7 +8,7 @@ export function mutation(solution,intensity) {
   return selectedCells;
 }
 
-
+//TODO: pass the individual like Vorono mutation and not just the dataSet or viceversa
 export function mutationConvexHull(dataSet,intensity) {
   // Take a random point in dataSet
   const randomIndex = Math.floor(Math.random() * dataSet.length);

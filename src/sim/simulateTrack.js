@@ -13,7 +13,6 @@ import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT } from '../u
 export async function simulate(mode = MODE, trackSize = 0, 
     dataSet = [], selected = [], seed = null, saveJson = true) {
     
-    
     if(trackSize == 0){
         if(mode=='voronoi'){
             //between 5 cells and 2
@@ -137,4 +136,9 @@ function executeCommand(command) {
     });
 }
 
-simulate().catch(err => console.error(`Unhandled error: ${err.message}`));
+
+
+if (process.argv[1].indexOf('simulateTrack.js') !== -1) {
+    //it means it is run directly as a script and not by another module
+    simulate().catch(err => console.error(`Unhandled error: ${err.message}`));
+}
