@@ -19,6 +19,12 @@
       </select>
       <button type="submit">Generate Track</button>
     </form>
+
+    <div class="json-input">
+      <textarea id="jsonInput" rows="2" cols="50" placeholder="Paste your JSON here"></textarea>
+      <button id="loadJSON">Load JSON</button>
+    </div>
+
     <div id="track-container" class="track-container"></div>
     <div class="navigation">
       <button id="prev-track">Previous</button>
@@ -41,6 +47,7 @@
 
       document.getElementById('prev-track').addEventListener('click', () => navigateTrack(-1));
       document.getElementById('next-track').addEventListener('click', () => navigateTrack(1));
+      document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
     });
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
@@ -73,32 +80,45 @@
     function displayTrack(index) {
       const track = tracks[index];
       if (!track) return;
+      genTrack(track.id, track.trackSize, track.mode, track.dataSet, track.selectedCells);
+      showStats(track)
+    }
 
+    function showStats(track){
       const trackContainer = document.getElementById('track-container');
       const statsContainer = document.getElementById('stats-container');
 
       trackContainer.innerHTML = '';
       statsContainer.innerHTML = '';
 
-      //for now if in data/tests there aren't genetic modified tracks is ok
-      //otherwise refactor this passing selectedCells and dataset
-      //TODO
-      genTrack(track.id, track.trackSize, track.mode);
-
       const stats = `
-        <p>Seed: ${track.id}</p>
-        <p>Mode: ${track.mode}</p>
-        <p>Track Size: ${track.trackSize}</p>
-        <p>Length: ${track.fitness.length}</p>
-        <p>Delta X: ${track.fitness.deltaX}</p>
-        <p>Delta Y: ${track.fitness.deltaY}</p>
-        <p>Delta Angle (Degrees): ${track.fitness.deltaAngleDegrees}</p>
+        <p>Seed: ${track.id || 'N/A'}</p>
+        <p>Mode: ${track.mode || 'N/A'}</p>
+        <p>Track Size: ${track.trackSize || 'N/A'}</p>
+        ${track.fitness ? `
+          <p>Length: ${track.fitness.length?.toFixed(2) || 'N/A'}</p>
+          <p>Delta X: ${track.fitness.deltaX?.toFixed(2) || 'N/A'}</p>
+          <p>Delta Y: ${track.fitness.deltaY?.toFixed(2) || 'N/A'}</p>
+          <p>Delta Angle (Degrees): ${track.fitness.deltaAngleDegrees?.toFixed(2) || 'N/A'}</p>
+        ` : '<p>Fitness data not available</p>'}
       `;
       statsContainer.innerHTML = stats;
     }
 
-    function genTrack(seed, trackSize, mode) {
-      splineTrack = generateTrack(mode, BBOX, seed, trackSize);
+    function loadJSONTrack() {
+      const jsonInput = document.getElementById('jsonInput').value;
+      try {
+        const trackData = JSON.parse(jsonInput);
+        genTrack(trackData.id, trackData.trackSize, trackData.mode, trackData.dataSet, trackData.selectedCells);
+        showStats(trackData)
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        alert('Invalid JSON format. Please check your input.');
+      }
+    }
+
+    function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
+      splineTrack = generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
       redraw();
     }
 

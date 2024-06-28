@@ -72,7 +72,7 @@
       }
       else{
         if(isNaN(intensityMutation))intensityMutation=10
-        const mutatedDataSetHull = mutationConvexHull(trackGenerator.dataSetHull,intensityMutation);
+        const mutatedDataSetHull = mutationConvexHull(trackGenerator,intensityMutation);
         splineTrack = generateTrack(mode, BBOX, seed, trackSize, false,trackGenerator.dataSet, mutatedDataSetHull);
       }      
       generator = getGenerator();

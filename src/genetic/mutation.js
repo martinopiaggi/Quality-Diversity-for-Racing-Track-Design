@@ -1,18 +1,14 @@
-export function mutation(solution,intensity) {
-  // Extract dataset from each parent
-  const selectedCells = solution.selectedCells.map(cell => cell.site);
-  // Take a random point in solution.selectedCells
+export function mutation(individual,intensity) {
+  const selectedCells = individual.selectedCells.map(cell => cell.site);
   const randomIndex = Math.floor(Math.random() * selectedCells.length);
   selectedCells[randomIndex].x += intensity*Math.random();
   selectedCells[randomIndex].y += intensity*Math.random();
   return selectedCells;
 }
 
-//TODO: pass the individual like Vorono mutation and not just the dataSet or viceversa
-export function mutationConvexHull(dataSet,intensity) {
-  // Take a random point in dataSet
-  const randomIndex = Math.floor(Math.random() * dataSet.length);
-  dataSet[randomIndex].x += intensity*Math.random();
-  dataSet[randomIndex].y += intensity*Math.random();
-  return dataSet;
+export function mutationConvexHull(individual,intensity) {
+  const randomIndex = Math.floor(Math.random() * individual.dataSetHull.length);
+  individual.dataSetHull[randomIndex].x += intensity*Math.random();
+  individual.dataSetHull[randomIndex].y += intensity*Math.random();
+  return individual.dataSetHull;
 }
