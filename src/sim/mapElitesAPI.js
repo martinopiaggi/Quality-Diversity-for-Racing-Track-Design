@@ -6,20 +6,10 @@ import { mutation, mutationConvexHull } from '../genetic/mutation.js';
 import { simulate } from './simulateTrack.js';
 import { BBOX } from '../utils/constants.js';
 
-
 const app = express();
 app.use(express.json());
 
-// Input validation middleware
-const validateInput = (req, res, next) => {
-    const { mode } = req.body;
-    if (!mode || (mode !== 'voronoi' && mode !== 'convexHull')) {
-        return res.status(400).json({ error: 'Invalid or missing mode' });
-    }
-    next();
-};
-
-app.post('/evaluate', validateInput, async (req, res, next) => {
+app.post('/evaluate', async (req, res, next) => {
     console.log("Received request to /evaluate");
     console.log("Request body:", JSON.stringify(req.body, null, 2));
     
@@ -47,7 +37,7 @@ app.post('/evaluate', validateInput, async (req, res, next) => {
     }
 });
 
-app.post('/crossover', validateInput, async (req, res, next) => {
+app.post('/crossover', async (req, res, next) => {
     console.log("ei")
     try {
         const { parent1, parent2, mode } = req.body;
@@ -86,33 +76,35 @@ app.post('/crossover', validateInput, async (req, res, next) => {
     }
 });
 
-app.post('/mutate', validateInput, async (req, res, next) => {
+app.post('/mutate', async (req, res, next) => {
     try {
-        const { mode, individual, intensityMutation = 10 } = req.body;
-        if (!individual || !individual.dataSet || (mode === 'voronoi' && !individual.selectedCells)) {
+        const {individual, intensityMutation = 10 } = req.body;
+        if (!individual || !individual.dataSet) {
             return res.status(400).json({ error: 'Invalid individual data' });
         }
-        console.log(individual)
         // Generate the initial track
-        await generateTrack(mode, BBOX, individual.id, individual.trackSize, true, individual.dataSet, individual.selectedCells);
+        await generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, true, individual.dataSet, individual.selectedCells);
         const trackGenerator = getGenerator();
 
-        if (mode === 'voronoi') {
+        if (individual.mode === 'voronoi') {
             const mutatedData = mutation(trackGenerator, intensityMutation);
             console.log(mutatedData)
             res.json({
                 mutated: {
-                    ds: trackGenerator.dataSet, //assumption: voronoi mutation doesn't change the dataset (aka in the dataset there aren't the selectedCells (now mutated))
-                    sel: mutatedData
+                    dataSet: mutatedData.ds, 
+                    selectedCells: mutatedData.sel
                 }
             });
-        } else { // convexHull
-            const mutatedData = mutationConvexHull(trackGenerator.dataSetHull, intensityMutation);
+        } else if (individual.mode === 'convexHull') { 
+            const mutatedData = mutationConvexHull(trackGenerator, intensityMutation);
             res.json({
                 mutated: {
-                    ds: mutatedData
+                    dataSet: mutatedData.ds
                 }
             });
+        }
+        else{
+            return res.status(400).json({ error: 'Invalid track generation mode in /mutate:'});
         }
     } catch (error) {
         console.error('Error in /mutate:', error);

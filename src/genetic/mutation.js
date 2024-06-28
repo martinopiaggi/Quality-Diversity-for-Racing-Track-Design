@@ -21,6 +21,7 @@ export function mutation(individual, intensity) {
   return { sel: selectedCells, ds: dataSet };
 }
 
+//let's move randomly a point in the convexHull
 export function mutationConvexHull(individual, intensity) {
   const dataSetHull = [...individual.dataSetHull];
   const dataSet = [...individual.dataSet];
@@ -36,8 +37,8 @@ export function mutationConvexHull(individual, intensity) {
   );
   
   if (dataSetIndex !== -1) {
-    dataSet[dataSetIndex] = {...dataSetHull[randomIndex]};
+    dataSet[dataSetIndex] = dataSetHull[randomIndex];
   }
   
-  return { ds: dataSet, hull: dataSetHull };
+  return { ds: dataSet};
 }

@@ -22,7 +22,7 @@ export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = fals
             break;
         case 'convexHull':
             //in case of convexHull, selected -> selected points from dataset which makes the hull
-            trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize, dataSet,selected);
+            trackGenerator = new ConvexHullTrackGenerator(bbox, seed, trackSize, dataSet);
             break;
         default:
             throw new Error('Invalid track generator mode');
