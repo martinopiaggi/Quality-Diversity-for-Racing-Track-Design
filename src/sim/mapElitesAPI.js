@@ -15,20 +15,18 @@ app.post('/evaluate', async (req, res, next) => {
     
     try {
         const { id, mode, dataSet, selectedCells, trackSize } = req.body;
-        console.log("Mode:", mode);
-        console.log("DataSet:", dataSet ? "Present" : "Not present");
-        console.log("SelectedCells:", selectedCells ? "Present" : "Not present");
-        console.log("TrackSize:", trackSize);
-        
-        let fitnessData;
+        let simulationResult;
 
-        if (dataSet && Array.isArray(dataSet) && selectedCells && Array.isArray(selectedCells)) {
+        if (dataSet && Array.isArray(dataSet)) {
             console.log("Valid track data provided");
-            fitnessData = await simulate(mode, trackSize, dataSet, selectedCells, id);
-            console.log('Fitness data:', fitnessData);
-            res.json({ fitness: fitnessData });
+            simulationResult = await simulate(mode, trackSize, dataSet, selectedCells, id);
+            console.log('Simulation result:', simulationResult);
+            res.json({
+                fitness: simulationResult.fitness,
+                selectedCells: simulationResult.selectedCells.map(cell => ({...cell.site})),
+                trackSize: simulationResult.trackSize
+            });
         } else {
-            console.log("No valid track data provided");
             res.status(400).json({ error: "Invalid or missing track data" });
         }
     } catch (error) {

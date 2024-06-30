@@ -2,17 +2,17 @@ import Voronoi from '../lib/rhill-voronoi-core.js';
 import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class VoronoiTrackGenerator {
-constructor(bbox, seed, size, dataSet = [], selectedVoronoiSites = []) {
+constructor(bbox, seed, trackSize, dataSet = [], selectedVoronoiSites = []) {
         this.bbox = bbox;
         this.randomGen = prng_alea(seed);
         this.voronoi = new Voronoi();
-        
+        this.trackSize = trackSize;
         this.dataSet = dataSet.length > 0 ? [...dataSet, ...selectedVoronoiSites] : this.generatePoints();
         this.diagram = this.voronoi.compute(this.dataSet, this.bbox);
         
         this.patchPath = [];
         this.selectedCells = selectedVoronoiSites.length > 0 ?  
-            this.sitesFromInput(selectedVoronoiSites) : this.selectCellsForTrack(size);
+            this.sitesFromInput(selectedVoronoiSites) : this.selectCellsForTrack(trackSize);
         this.trackEdges = this.findTrackEdges();
     }
 
