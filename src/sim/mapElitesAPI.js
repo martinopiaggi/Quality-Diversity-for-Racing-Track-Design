@@ -3,11 +3,13 @@ import { generateTrack, getGenerator } from '../trackGen/trackGenerator.js';
 import { crossover } from '../genetic/crossoverVoronoi.js';
 import { crossover as crossoverConvexHull } from '../genetic/crossoverConvexHull.js';
 import { mutation, mutationConvexHull } from '../genetic/mutation.js';
-import { simulate } from './simulateTrack.js';
 import { BBOX } from '../utils/constants.js';
+import { simulate } from './simulateTrack.js';
+
 
 const app = express();
 app.use(express.json());
+
 
 app.post('/evaluate', async (req, res, next) => {
     console.log("Received request to /evaluate");
@@ -15,25 +17,29 @@ app.post('/evaluate', async (req, res, next) => {
     
     try {
         const { id, mode, dataSet, selectedCells, trackSize } = req.body;
-        let simulationResult;
 
-        if (dataSet && Array.isArray(dataSet)) {
-            console.log("Valid track data provided");
-            simulationResult = await simulate(mode, trackSize, dataSet, selectedCells, id);
-            console.log('Simulation result:', simulationResult);
-            res.json({
-                fitness: simulationResult.fitness,
-                selectedCells: simulationResult.selectedCells.map(cell => ({...cell.site})),
-                trackSize: simulationResult.trackSize
-            });
-        } else {
-            res.status(400).json({ error: "Invalid or missing track data" });
+        if (!dataSet || !Array.isArray(dataSet)) {
+            return res.status(400).json({ error: "Invalid or missing track data" });
         }
+
+        const simulationResult = await simulate(mode, trackSize, dataSet, selectedCells, id);
+        res.json({
+            fitness: simulationResult.fitness,
+            selectedCells: simulationResult.selectedCells.map(cell => ({ x: cell.site.x, y: cell.site.y })),
+            trackSize: simulationResult.trackSize
+        });
+
     } catch (error) {
         console.error('Error in /evaluate:', error);
-        next(error);
+        if (error.message === 'Simulation timeout') {
+            res.status(408).json({ error: "Simulation timed out" });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
 });
+
+
 
 app.post('/crossover', async (req, res, next) => {
     console.log("ei")

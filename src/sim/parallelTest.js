@@ -13,8 +13,8 @@ async function runSimulation(simulationIndex) {
     try {
         console.log(`Starting simulation ${simulationIndex}`);
         
-        // Run the pipelineTorcs script and get the container ID
-        const pipelineProcess = spawn('node', ['pipelineTorcs.js'], { shell: true });
+        // Run the simulation script and get the container ID
+        const pipelineProcess = spawn('node', ['simulateTrack.js'], { shell: true });
         let scriptOutput = '';
 
         // Capture the container ID from the pipeline script output

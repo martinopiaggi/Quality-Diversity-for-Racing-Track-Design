@@ -1,24 +1,22 @@
 import { exec } from 'child_process';
 import { generateTrack, getGenerator } from '../trackGen/trackGenerator.js';
 import * as xml from '../utils/xmlTorcsGenerator.js';
-import {saveFitnessToJson} from '../utils/jsonUtils.js';
+import { saveFitnessToJson } from '../utils/jsonUtils.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
-//todo I have to rename MAPELITE_PATH since misleading 
 import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT } from '../utils/constants.js';
 
-// Main function to simulate a track using Docker torcs
+const SIMULATION_TIMEOUT = 30000; // 30 seconds timeout
+
 export async function simulate(mode = MODE, trackSize = 0, 
     dataSet = [], selected = [], seed = null, saveJson = true) {
     
     if(trackSize == 0){
         if(mode=='voronoi'){
-            //between 5 cells and 2
             trackSize = Math.ceil(Math.random() * 4 ) + 1; 
-        }
-        else{
+        } else {
             trackSize = 50;
         }
     }
@@ -33,12 +31,17 @@ export async function simulate(mode = MODE, trackSize = 0,
     console.log(`MODE: ${mode}`);
     console.log(`trackSize: ${trackSize}`);
 
+    let containerId;
     try {
-        const containerId = await startDockerContainer();
-        const trackgenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
+        containerId = await startDockerContainer();
+        const trackGenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
         
-        const fitness = await runRaceSimulation(containerId, seed, trackSize, trackgenOutput);
-        await stopDockerContainer(containerId);
+        const fitness = await Promise.race([
+            runRaceSimulation(containerId, trackGenOutput),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Simulation timeout')), SIMULATION_TIMEOUT)
+            )
+        ]);
 
         if (saveJson) {
             await saveFitnessToJson(seed, mode, trackSize, fitness.length, fitness.deltaX, fitness.deltaY, fitness.deltaAngleDegrees);
@@ -52,10 +55,12 @@ export async function simulate(mode = MODE, trackSize = 0,
     } catch (err) {
         console.error(`Error: ${err.message}`);
         throw err;
+    } finally {
+        if (containerId) {
+            await stopDockerContainer(containerId);
+        }
     }
 }
-
-// Docker container management
 
 async function startDockerContainer() {
     const containerId = await executeCommand(`docker run -d -it --memory ${MEMORY_LIMIT} ${DOCKER_IMAGE_NAME}`);
@@ -92,20 +97,14 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
     }
 }
 
+async function runRaceSimulation(containerId,trackGenOutput) {
+    await executeCommand(`docker cp ${MAPELITE_PATH} ${containerId}:/usr/share/games/torcs/config/raceman/mapelite.xml`);
+    await executeCommand(`docker exec ${containerId} /usr/games/torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`);
+    console.log(`Race simulation completed inside Docker container ${containerId}`);
 
-// Simulation and output
-async function runRaceSimulation(containerId, seed, trackSize, trackgenOutput) {
-    try {
-        await executeCommand(`docker cp ${MAPELITE_PATH} ${containerId}:/usr/share/games/torcs/config/raceman/mapelite.xml`);
-        await executeCommand(`docker exec ${containerId} /usr/games/torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`);
-        console.log(`Race simulation completed inside Docker container ${containerId}`);
+    const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackGenOutput);
 
-        const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackgenOutput);
-    
-        return { length, deltaX, deltaY, deltaAngleDegrees };
-    } catch (err) {
-        throw new Error(`Failed to run race simulation: ${err.message}`);
-    }
+    return { length, deltaX, deltaY, deltaAngleDegrees };
 }
 
 function parseTrackgenOutput(trackgenOutput) {
@@ -116,12 +115,13 @@ function parseTrackgenOutput(trackgenOutput) {
 
     return {
         length: lengthMatch ? parseFloat(lengthMatch[1]) : null,
-        deltaX        : deltaXMatch ? parseFloat(deltaXMatch[1]) : null,
+        deltaX: deltaXMatch ? parseFloat(deltaXMatch[1]) : null,
         deltaY: deltaYMatch ? parseFloat(deltaYMatch[1]) : null,
         deltaAngle: deltaAngleMatch ? parseFloat(deltaAngleMatch[1]) : null,
         deltaAngleDegrees: deltaAngleMatch ? parseFloat(deltaAngleMatch[2]) : null
     };
 }
+
 
 // Utility function to execute shell commands
 function executeCommand(command) {
@@ -139,8 +139,6 @@ function executeCommand(command) {
         });
     });
 }
-
-
 
 if (process.argv[1].indexOf('simulateTrack.js') !== -1) {
     //it means it is run directly as a script and not by another module
