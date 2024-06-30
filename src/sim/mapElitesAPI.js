@@ -59,6 +59,7 @@ app.post('/crossover', async (req, res, next) => {
 
         let result;
         if (mode === 'voronoi') {
+            console.log("CROSSOVER VORONOI")
             result = crossover(trackGenerator1, trackGenerator2, true);
             res.json({
                 offspring: {
