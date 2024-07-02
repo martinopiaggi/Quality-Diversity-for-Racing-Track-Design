@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateTrack, getGenerator } from '../trackGen/trackGenerator.js';
+import { generateTrack } from '../trackGen/trackGenerator.js';
 import { crossover } from '../genetic/crossoverVoronoi.js';
 import { crossover as crossoverConvexHull } from '../genetic/crossoverConvexHull.js';
 import { mutation, mutationConvexHull } from '../genetic/mutation.js';
@@ -11,38 +11,46 @@ const app = express();
 app.use(express.json());
 
 
-app.post('/evaluate', async (req, res, next) => {
+app.post('/generate', async (req, res) => {
+    try {
+        const { id, mode, trackSize } = req.body;
+        //id is used as seed for the generation of the track
+        console.log(trackSize)
+        const { track, generator } = await generateTrack(mode, BBOX, id, trackSize, false);
+        
+        const response = {
+            id: id,
+            mode: mode,
+            dataSet: generator.dataSet,
+            selectedCells: generator.selectedCells.map(cell => ({ x: cell.site.x, y: cell.site.y })),
+            trackSize: generator.trackSize
+        };
+        
+        res.json(response);
+    } catch (error) {
+        console.error('Error in /generate:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/evaluate', async (req, res) => {
     console.log("Received request to /evaluate");
-    console.log("Request body:", JSON.stringify(req.body, null, 2));
-    
     try {
         const { id, mode, dataSet, selectedCells, trackSize } = req.body;
-
-        if (!dataSet || !Array.isArray(dataSet)) {
-            return res.status(400).json({ error: "Invalid or missing track data" });
-        }
-
+        
         const simulationResult = await simulate(mode, trackSize, dataSet, selectedCells, id);
         res.json({
-            fitness: simulationResult.fitness,
-            selectedCells: simulationResult.selectedCells.map(cell => ({ x: cell.site.x, y: cell.site.y })),
-            trackSize: simulationResult.trackSize
+            fitness: simulationResult.fitness
         });
-
     } catch (error) {
         console.error('Error in /evaluate:', error);
-        if (error.message === 'Simulation timeout') {
-            res.status(408).json({ error: "Simulation timed out" });
-        } else {
-            res.status(500).json({ error: error.message });
-        }
+        res.status(500).json({ error: error.message });
     }
 });
 
 
-
 app.post('/crossover', async (req, res, next) => {
-    console.log("ei")
+    console.log("Crossover endpoint called")
     try {
         const { parent1, parent2, mode } = req.body;
         if (!parent1 || !parent2 || !parent1.dataSet || !parent2.dataSet || 
@@ -51,11 +59,8 @@ app.post('/crossover', async (req, res, next) => {
         }
 
         // Generate tracks for both parents
-        await generateTrack(mode, BBOX, parent1.id, parent1.trackSize, false, parent1.dataSet, parent1.selectedCells);
-        const trackGenerator1 = getGenerator();
-
-        await generateTrack(mode, BBOX, parent2.id, parent2.trackSize, false, parent2.dataSet, parent2.selectedCells);
-        const trackGenerator2 = getGenerator();
+        const { generator: trackGenerator1 } = await generateTrack(mode, BBOX, parent1.id, parent1.trackSize, false, parent1.dataSet, parent1.selectedCells);
+        const { generator: trackGenerator2 } = await generateTrack(mode, BBOX, parent2.id, parent2.trackSize, false, parent2.dataSet, parent2.selectedCells);
 
         let result;
         if (mode === 'voronoi') {
@@ -88,8 +93,7 @@ app.post('/mutate', async (req, res, next) => {
             return res.status(400).json({ error: 'Invalid individual data' });
         }
         // Generate the initial track
-        await generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, true, individual.dataSet, individual.selectedCells);
-        const trackGenerator = getGenerator();
+        const { generator: trackGenerator } = await generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, true, individual.dataSet, individual.selectedCells);
 
         if (individual.mode === 'voronoi') {
             const mutatedData = mutation(trackGenerator, intensityMutation);

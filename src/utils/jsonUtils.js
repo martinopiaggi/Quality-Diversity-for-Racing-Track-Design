@@ -42,7 +42,7 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
         jsonContent = {
             id: seed,
             mode: null,
-            trackSize: null,
+            trackSize: selectedCells.length,
             parents: {
                 parent1: null,
                 parent2: null
@@ -51,15 +51,12 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
             dataSet: dataSet.map(point => ({
                 x: point.x,
                 y: point.y
-            }))
-        };
-        
-        if (selectedCells.length > 0) {
-            jsonContent.selectedCells = selectedCells.map(point => ({
+            })),
+            selectedCells: selectedCells.map(point => ({
                 x: point.x,
                 y: point.y
-            }));
-        }
+            }))
+        };
     }
     
     await writeJsonFile(jsonFilePath, jsonContent);
