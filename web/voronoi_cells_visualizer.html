@@ -17,11 +17,11 @@
     </form>
   </main>
   <script type="module">
-    import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
+    import { generateTrack } from '../src/trackGen/trackGenerator.js';
     import * as utils from '../src/utils/utils.js';
 
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-    let trackGenerator, trackEdges, dataSet, diagram, selectedCells;
+    let trackResult;
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
       event.preventDefault();
@@ -30,14 +30,9 @@
       genTrack(seed, trackSize);
     });
 
-    function genTrack(seed, trackSize) {
+    async function genTrack(seed, trackSize) {
       if (isNaN(seed)) seed = Math.random();
-      generateTrack("voronoi", BBOX, seed, trackSize);
-      trackGenerator = getGenerator()
-      trackEdges = trackGenerator.trackEdges;
-      dataSet = trackGenerator.dataSet;
-      diagram = trackGenerator.diagram;
-      selectedCells = trackGenerator.selectedCells;
+      trackResult = await generateTrack("voronoi", BBOX, seed, trackSize);
       redraw();
     }
 
@@ -55,6 +50,7 @@
     }
 
     function drawSelectedSites() {
+      const selectedCells = trackResult.generator.selectedCells;	
       fill(0, 255, 0);
       noStroke();
       selectedCells.forEach((cell) => {
@@ -64,6 +60,7 @@
     }
 
     function drawOriginalEdges() {
+      const trackEdges = trackResult.generator.trackEdges;
       stroke(0, 255, 255);
       strokeWeight(2);
       for (let i = 0; i < trackEdges.length; i++) {
@@ -74,6 +71,7 @@
     }
 
     function drawPoints() {
+      const dataSet = trackResult.generator.dataSet;
       fill(255);
       noStroke();
       dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
@@ -81,6 +79,7 @@
 
     function drawVoronoi() {
       stroke(255);
+      const diagram = trackResult.generator.diagram;
       diagram.edges.forEach(edge => line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y));
     }
 

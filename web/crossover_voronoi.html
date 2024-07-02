@@ -38,7 +38,7 @@
 </div>
   </main>
   <script type="module">
-    import { generateTrack, getGenerator } from '../src/trackGen/trackGenerator.js';
+    import { generateTrack } from '../src/trackGen/trackGenerator.js';
     const { crossover , crossover2 , crossover3} = await import('../src/genetic/crossoverVoronoi.js');
     import * as utils from '../src/utils/utils.js';
 
@@ -90,9 +90,10 @@
 });
 
 async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
-  let splineTrack;
+  let trackResult;
   if (canvasId === 'crossover') {
     // Get the parent tracks
+    await Promise.all([trackGenerators.parent1, trackGenerators.parent2]);
     const parent1 = trackGenerators.parent1;
     const parent2 = trackGenerators.parent2;
     
@@ -113,16 +114,13 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
     const crossoverDataSet = result.ds; 
     const selectedCells = result.sel;
     lineParameters = result.lineParameters; 
-    splineTrack = generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet , selectedCells);
+    trackResult = await generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet , selectedCells);
   } else {
-    splineTrack = generateTrack("voronoi", BBOX, seed, trackSize);
+    trackResult = await generateTrack("voronoi", BBOX, seed, trackSize);
   }
   
-  const trackGenerator = getGenerator();
-  setupCanvas(canvasId, trackGenerator, splineTrack);
-  
-  // Store the trackGenerator for later use
-  trackGenerators[canvasId] = trackGenerator;
+  setupCanvas(canvasId, trackResult.generator, trackResult.track);
+  trackGenerators[canvasId] = trackResult.generator;
 }
 
     function setupCanvas(containerId, trackGenerator, splineTrack) {

@@ -25,10 +25,10 @@
   </div>
 
   <script type="module">
-    import { generateTrack,getGenerator } from '../src/trackGen/trackGenerator.js';
+    import { generateTrack } from '../src/trackGen/trackGenerator.js';
     import { mutation, mutationConvexHull} from "../src/genetic/mutation.js"
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-    let splineTrack; 
+    let trackResult; 
     let mode;
 
     document.getElementById('trackForm').addEventListener('submit', function(event) {
@@ -40,11 +40,9 @@
       genTrack(seed, trackSize, intensity);
     });
 
-    let generator = null; 
-
     function drawVoronoi() {
       strokeWeight(1);
-      const diagram = generator.diagram;
+      const diagram = trackResult.generator.diagram;
       if (!diagram) return;
       stroke(255, 255, 255, 255); // White with reduced opacity
       diagram.edges.forEach(edge => {
@@ -54,7 +52,7 @@
 
     function drawPoints() {
       strokeWeight(1);
-      const dataSet = generator.dataSet;
+      const dataSet = trackResult.generator.dataSet;
       if (!dataSet) return;
       fill(255, 255, 255, 255); // White with reduced opacity
       noStroke();
@@ -63,19 +61,18 @@
 
 
     async function genTrack(seed, trackSize, intensityMutation) {
-      splineTrack = generateTrack(mode, BBOX, seed, trackSize);
-      const trackGenerator = getGenerator();
+      trackResult = await generateTrack(mode, BBOX, seed, trackSize);
+      
       if(mode=="voronoi"){
         if(isNaN(intensityMutation))intensityMutation=10
-        const mutated = mutation(trackGenerator,intensityMutation);
-        splineTrack = generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds,mutated.sel);
+        const mutated = mutation(trackResult.generator,intensityMutation);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds,mutated.sel);
       }
       else{
         if(isNaN(intensityMutation))intensityMutation=10
-        const mutated = mutationConvexHull(trackGenerator,intensityMutation);
-        splineTrack = generateTrack(mode, BBOX, seed, trackSize, false,mutated.ds, mutated.hull);
+        const mutated = mutationConvexHull(trackResult.generator,intensityMutation);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false,mutated.ds, mutated.hull);
       }      
-      generator = getGenerator();
       redraw();
     }
 
@@ -87,7 +84,7 @@
     window.draw = function draw() {
       background(0);
 
-      if (splineTrack) {
+      if (trackResult.track) {
         if(mode=="voronoi"){
           drawVoronoi();
         }
@@ -96,7 +93,7 @@
         noFill();
         stroke(0, 255, 0);
         strokeWeight(3);
-        drawSpline(splineTrack);
+        drawSpline(trackResult.track);
       }
     }
 

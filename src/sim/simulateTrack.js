@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { generateTrack, getGenerator } from '../trackGen/trackGenerator.js';
+import { generateTrack } from '../trackGen/trackGenerator.js';
 import * as xml from '../utils/xmlTorcsGenerator.js';
 import { saveFitnessToJson } from '../utils/jsonUtils.js';
 import { promises as fs } from 'fs';
@@ -23,9 +23,8 @@ export async function simulate(mode = MODE, trackSize = 0,
 
     if(seed === null) seed = Math.random();
     
-    const splineTrack = await generateTrack(mode, BBOX, seed, trackSize, saveJson, dataSet, selected);
-    const generator = getGenerator();
-    const trackXml = xml.exportTrackToXML(splineTrack);
+    const trackResults = await generateTrack(mode, BBOX, seed, trackSize, saveJson, dataSet, selected);
+    const trackXml = xml.exportTrackToXML(trackResults.track);
 
     console.log(`SEED: ${seed}`);
     console.log(`MODE: ${mode}`);
@@ -44,14 +43,11 @@ export async function simulate(mode = MODE, trackSize = 0,
         ]);
 
         if (saveJson) {
-            await saveFitnessToJson(seed, mode, trackSize, fitness.length, fitness.deltaX, fitness.deltaY, fitness.deltaAngleDegrees);
+            await saveFitnessToJson(seed, mode, trackResults.generator.trackSize, fitness.length, fitness.deltaX, fitness.deltaY, fitness.deltaAngleDegrees);
         }
 
-        return {
-            fitness: fitness,
-            selectedCells: generator.selectedCells,
-            trackSize: generator.trackSize
-        };
+        return {fitness: fitness        };
+
     } catch (err) {
         console.error(`Error: ${err.message}`);
         throw err;

@@ -43,9 +43,5 @@ export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = fals
             savePointsToJson(seed, trackGenerator.dataSet);
     }
 
-    return splineTrack;
-}
-
-export function getGenerator(){
-    return trackGenerator;
+    return { track: splineTrack, generator: trackGenerator };
 }

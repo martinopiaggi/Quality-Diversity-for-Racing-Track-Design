@@ -39,7 +39,7 @@
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
     let currentTrackIndex = 0;
     let tracks = [];
-    let splineTrack; 
+    let trackResult; 
 
     document.addEventListener('DOMContentLoaded', async () => {
       tracks = await loadTrackData();
@@ -117,8 +117,8 @@
       }
     }
 
-    function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
-      splineTrack = generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
+    async function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
+      trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
       redraw();
     }
 
@@ -129,12 +129,12 @@
 
     window.draw = function draw() {
       background(0);
-      if (splineTrack) {
+      if (trackResult.track) {
         strokeWeight(0.5);
         noFill();
         stroke(0, 255, 0);
         strokeWeight(3);
-        drawSpline(splineTrack);
+        drawSpline(trackResult.track);
       }
     }
 
