@@ -15,7 +15,6 @@ app.post('/generate', async (req, res) => {
     try {
         const { id, mode, trackSize } = req.body;
         //id is used as seed for the generation of the track
-        console.log(trackSize)
         const { track, generator } = await generateTrack(mode, BBOX, id, trackSize, false);
         
         const response = {
@@ -34,11 +33,9 @@ app.post('/generate', async (req, res) => {
 });
 
 app.post('/evaluate', async (req, res) => {
-    console.log("Received request to /evaluate");
     try {
-        const { id, mode, dataSet, selectedCells, trackSize } = req.body;
-        
-        const simulationResult = await simulate(mode, trackSize, dataSet, selectedCells, id);
+        const { id, mode, dataSet, selectedCells } = req.body;
+        const simulationResult = await simulate(mode, selectedCells.length, dataSet, selectedCells, id);
         res.json({
             fitness: simulationResult.fitness
         });
@@ -97,7 +94,6 @@ app.post('/mutate', async (req, res, next) => {
 
         if (individual.mode === 'voronoi') {
             const mutatedData = mutation(trackGenerator, intensityMutation);
-            console.log(mutatedData)
             res.json({
                 mutated: {
                     dataSet: mutatedData.ds, 

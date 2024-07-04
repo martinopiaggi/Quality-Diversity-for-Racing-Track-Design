@@ -13,9 +13,14 @@ const SIMULATION_TIMEOUT = 30000; // 30 seconds timeout
 export async function simulate(mode = MODE, trackSize = 0, 
     dataSet = [], selected = [], seed = null, saveJson = true) {
     
-    if(trackSize == 0){
+    if(isNaN(trackSize)){
         if(mode=='voronoi'){
-            trackSize = Math.ceil(Math.random() * 4 ) + 1; 
+            if(selected.length > 0){
+                trackSize = selected.length;
+            }
+            else{
+                trackSize = Math.ceil(Math.random() * 4 ) + 1; 
+            }
         } else {
             trackSize = 50;
         }

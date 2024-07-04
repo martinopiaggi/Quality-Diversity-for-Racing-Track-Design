@@ -24,7 +24,7 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
     const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
     
     let jsonContent = await readJsonFile(jsonFilePath);
-    
+    console.log(selectedCells)
     if (jsonContent) {
         if (selectedCells.length > 0) {
             jsonContent.selectedCells = selectedCells.map(point => ({
