@@ -20,101 +20,105 @@
       <input type="text" id="cellCountInput2" name="cellCountInput2">
 
       <label for="crossoverMethod">Crossover Method:</label>
-  <select id="crossoverMethod" name="crossoverMethod">
-    <option value="crossover">Crossover</option>
-    <option value="crossover2">Crossover 2</option>
-    <option value="crossover3">Crossover 3</option>
-  </select>
+      <select id="crossoverMethod" name="crossoverMethod">
+        <option value="crossover">Crossover</option>
+        <option value="crossover2">Crossover 2</option>
+        <option value="crossover3">Crossover 3</option>
+      </select>
 
-  <button type="submit">Generate Tracks</button>
-  <button id="toggle-spline">Toggle Spline</button>
-  <input type="checkbox" id="regularize" class="toggle-input" checked="false">
-  <label for="regularize" class="toggle-label">Regularize</label>
-</form>
-<div class="canvas-container">
-  <div id="parent1"></div>
-  <div id="parent2"></div>
-  <div id="crossover"></div>
-</div>
+      <button type="submit">Generate Tracks</button>
+    </form>
+    <div>
+      <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi</label>
+      <label><input type="checkbox" id="showPoints" checked> Show Points</label>
+      <label><input type="checkbox" id="showEdges" checked> Show Edges</label>
+      <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
+      <label><input type="checkbox" id="regularize"> Regularize</label>
+    </div>
+    <div class="canvas-container">
+      <div id="parent1"></div>
+      <div id="parent2"></div>
+      <div id="crossover"></div>
+    </div>
   </main>
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
-    const { crossover , crossover2 , crossover3} = await import('../src/genetic/crossoverVoronoi.js');
-    import * as utils from '../src/utils/utils.js';
+import { crossover, crossover2, crossover3 } from '../src/genetic/crossoverVoronoi.js';
 
-    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+// Constants and global variables
+const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+const COLORS = {
+  VORONOI: [88, 86, 214, 150],    // Soft Blue with opacity
+  POINTS: [255, 255, 255, 150],   // White with opacity
+  EDGES: [76, 217, 100, 150],     // Muted Green with opacity
+  SELECTED: [103, 58, 183, 150],  // Deep Purple with opacity
+  BACKGROUND: [18, 18, 18],       // Dark Grey (Material Design background)
+  SPLINE: [
+    [88, 86, 214],   // Soft Blue (inspired by Apple iOS)
+    [255, 45, 85],   // Vibrant Coral (inspired by Apple iOS)
+    [103, 58, 183],  // Deep Purple (from Material Design)
+    [255, 196, 0]    // Warm Yellow (from Material Design)
+  ],
+  SEPARATION_LINE: [255, 0, 0]    // Red for separation line
+};
 
-    let trackGenerators = {
-      parent1: null,
-      parent2: null,
-      crossover: null
-    };
+let trackGenerators = {
+  parent1: null,
+  parent2: null,
+  crossover: null
+};
 
-    let crossover_data = {
-      dataset1: [],
-      voronoiId1: [],
-      dataset2: [],
-      voronoiId2: []
-    };
+let p5Instances = {};
+let lineParameters = null;
 
-    let lineParameters;
-    let showSpline = false;
-    let regularize = document.getElementById('regularize').checked;
-    let p5Instances = {};
+// DOM-related functions
+function setupEventListeners() {
+  document.getElementById('trackForm').addEventListener('submit', handleFormSubmit);
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', redrawAllCanvases);
+  });
+}
 
-    document.getElementById('trackForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      const seed1 = parseFloat(document.getElementById('seedInput1').value);
-      const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
+function handleFormSubmit(event) {
+  event.preventDefault();
+  const seed1 = parseFloat(document.getElementById('seedInput1').value);
+  const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
+  const seed2 = parseFloat(document.getElementById('seedInput2').value);
+  const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
+  const crossoverMethod = document.getElementById('crossoverMethod').value;
 
-      const seed2 = parseFloat(document.getElementById('seedInput2').value);
-      const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
+  clearCanvases();
+  genTrack('parent1', isNaN(seed1) ? Math.random() : seed1, isNaN(trackSize1) ? 3 : trackSize1);
+  genTrack('parent2', isNaN(seed2) ? Math.random() : seed2, isNaN(trackSize2) ? 3 : trackSize2);
+  genTrack('crossover', -1, -1, crossoverMethod);
+}
 
-      const crossoverMethod = document.getElementById('crossoverMethod').value;
-
-      // Clear existing canvases
-      clearCanvases();
-
-      // Generate tracks for each canvas
-      genTrack('parent1', isNaN(seed1) ? Math.random() : seed1 ,  isNaN(trackSize1) ? 3 : trackSize1);
-      genTrack('parent2', isNaN(seed2) ? Math.random() : seed2 ,  isNaN(trackSize2) ? 3 : trackSize2);
-      genTrack('crossover', -1, -1, crossoverMethod);
-    });
-
-    document.getElementById('toggle-spline').addEventListener('click', () => {
-      showSpline = !showSpline;
-    });
-
-    document.getElementById('regularize').addEventListener('change', (event) => {
-  regularize = event.target.checked;
-});
-
+// Track generation and canvas setup
 async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
   let trackResult;
   if (canvasId === 'crossover') {
-    // Get the parent tracks
     await Promise.all([trackGenerators.parent1, trackGenerators.parent2]);
     const parent1 = trackGenerators.parent1;
     const parent2 = trackGenerators.parent2;
     
-    // Generate the crossover track based on the selected method
+    const regularize = document.getElementById('regularize').checked;
     let result;
     switch (crossoverMethod) {
       case 'crossover':
-        result = crossover(parent1, parent2,regularize);
+        result = crossover(parent1, parent2, regularize);
+        lineParameters = result.lineParameters;
         break;
       case 'crossover2':
-        result = crossover2(parent1, parent2,regularize);
+        result = crossover2(parent1, parent2, regularize);
+        lineParameters = null;
         break;
       case 'crossover3':
         result = crossover3(parent1, parent2);
+        lineParameters = null;
         break;
     }
     
-    const crossoverDataSet = result.ds; 
-    const selectedCells = result.sel;
-    lineParameters = result.lineParameters; 
-    trackResult = await generateTrack("voronoi", BBOX, seed, trackSize, false, crossoverDataSet , selectedCells);
+    trackResult = await generateTrack("voronoi", BBOX, seed, trackSize, false, result.ds, result.sel);
   } else {
     trackResult = await generateTrack("voronoi", BBOX, seed, trackSize);
   }
@@ -123,109 +127,110 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
   trackGenerators[canvasId] = trackResult.generator;
 }
 
-    function setupCanvas(containerId, trackGenerator, splineTrack) {
-      p5Instances[containerId] = new p5((sketch) => {
-        sketch.setup = () => {
-          sketch.createCanvas(BBOX.xr, BBOX.yb).parent(containerId);
-          sketch.noLoop();
-          drawCanvas(sketch, trackGenerator, splineTrack);
-        };
-      });
-    }
+function setupCanvas(containerId, trackGenerator, splineTrack) {
+  p5Instances[containerId] = new p5((sketch) => {
+    sketch.setup = () => {
+      sketch.createCanvas(BBOX.xr, BBOX.yb).parent(containerId);
+      sketch.frameRate(30);
+      sketch.loop();
+    };
+    sketch.draw = () => drawCanvas(sketch, trackGenerator, splineTrack, containerId === 'crossover');
+  });
+}
 
-    function drawCanvas(sketch, trackGenerator, splineTrack) {
-      sketch.background(0); // Set the background
-      sketch.strokeWeight(1);
+// Drawing functions
+function drawCanvas(sketch, trackGenerator, splineTrack, isCrossover) {
+  sketch.background(COLORS.BACKGROUND);
 
-      const { diagram, trackEdges, dataSet, selectedCells, patchPath} = trackGenerator;
+  if (document.getElementById('showVoronoi').checked) drawVoronoi(sketch, trackGenerator.diagram);
+  if (document.getElementById('showPoints').checked) drawPoints(sketch, trackGenerator.dataSet);
+  if (document.getElementById('showEdges').checked) drawOriginalEdges(sketch, trackGenerator.trackEdges);
+  if (document.getElementById('showSpline').checked) drawAnimatedSpline(sketch, splineTrack);
+  if (isCrossover && lineParameters) drawSeparationLine(sketch, lineParameters);
+}
 
-      drawVoronoi(sketch, diagram, 150);
-      drawPoints(sketch, dataSet, 150);
-      drawOriginalEdges(sketch, trackEdges, 150);
-      drawSelectedSites(sketch, selectedCells, patchPath, 150);
-      if(showSpline)drawSpline(sketch, splineTrack);
-      if(lineParameters!=null){
-        drawSeparationLine(sketch,lineParameters);
-        lineParameters = null;
-      }
-      
-    }
+function drawVoronoi(sketch, diagram) {
+  sketch.strokeWeight(1);
+  if (!diagram) return;
+  sketch.stroke(COLORS.VORONOI);
+  diagram.edges.forEach(edge => {
+    sketch.line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+  });
+  sketch.strokeWeight(1);
+}
 
-    function drawVoronoi(sketch, diagram, opacity) {
-      if (!diagram) return;
-      sketch.stroke(255, 255, 255, opacity); // White with reduced opacity
-      diagram.edges.forEach(edge => {
-        sketch.line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
-      });
-    }
+function drawPoints(sketch, dataSet) {
+  if (!dataSet) return;
+  sketch.fill(COLORS.POINTS);
+  sketch.noStroke();
+  dataSet.forEach(pt => sketch.ellipse(pt.x, pt.y, 5, 5));
+}
 
-    function drawPoints(sketch, dataSet, opacity) {
-      if (!dataSet) return;
-      sketch.fill(255, 255, 255, opacity); // White with reduced opacity
-      sketch.noStroke();
-      dataSet.forEach(pt => sketch.ellipse(pt.x, pt.y, 5, 5));
-    }
+function drawOriginalEdges(sketch, trackEdges) {
+  sketch.strokeWeight(1);
+  if (!trackEdges) return;
+  sketch.stroke(COLORS.EDGES);
+  sketch.strokeWeight(2);
+  for (let i = 0; i < trackEdges.length; i++) {
+    let nextIndex = (i + 1) % trackEdges.length;
+    sketch.line(trackEdges[i].x, trackEdges[i].y, trackEdges[nextIndex].x, trackEdges[nextIndex].y);
+  }
+  sketch.strokeWeight(1);
+}
 
-    function drawOriginalEdges(sketch, trackEdges, opacity) {
-      if (!trackEdges) return;
-      sketch.stroke(0, 255, 255, opacity); // Cyan with reduced opacity
-      sketch.strokeWeight(2);
-      for (let i = 0; i < trackEdges.length; i++) {
-        let nextIndex = (i + 1) % trackEdges.length;
-        sketch.line(trackEdges[i].x, trackEdges[i].y, trackEdges[nextIndex].x, trackEdges[nextIndex].y);
-      }
-      sketch.strokeWeight(1);
-    }
+function drawAnimatedSpline(sketch, splineTrack) {
+  if (!splineTrack) return;
 
-    function drawSelectedSites(sketch, selectedCells, patchPath, opacity) {
-      if (!selectedCells) return;
-      sketch.fill(0, 255, 0, opacity); // Green with reduced opacity
-      sketch.noStroke();
-      selectedCells.forEach((cell) => {
-        let site = cell.site;
-        sketch.ellipse(site.x, site.y, 8, 8);
-      });
-      sketch.fill(255, 0, 0, opacity); // Red with reduced opacity
-      patchPath.forEach((cell) => {
-        let site = cell.site;
-        sketch.ellipse(site.x, site.y, 8, 8);
-      });
-      sketch.fill(0, 255, 0, opacity); // Green with reduced opacity
-    }
+  sketch.beginShape();
+  for (let i = 0; i < splineTrack.length; i++) {
+    let t = (i / splineTrack.length + sketch.frameCount * 0.02) % 1;
+    t = (t + 1) % 1; // Ensure t is always positive
+    
+    let colorIndex = Math.floor(t * COLORS.SPLINE.length);
+    let nextColorIndex = (colorIndex + 1) % COLORS.SPLINE.length;
+    let colorT = (t * COLORS.SPLINE.length) % 1;
+    
+    let c = sketch.lerpColor(
+      sketch.color(...COLORS.SPLINE[colorIndex]), 
+      sketch.color(...COLORS.SPLINE[nextColorIndex]), 
+      colorT
+    );
+    
+    sketch.stroke(c);
+    sketch.strokeWeight(3);
+    sketch.point(splineTrack[i].x, splineTrack[i].y);
+  }
+  sketch.endShape(sketch.CLOSE);
+}
 
-    async function drawSpline(sketch, spline) {
-      const resolvedSpline = await spline;
-      sketch.strokeWeight(3);
-      sketch.beginShape();
-      let startColor = sketch.color(0, 255, 255);
-      let endColor = sketch.color(255, 0, 255);
-      for (let i = 0; i < resolvedSpline.length; i++) {
-        sketch.stroke(sketch.lerpColor(startColor, endColor, i / resolvedSpline.length));
-        sketch.point(resolvedSpline[i].x, resolvedSpline[i].y);
-      }
-      sketch.endShape(sketch.CLOSE);
-    }
+function drawSeparationLine(sketch, lineParams) {
+  sketch.strokeWeight(2);
+  const { slope, intercept } = lineParams;
+  const x1 = 0;
+  const y1 = slope * x1 + intercept;
+  const x2 = sketch.width;
+  const y2 = slope * x2 + intercept;
+  sketch.strokeWeight(2);
+  sketch.stroke(COLORS.SEPARATION_LINE);
+  sketch.line(x1, y1, x2, y2);
+  sketch.strokeWeight(1);
+}
 
-    function drawSeparationLine(sketch, lineParameters) {
-      const { slope, intercept } = lineParameters;
-      const x1 = 0;
-      const y1 = slope * x1 + intercept;
-      const x2 = sketch.width;
-      const y2 = slope * x2 + intercept;
-      sketch.strokeWeight(2);
-      sketch.stroke(255, 0, 0); // Red color
-      sketch.line(x1, y1, x2, y2);
-    }
-        
-    function clearCanvases() {
-      Object.keys(p5Instances).forEach(instance => {
-        p5Instances[instance].remove();
-      });
-      p5Instances = {};
-      document.getElementById('parent1').innerHTML = '';
-      document.getElementById('parent2').innerHTML = '';
-      document.getElementById('crossover').innerHTML = '';
-    }
+// Utility functions
+function clearCanvases() {
+  Object.values(p5Instances).forEach(instance => instance.remove());
+  p5Instances = {};
+  ['parent1', 'parent2', 'crossover'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+}
+
+function redrawAllCanvases() {
+  Object.values(p5Instances).forEach(instance => instance.redraw());
+}
+
+// Initialization
+document.addEventListener('DOMContentLoaded', setupEventListeners);
     
   </script>
 </body>
