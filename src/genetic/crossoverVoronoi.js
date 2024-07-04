@@ -63,13 +63,13 @@ export function crossover(parent1, parent2, regularize = false) {
 
   // Combine the corresponding halves of the dataset
   //keeping them with length 50
-  let combinedDataSet = halfDataSet1.concat(halfDataSet2);
+  let combinedDataSet = [];
   const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
   const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
   const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
   let i = 35; //arbitrary value: still giving priority to most far points but not at the borders
   while (combinedDataSet.length < 50 && i >= 0) {
-    if (i < borderPoints1.length) {
+    if (i < borderPoints1.length && combinedDataSet.length < 50) {
       combinedDataSet.push(borderPoints1[i]);
     }
     if (i < borderPoints2.length && combinedDataSet.length < 50 ) {
