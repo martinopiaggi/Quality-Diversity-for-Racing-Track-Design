@@ -36,132 +36,141 @@
   <script type="module">
     
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
-    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-    let currentTrackIndex = 0;
-    let tracks = [];
-    let trackResult; 
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      tracks = await loadTrackData();
-      displayTrack(currentTrackIndex);
+// Constants and global variables
+const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+const COLORS = [
+  [88, 86, 214],   // Soft Blue (inspired by Apple iOS)
+  [255, 45, 85],   // Vibrant Coral (inspired by Apple iOS)
+  [103, 58, 183],  // Deep Purple (from Material Design)
+  [255, 196, 0]    // Warm Yellow (from Material Design)
+];
 
-      document.getElementById('prev-track').addEventListener('click', () => navigateTrack(-1));
-      document.getElementById('next-track').addEventListener('click', () => navigateTrack(1));
-      document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
-    });
+let currentTrackIndex = 0;
+let tracks = [];
+let trackResult;
+let splinePoints = [];
 
-    document.getElementById('trackForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      const seed = parseFloat(document.getElementById('seedInput').value);
-      const trackSize = parseInt(document.getElementById('cellCountInput').value);
-      const mode = document.getElementById('modeSelect').value;
-      genTrack(seed, trackSize, mode);
-    });
+// DOM-related functions
+function setupEventListeners() {
+  document.getElementById('prev-track').addEventListener('click', () => navigateTrack(-1));
+  document.getElementById('next-track').addEventListener('click', () => navigateTrack(1));
+  document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
+  document.getElementById('trackForm').addEventListener('submit', handleFormSubmit);
+}
 
-    async function loadTrackData() {
-      try {
-          const response = await fetch('/data/tests/index.json');
-          if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const fileNames = await response.json();
-          const dataPromises = fileNames.map(fileName =>
-              fetch(`/data/tests/${fileName}`).then(resp => resp.json())
-          );
-          const data = await Promise.all(dataPromises);
-          return data;
-        } catch (error) {
-          console.error('Error loading track data:', error);
-          return [];
-        }
+function handleFormSubmit(event) {
+  event.preventDefault();
+  const seed = parseFloat(document.getElementById('seedInput').value);
+  const trackSize = parseInt(document.getElementById('cellCountInput').value);
+  const mode = document.getElementById('modeSelect').value;
+  genTrack(seed, trackSize, mode);
+}
+
+// Track data handling functions
+async function loadTrackData() {
+  try {
+    const response = await fetch('/data/tests/index.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const fileNames = await response.json();
+    const dataPromises = fileNames.map(fileName =>
+      fetch(`/data/tests/${fileName}`).then(resp => resp.json())
+    );
+    return await Promise.all(dataPromises);
+  } catch (error) {
+    console.error('Error loading track data:', error);
+    return [];
+  }
+}
 
+function navigateTrack(direction) {
+  currentTrackIndex = (currentTrackIndex + direction + tracks.length) % tracks.length;
+  displayTrack(currentTrackIndex);
+}
 
-    function displayTrack(index) {
-      const track = tracks[index];
-      if (!track) return;
-      genTrack(track.id, track.trackSize, track.mode, track.dataSet, track.selectedCells);
-      showStats(track)
-    }
+function loadJSONTrack() {
+  const jsonInput = document.getElementById('jsonInput').value;
+  try {
+    const trackData = JSON.parse(jsonInput);
+    genTrack(trackData.id, trackData.trackSize, trackData.mode, trackData.dataSet, trackData.selectedCells);
+    showStats(trackData);
+  } catch (error) {
+    console.error('Error parsing JSON:', error);
+    alert('Invalid JSON format. Please check your input.');
+  }
+}
 
-    function showStats(track){
-      const trackContainer = document.getElementById('track-container');
-      const statsContainer = document.getElementById('stats-container');
+// Track generation and display functions
+async function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
+  trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
+  splinePoints = await trackResult.track;
+  redraw();
+}
 
-      trackContainer.innerHTML = '';
-      statsContainer.innerHTML = '';
+function displayTrack(index) {
+  const track = tracks[index];
+  if (!track) return;
+  genTrack(track.id, track.trackSize, track.mode, track.dataSet, track.selectedCells);
+  showStats(track);
+}
 
-      const stats = `
-        <p>Seed: ${track.id || 'N/A'}</p>
-        <p>Mode: ${track.mode || 'N/A'}</p>
-        <p>Track Size: ${track.trackSize || 'N/A'}</p>
-        ${track.fitness ? `
-          <p>Length: ${track.fitness.length?.toFixed(2) || 'N/A'}</p>
-          <p>Delta X: ${track.fitness.deltaX?.toFixed(2) || 'N/A'}</p>
-          <p>Delta Y: ${track.fitness.deltaY?.toFixed(2) || 'N/A'}</p>
-          <p>Delta Angle (Degrees): ${track.fitness.deltaAngleDegrees?.toFixed(2) || 'N/A'}</p>
-        ` : '<p>Fitness data not available</p>'}
-      `;
-      statsContainer.innerHTML = stats;
-    }
+function showStats(track) {
+  const statsContainer = document.getElementById('stats-container');
+  statsContainer.innerHTML = `
+    <p>Seed: ${track.id || 'N/A'}</p>
+    <p>Mode: ${track.mode || 'N/A'}</p>
+    <p>Track Size: ${track.trackSize || 'N/A'}</p>
+    ${track.fitness ? `
+      <p>Length: ${track.fitness.length?.toFixed(2) || 'N/A'}</p>
+      <p>Delta X: ${track.fitness.deltaX?.toFixed(2) || 'N/A'}</p>
+      <p>Delta Y: ${track.fitness.deltaY?.toFixed(2) || 'N/A'}</p>
+      <p>Delta Angle (Degrees): ${track.fitness.deltaAngleDegrees?.toFixed(2) || 'N/A'}</p>
+    ` : '<p>Fitness data not available</p>'}
+  `;
+}
 
-    function loadJSONTrack() {
-      const jsonInput = document.getElementById('jsonInput').value;
-      try {
-        const trackData = JSON.parse(jsonInput);
-        genTrack(trackData.id, trackData.trackSize, trackData.mode, trackData.dataSet, trackData.selectedCells);
-        showStats(trackData)
-      } catch (error) {
-        console.error('Error parsing JSON:', error);
-        alert('Invalid JSON format. Please check your input.');
-      }
-    }
+// P5.js setup and draw functions
+window.setup = function setup() {
+  createCanvas(BBOX.xr, BBOX.yb);
+  frameRate(30);
+  loop();
+}
 
-    async function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
-      trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
-      redraw();
-    }
+window.draw = function draw() {
+  background(0);
+  if (splinePoints.length > 0) {
+    drawAnimatedSpline();
+  }
+}
 
-    window.setup = function setup() {
-      createCanvas(BBOX.xr, BBOX.yb);
-      noLoop();
-    }
+// Animation functions
+function drawAnimatedSpline() {
+  beginShape();
+  for (let i = 0; i < splinePoints.length; i++) {
+    let t = (i / splinePoints.length + frameCount * 0.02) % 1;
+    t = (t + 1) % 1; // Ensure t is always positive
+    
+    let colorIndex = floor(t * COLORS.length);
+    let nextColorIndex = (colorIndex + 1) % COLORS.length;
+    let colorT = (t * COLORS.length) % 1;
+    
+    let c = lerpColor(color(...COLORS[colorIndex]), color(...COLORS[nextColorIndex]), colorT);
+    
+    stroke(c);
+    strokeWeight(3);
+    point(splinePoints[i].x, splinePoints[i].y);
+  }
+  endShape(CLOSE);
+}
 
-    window.draw = function draw() {
-      background(0);
-      if (trackResult.track) {
-        strokeWeight(0.5);
-        noFill();
-        stroke(0, 255, 0);
-        strokeWeight(3);
-        drawSpline(trackResult.track);
-      }
-    }
-
-    async function drawSpline(spline) {
-      const resolvedSpline = await spline;
-      beginShape();
-      let startColor = color(0, 255, 255);
-      let endColor = color(255, 0, 255);
-      for (let i = 0; i < resolvedSpline.length; i++) {
-        stroke(lerpColor(startColor, endColor, i / resolvedSpline.length));
-        point(resolvedSpline[i].x, resolvedSpline[i].y);
-      }
-      endShape(CLOSE);
-    }
-
-    function navigateTrack(direction) {
-      currentTrackIndex += direction;
-      if (currentTrackIndex < 0) {
-        currentTrackIndex = tracks.length - 1;
-      } else if (currentTrackIndex >= tracks.length) {
-        currentTrackIndex = 0;
-      }
-      displayTrack(currentTrackIndex);
-    }
-
-    window.setup = setup;
-    window.draw = draw;
+// Initialization
+document.addEventListener('DOMContentLoaded', async () => {
+  tracks = await loadTrackData();
+  setupEventListeners();
+  displayTrack(currentTrackIndex);
+});
   </script>
 </body>
 </html>
