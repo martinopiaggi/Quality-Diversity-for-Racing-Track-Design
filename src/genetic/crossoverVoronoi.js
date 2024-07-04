@@ -57,7 +57,7 @@ export function crossover(parent1, parent2, regularize = false) {
       }
     }
   }
-  
+  console.log("combinedDataset length" + combinedDataSet.length)
     // Combine the corresponding halves 
   let combinedSelectedCells = [...selected1, ...selected2];
   const combinedDataSet = [...halfDataSet1, ...halfDataSet2];
