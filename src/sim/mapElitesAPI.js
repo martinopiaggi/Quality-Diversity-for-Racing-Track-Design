@@ -90,7 +90,7 @@ app.post('/mutate', async (req, res, next) => {
             return res.status(400).json({ error: 'Invalid individual data' });
         }
         // Generate the initial track
-        const { generator: trackGenerator } = await generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, true, individual.dataSet, individual.selectedCells);
+        const { generator: trackGenerator } = await generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, false, individual.dataSet, individual.selectedCells);
 
         if (individual.mode === 'voronoi') {
             const mutatedData = mutation(trackGenerator, intensityMutation);

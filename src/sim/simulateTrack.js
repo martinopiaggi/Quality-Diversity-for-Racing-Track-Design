@@ -11,7 +11,7 @@ import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT } from '../u
 const SIMULATION_TIMEOUT = 30000; // 30 seconds timeout
 
 export async function simulate(mode = MODE, trackSize = 0, 
-    dataSet = [], selected = [], seed = null, saveJson = true) {
+    dataSet = [], selected = [], seed = null, saveJson = false) {
     
     if(isNaN(trackSize)){
         if(mode=='voronoi'){
