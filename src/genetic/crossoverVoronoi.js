@@ -10,7 +10,9 @@ export function crossover(parent1, parent2, regularize = false) {
   let parent1selected = parent1.selectedCells.map(cell => cell.site)
   let parent2selected = parent2.selectedCells.map(cell => cell.site)
   
-  const { slope, intercept } = randomSlopeThroughCenter(parent1selected, parent2selected);
+  const center = computeGeometricCenter([...parent1selected, ...parent2selected]);
+
+  const { slope, intercept } = randomSlopeThroughCenter(center);
 
   const criteria = (data) => data.y <= slope * data.x + intercept;
 
@@ -64,16 +66,17 @@ export function crossover(parent1, parent2, regularize = false) {
   // Combine the corresponding halves of the dataset
   //keeping them with length 50
   let combinedDataSet = [];
-  const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
-  const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
-  const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
-  let i = 35; //arbitrary value: still giving priority to most far points but not at the borders
+  let i = 50;
   while (combinedDataSet.length < 50 && i >= 0) {
-    if (i < borderPoints1.length && combinedDataSet.length < 50) {
-      combinedDataSet.push(borderPoints1[i]);
+    if (i < halfDataSet1.length && combinedDataSet.length < 50) {
+      if(!isPointAlreadyInSet(halfDataSet1[i],combinedDataSet)){
+        combinedDataSet.push(halfDataSet1[i]);
+      }
     }
-    if (i < borderPoints2.length && combinedDataSet.length < 50 ) {
-      combinedDataSet.push(borderPoints2[i]);
+    if (i < halfDataSet2.length && combinedDataSet.length < 50 ) {
+      if(!isPointAlreadyInSet(halfDataSet2[i],combinedDataSet)){
+        combinedDataSet.push(halfDataSet2[i]);
+      }
     }
     i--;
   }
@@ -82,24 +85,19 @@ export function crossover(parent1, parent2, regularize = false) {
   return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
 }
 
-function randomSlopeThroughCenter(vertices1, vertices2) {
-  // Combine the vertices
-  const combinedVertices = [...vertices1, ...vertices2];
-
-  // Calculate the center coordinates
-  const centerX = combinedVertices.reduce((acc, vertex) => acc + vertex.x, 0) / combinedVertices.length;
-  const centerY = combinedVertices.reduce((acc, vertex) => acc + vertex.y, 0) / combinedVertices.length;
-
+function randomSlopeThroughCenter(center) {
     // Generate a random angle in radians between -π/2 and π/2
     const angle = Math.random() * Math.PI - Math.PI / 2;
-
-    // Calculate the slope using the tangent of the angle
     const slope = Math.tan(angle);
+    const intercept = center.y - slope * center.x;
+    return { slope, intercept };
+}
 
-  // Calculate the intercept based on the center coordinates and slope
-  const intercept = centerY - slope * centerX;
 
-  return { slope, intercept };
+function computeGeometricCenter(vertices) {
+  const x = vertices.reduce((acc, vertex) => acc + vertex.x, 0) / vertices.length;
+  const y = vertices.reduce((acc, vertex) => acc + vertex.y, 0) / vertices.length;
+  return { x, y };
 }
 
 
