@@ -1,91 +1,34 @@
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
+import { simulate } from './simulateTrack.js';
+import { JSON_DEBUG } from '../utils/constants.js';
 
 const execPromise = promisify(exec);
-const TIMEOUT = 14000; // milliseconds timeout
-const TOTAL_SIMULATIONS = 1000;
+const TIMEOUT = 35000; // Increased to 35 seconds to account for the 30-second simulation timeout
+const TOTAL_SIMULATIONS = 100;
 const CONCURRENCY_LIMIT = 25; // Number of parallel simulations
 
 async function runSimulation(simulationIndex) {
-    let containerId = null;
-    let simulationTimeout;
-
     try {
         console.log(`Starting simulation ${simulationIndex}`);
-        
-        // Run the simulation script and get the container ID
-        const pipelineProcess = spawn('node', ['simulateTrack.js'], { shell: true });
-        let scriptOutput = '';
 
-        // Capture the container ID from the pipeline script output
-        const containerIdPromise = new Promise((resolve, reject) => {
-            pipelineProcess.stdout.on('data', (data) => {
-                scriptOutput += data.toString();
-                const match = scriptOutput.match(/Docker container started with ID: (\w+)/);
-                if (match) {
-                    containerId = match[1];
-                    console.log(`Container started for simulation ${simulationIndex}: ${containerId}`);
-                    resolve(containerId);
-                }
-            });
+        // Generate random parameters for the simulation
+        const mode = Math.random() < 0.5 ? 'voronoi' : 'convexHull';
+        const trackSize = mode === 'voronoi' ? Math.ceil(Math.random() * 4) + 1 : 50;
+        const seed = Math.random();
 
-            pipelineProcess.on('exit', () => {
-                if (!containerId) {
-                    reject(new Error('Container ID not captured before process exit.'));
-                }
-            });
+        // Run the simulation
+        const { fitness } = await Promise.race([
+            simulate(mode, trackSize, [], [], seed, JSON_DEBUG),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Simulation timeout')), TIMEOUT)
+            )
+        ]);
 
-            pipelineProcess.on('error', (err) => {
-                reject(err);
-            });
-        });
-
-        // Set up a timeout to kill the container if the simulation takes too long
-        simulationTimeout = setTimeout(async () => {
-            if (containerId) {
-                await killContainer(containerId, simulationIndex);
-            }
-            pipelineProcess.kill();
-        }, TIMEOUT);
-
-        // Wait for the container ID and process to complete
-        await containerIdPromise;
-
-        const exitCode = await new Promise((resolve, reject) => {
-            pipelineProcess.on('exit', (code) => {
-                clearTimeout(simulationTimeout);
-                resolve(code);
-            });
-
-            pipelineProcess.on('error', (err) => {
-                clearTimeout(simulationTimeout);
-                reject(err);
-            });
-        });
-
-        if (exitCode !== 0) {
-            throw new Error(`Pipeline script exited with code ${exitCode}`);
-        }
-
+        console.log(`Simulation ${simulationIndex} completed. Fitness:`, fitness);
+        return fitness;
     } catch (error) {
-        if (error.message === 'Simulation timed out.') {
-            console.error(`Simulation ${simulationIndex} timed out.`);
-        } else {
-            console.error(`Error in simulation ${simulationIndex}: ${error.message}`);
-        }
-    } finally {
-        if (containerId) {
-            await killContainer(containerId, simulationIndex);
-        }
-    }
-}
-
-async function killContainer(containerId, simulationIndex) {
-    try {
-        await execPromise(`docker rm --force ${containerId}`);
-        console.log(`Container killed for simulation ${simulationIndex}: ${containerId}`);
-    } catch (err) {
-        console.error(`Failed to kill container for simulation ${simulationIndex} (${containerId}): ${err.message}`);
+        console.error(`Error in simulation ${simulationIndex}: ${error.message}`);
     }
 }
 

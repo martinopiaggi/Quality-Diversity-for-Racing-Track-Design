@@ -1,6 +1,7 @@
 import { VoronoiTrackGenerator } from '../trackGen/voronoiTrackGenerator.js';
 import { ConvexHullTrackGenerator } from '../trackGen/convexHullTrackGenerator.js';
 import * as utils from '../utils/utils.js';
+import { JSON_DEBUG } from '../utils/constants.js';
 
 let trackGenerator;
 let savePointsToJson;
@@ -12,7 +13,7 @@ async function importJsonUtils() {
     }
 }
   
-export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = false, dataSet = [], selected = []) {
+export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = JSON_DEBUG, dataSet = [], selected = []) {
     if (isNaN(seed)) seed = Math.random();
 
     switch (mode) {
