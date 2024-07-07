@@ -262,7 +262,7 @@ export function crossover3(parent1, parent2) {
     }
   }
 
-  for (let i = 0; i < Math.ceil(parentSelected2.length/2); i++) {
+  for (let i = 0; i < Math.floor(parentSelected2.length/2); i++) {
     const point1 = parentSelected2[i].site;
     const point2 = findNearestPoint(point1, parent1.dataSet);
     const middlePoint = getMiddlePoint(point1, point2);
