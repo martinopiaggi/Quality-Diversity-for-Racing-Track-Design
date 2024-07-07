@@ -5,3 +5,4 @@ export const DOCKER_IMAGE_NAME = 'torcs';
 export const MAPELITE_PATH = '../utils/mapelite.xml';
 export const MEMORY_LIMIT = '24m';
 export const OUTPUT_DIR = '../../data/tests';
+export const JSON_DEBUG = false;

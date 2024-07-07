@@ -43,10 +43,6 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
             id: seed,
             mode: null,
             trackSize: selectedCells.length,
-            parents: {
-                parent1: null,
-                parent2: null
-            },
             fitness: null,
             dataSet: dataSet.map(point => ({
                 x: point.x,
@@ -83,10 +79,6 @@ export async function saveFitnessToJson(seed, mode, trackSize, length, deltaX, d
             id: seed,
             mode,
             trackSize,
-            parents: {
-                parent1: null,
-                parent2: null
-            },
             fitness: {
                 length,
                 deltaX,

@@ -3,7 +3,7 @@ import { generateTrack } from '../trackGen/trackGenerator.js';
 import { crossover } from '../genetic/crossoverVoronoi.js';
 import { crossover as crossoverConvexHull } from '../genetic/crossoverConvexHull.js';
 import { mutation, mutationConvexHull } from '../genetic/mutation.js';
-import { BBOX } from '../utils/constants.js';
+import { BBOX, JSON_DEBUG } from '../utils/constants.js';
 import { simulate } from './simulateTrack.js';
 
 
@@ -15,7 +15,7 @@ app.post('/generate', async (req, res) => {
     try {
         const { id, mode, trackSize } = req.body;
         //id is used as seed for the generation of the track
-        const { track, generator } = await generateTrack(mode, BBOX, id, trackSize, false);
+        const { track, generator } = await generateTrack(mode, BBOX, id, trackSize, JSON_DEBUG);
         
         const response = {
             id: id,
@@ -35,7 +35,7 @@ app.post('/generate', async (req, res) => {
 app.post('/evaluate', async (req, res) => {
     try {
         const { id, mode, dataSet, selectedCells } = req.body;
-        const simulationResult = await simulate(mode, selectedCells.length, dataSet, selectedCells, id);
+        const simulationResult = await simulate(mode, selectedCells.length, dataSet, selectedCells, id,JSON_DEBUG);
         res.json({
             fitness: simulationResult.fitness
         });
