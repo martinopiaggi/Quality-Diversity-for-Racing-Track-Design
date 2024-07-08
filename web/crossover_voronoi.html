@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Crossover Lab</title>
@@ -126,50 +126,50 @@
 </head>
 <body>
   <div class="container">
-  <header>
-    <h1>Crossover Voronoi Lab</h1>
-  </header>
-  <div class="content">
-    <div class="controls-wrapper">
-      <div class="controls">
-        <form id="trackForm">
-          <label for="seedInput1">Enter Seed for Parent 1:</label>
-          <input type="text" id="seedInput1" name="seedInput1">
-          <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
-          <input type="text" id="cellCountInput1" name="cellCountInput1">
-          
-          <label for="seedInput2">Enter Seed for Parent 2:</label>
-          <input type="text" id="seedInput2" name="seedInput2">
-          <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
-          <input type="text" id="cellCountInput2" name="cellCountInput2">
+    <header>
+      <h1>Crossover Lab</h1>
+    </header>
+    <div class="content">
+      <div class="controls-wrapper">
+        <div class="controls">
+          <form id="trackForm">
+            <label for="seedInput1">Enter Seed for Parent 1:</label>
+            <input type="text" id="seedInput1" name="seedInput1">
+            <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
+            <input type="text" id="cellCountInput1" name="cellCountInput1">
+            
+            <label for="seedInput2">Enter Seed for Parent 2:</label>
+            <input type="text" id="seedInput2" name="seedInput2">
+            <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
+            <input type="text" id="cellCountInput2" name="cellCountInput2">
 
-          <label for="crossoverMethod">Crossover Method:</label>
-          <select id="crossoverMethod" name="crossoverMethod">
-            <option value="crossover">Crossover</option>
-            <option value="crossover2">Crossover 2</option>
-            <option value="crossover3">Crossover 3</option>
-          </select>
-          <button type="submit">Generate Tracks</button>
-      </form>
-      <div>
-        <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi</label>
-        <label><input type="checkbox" id="showPoints" checked> Show Points</label>
-        <label><input type="checkbox" id="showEdges" checked> Show Edges</label>
-        <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
-        <label><input type="checkbox" id="regularize"> Regularize</label>
+            <label for="crossoverMethod">Crossover Method:</label>
+            <select id="crossoverMethod" name="crossoverMethod">
+              <option value="voronoi">Voronoi</option>
+              <option value="convexHull">Convex Hull</option>
+            </select>
+            <button type="submit">Generate Tracks</button>
+          </form>
+          <div>
+            <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi/Convex Hull</label>
+            <label><input type="checkbox" id="showPoints" checked> Show Points</label>
+            <label><input type="checkbox" id="showEdges" checked> Show Edges</label>
+            <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
+            <label><input type="checkbox" id="regularize"> Regularize</label>
+          </div>
+        </div>
       </div>
+      <div class="canvas-container">
+        <div class="canvas-wrapper" id="parent1"></div>
+        <div class="canvas-wrapper" id="parent2"></div>
+        <div class="canvas-wrapper" id="crossover"></div>
       </div>
-    </div>
-    <div class="canvas-container">
-      <div class="canvas-wrapper" id="parent1"></div>
-      <div class="canvas-wrapper" id="parent2"></div>
-      <div class="canvas-wrapper" id="crossover"></div>
     </div>
   </div>
-</div>
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
-import { crossover, crossover2, crossover3 } from '../src/genetic/crossoverVoronoi.js';
+    import { crossover as voronoiCrossover, crossover2 as voronoiCrossover2, crossover3 as voronoiCrossover3 } from '../src/genetic/crossoverVoronoi.js';
+    import { crossover as convexHullCrossover } from '../src/genetic/crossoverConvexHull.js';
 
 // Constants and global variables
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
@@ -206,52 +206,62 @@ function setupEventListeners() {
 }
 
 function handleFormSubmit(event) {
-  event.preventDefault();
-  const seed1 = parseFloat(document.getElementById('seedInput1').value);
-  const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
-  const seed2 = parseFloat(document.getElementById('seedInput2').value);
-  const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
-  const crossoverMethod = document.getElementById('crossoverMethod').value;
+      event.preventDefault();
+      const seed1 = parseFloat(document.getElementById('seedInput1').value);
+      const trackSize1 = parseInt(document.getElementById('cellCountInput1').value);
+      const seed2 = parseFloat(document.getElementById('seedInput2').value);
+      const trackSize2 = parseInt(document.getElementById('cellCountInput2').value);
+      const crossoverMethod = document.getElementById('crossoverMethod').value;
 
-  clearCanvases();
-  genTrack('parent1', isNaN(seed1) ? Math.random() : seed1, isNaN(trackSize1) ? 3 : trackSize1);
-  genTrack('parent2', isNaN(seed2) ? Math.random() : seed2, isNaN(trackSize2) ? 3 : trackSize2);
-  genTrack('crossover', -1, -1, crossoverMethod);
-}
+      clearCanvases();
+      genTrack('parent1', isNaN(seed1) ? Math.random() : seed1, isNaN(trackSize1) ? 3 : trackSize1, crossoverMethod);
+      genTrack('parent2', isNaN(seed2) ? Math.random() : seed2, isNaN(trackSize2) ? 3 : trackSize2, crossoverMethod);
+      genTrack('crossover', -1, -1, crossoverMethod);
+    }
+
 
 // Track generation and canvas setup
 async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
-  let trackResult;
-  if (canvasId === 'crossover') {
-    await Promise.all([trackGenerators.parent1, trackGenerators.parent2]);
-    const parent1 = trackGenerators.parent1;
-    const parent2 = trackGenerators.parent2;
-    
-    const regularize = document.getElementById('regularize').checked;
-    let result;
-    switch (crossoverMethod) {
-      case 'crossover':
-        result = crossover(parent1, parent2, regularize);
-        lineParameters = result.lineParameters;
-        break;
-      case 'crossover2':
-        result = crossover2(parent1, parent2, regularize);
-        lineParameters = null;
-        break;
-      case 'crossover3':
-        result = crossover3(parent1, parent2);
-        lineParameters = null;
-        break;
+      const mode = crossoverMethod === 'voronoi' ? 'voronoi' : 'convexHull';
+      const defaultTrackSize = mode === 'voronoi' ? 3 : 25;
+      trackSize = isNaN(trackSize) ? defaultTrackSize : trackSize;
+
+      let trackResult;
+      if (canvasId === 'crossover') {
+        await Promise.all([trackGenerators.parent1, trackGenerators.parent2]);
+        const parent1 = trackGenerators.parent1;
+        const parent2 = trackGenerators.parent2;
+        
+        let result;
+        if (mode === 'voronoi') {
+          const regularize = document.getElementById('regularize').checked;
+          switch (crossoverMethod) {
+            case 'voronoi':
+              result = voronoiCrossover(parent1, parent2, regularize);
+              lineParameters = result.lineParameters;
+              break;
+            case 'voronoi2':
+              result = voronoiCrossover2(parent1, parent2, regularize);
+              lineParameters = null;
+              break;
+            case 'voronoi3':
+              result = voronoiCrossover3(parent1, parent2);
+              lineParameters = null;
+              break;
+          }
+        } else {
+          result = convexHullCrossover(parent1, parent2);
+          lineParameters = result.lineParameters;
+        }
+        
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, result.ds, result.sel);
+      } else {
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize);
+      }
+      
+      setupCanvas(canvasId, trackResult.generator, trackResult.track);
+      trackGenerators[canvasId] = trackResult.generator;
     }
-    
-    trackResult = await generateTrack("voronoi", BBOX, seed, trackSize, false, result.ds, result.sel);
-  } else {
-    trackResult = await generateTrack("voronoi", BBOX, seed, trackSize);
-  }
-  
-  setupCanvas(canvasId, trackResult.generator, trackResult.track);
-  trackGenerators[canvasId] = trackResult.generator;
-}
 
 function setupCanvas(containerId, trackGenerator, splineTrack) {
       p5Instances[containerId] = new p5((sketch) => {
