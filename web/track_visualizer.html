@@ -1,176 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Gallery Visualization</title>
   <script src="/src/lib/p5.js"></script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="/src/lib/rhill-voronoi-core.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      background-color: #f8f8f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+    }
+
+    .visualization {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0 20px;
+    }
+
+    .stats {
+      width: 100%;
+      max-width: 600px;
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      width: 100%;
+      max-width: 400px;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    label {
+      font-weight: bold;
+      color: #333;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .json-input {
+      margin-top: 1rem;
+    }
+
+    .json-input textarea {
+      height: 100px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @media screen and (min-width: 992px) {
+      .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .visualization {
+        margin-right: 2rem;
+        margin-bottom: 0;
+      }
+
+      .canvas-wrapper {
+        padding-right: 0;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="gallery-container">
-    <form id="trackForm">
-      <label for="seedInput">Enter Seed:</label>
-      <input type="text" id="seedInput" name="seedInput">
-      <label for="cellCountInput">Enter Number of Cell Tracks:</label>
-      <input type="text" id="cellCountInput" name="cellCountInput">
-      <label for="modeSelect">Select Track Generator Mode:</label>
-      <select id="modeSelect" name="modeSelect">
-        <option value="voronoi">Voronoi</option>
-        <option value="convexHull">Convex Hull</option>
-      </select>
-      <button type="submit">Generate Track</button>
-    </form>
-
-    <div class="json-input">
-      <textarea id="jsonInput" rows="2" cols="50" placeholder="Paste your JSON here"></textarea>
-      <button id="loadJSON">Load JSON</button>
+  <div class="container">
+    <div class="visualization">
+      <div class="canvas-wrapper">
+        <div id="track-container"></div>
+      </div>
     </div>
+    <div class="controls">
+      <form id="trackForm">
+        <label for="seedInput">Seed:</label>
+        <input type="text" id="seedInput" name="seedInput" placeholder="default random">
 
-    <div id="track-container" class="track-container"></div>
-    <div class="navigation">
-      <button id="prev-track">Previous</button>
-      <button id="next-track">Next</button>
+        <label for="cellCountInput">Number of Cell Tracks:</label>
+        <input type="text" id="cellCountInput" name="cellCountInput" placeholder="default 5">
+
+        <label for="modeSelect">Track Generator Mode:</label>
+        <select id="modeSelect" name="modeSelect">
+          <option value="voronoi">Voronoi</option>
+          <option value="convexHull">Convex Hull</option>
+        </select>
+
+        <button type="submit">Generate Track</button>
+      </form>
+
+      <div class="json-input">
+        <textarea id="jsonInput" placeholder="Genotype in JSON format"></textarea>
+        <button id="loadJSON">Load JSON</button>
+      </div>
+
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="showVoronoi" checked> Voronoi/Convex Hull</label>
+        <label><input type="checkbox" id="showPoints" checked> Points</label>
+        <label><input type="checkbox" id="showEdges" checked> Edges</label>
+        <label><input type="checkbox" id="showSpline" checked> Spline</label>
+      </div>
     </div>
-    <div id="stats-container" class="stats"></div>
   </div>
 
   <script type="module">
-    
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
 
-// Constants and global variables
-const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const COLORS = [
-  [88, 86, 214],   // Soft Blue (inspired by Apple iOS)
-  [255, 45, 85],   // Vibrant Coral (inspired by Apple iOS)
-  [103, 58, 183],  // Deep Purple (from Material Design)
-  [255, 196, 0]    // Warm Yellow (from Material Design)
-];
+    // Update the color constants to match the overall color scheme
+    const COLORS = {
+      VORONOI: [76, 175, 80],    // Green
+      POINTS: [33, 150, 243],    // Blue
+      EDGES: [255, 152, 0],      // Orange
+      BACKGROUND: [248, 248, 248],  // Light Gray
+      SPLINE: [
+      [33, 150, 243],    // Green
+        [33, 150, 243],   // Blue
+        [255, 152, 0],    // Orange
+        [156, 39, 176]    // Purple
+      ]
+    };
 
-let currentTrackIndex = 0;
-let tracks = [];
-let trackResult;
-let splinePoints = [];
 
-// DOM-related functions
-function setupEventListeners() {
-  document.getElementById('prev-track').addEventListener('click', () => navigateTrack(-1));
-  document.getElementById('next-track').addEventListener('click', () => navigateTrack(1));
-  document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
-  document.getElementById('trackForm').addEventListener('submit', handleFormSubmit);
-}
+    // Constants and global variables
+    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
+    let trackResult;
+    let splinePoints = [];
 
-function handleFormSubmit(event) {
-  event.preventDefault();
-  const seed = parseFloat(document.getElementById('seedInput').value);
-  const trackSize = parseInt(document.getElementById('cellCountInput').value);
-  const mode = document.getElementById('modeSelect').value;
-  genTrack(seed, trackSize, mode);
-}
-
-// Track data handling functions
-async function loadTrackData() {
-  try {
-    const response = await fetch('/data/tests/index.json');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // DOM-related functions
+    function setupEventListeners() {
+      document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
+      document.getElementById('trackForm').addEventListener('submit', handleFormSubmit);
+      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => redraw());
+      });
     }
-    const fileNames = await response.json();
-    const dataPromises = fileNames.map(fileName =>
-      fetch(`/data/tests/${fileName}`).then(resp => resp.json())
-    );
-    return await Promise.all(dataPromises);
-  } catch (error) {
-    console.error('Error loading track data:', error);
-    return [];
-  }
-}
 
-function navigateTrack(direction) {
-  currentTrackIndex = (currentTrackIndex + direction + tracks.length) % tracks.length;
-  displayTrack(currentTrackIndex);
-}
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const seed = parseFloat(document.getElementById('seedInput').value);
+      const trackSizeInput = document.getElementById('cellCountInput').value;
+      const trackSize = trackSizeInput ? parseInt(trackSizeInput) : 5;
+      const mode = document.getElementById('modeSelect').value;
+      genTrack(seed, trackSize, mode);
+    }
 
-function loadJSONTrack() {
-  const jsonInput = document.getElementById('jsonInput').value;
-  try {
-    const trackData = JSON.parse(jsonInput);
-    genTrack(trackData.id, trackData.trackSize, trackData.mode, trackData.dataSet, trackData.selectedCells);
-    showStats(trackData);
-  } catch (error) {
-    console.error('Error parsing JSON:', error);
-    alert('Invalid JSON format. Please check your input.');
-  }
-}
+    function loadJSONTrack() {
+      const jsonInput = document.getElementById('jsonInput').value;
+      try {
+        const trackData = JSON.parse(jsonInput);
+        genTrack(trackData.id, trackData.trackSize, trackData.mode, trackData.dataSet, trackData.selectedCells);
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        alert('Invalid JSON format. Please check your input.');
+      }
+    }
 
-// Track generation and display functions
-async function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
-  trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
-  splinePoints = await trackResult.track;
-  redraw();
-}
+    // Track generation and display functions
+    async function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
+      trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
+      splinePoints = await trackResult.track;
+      redraw();
+    }
 
-function displayTrack(index) {
-  const track = tracks[index];
-  if (!track) return;
-  genTrack(track.id, track.trackSize, track.mode, track.dataSet, track.selectedCells);
-  showStats(track);
-}
+    function displayTrack(index) {
+      const track = tracks[index];
+      if (!track) return;
+      genTrack(track.id, track.trackSize, track.mode, track.dataSet, track.selectedCells);
+      showStats(track);
+    }
 
-function showStats(track) {
-  const statsContainer = document.getElementById('stats-container');
-  statsContainer.innerHTML = `
-    <p>Seed: ${track.id || 'N/A'}</p>
-    <p>Mode: ${track.mode || 'N/A'}</p>
-    <p>Track Size: ${track.trackSize || 'N/A'}</p>
-    ${track.fitness ? `
-      <p>Length: ${track.fitness.length?.toFixed(2) || 'N/A'}</p>
-      <p>Delta X: ${track.fitness.deltaX?.toFixed(2) || 'N/A'}</p>
-      <p>Delta Y: ${track.fitness.deltaY?.toFixed(2) || 'N/A'}</p>
-      <p>Delta Angle (Degrees): ${track.fitness.deltaAngleDegrees?.toFixed(2) || 'N/A'}</p>
-    ` : '<p>Fitness data not available</p>'}
-  `;
-}
+    // P5.js setup and draw functions
+    window.setup = function setup() {
+      const trackContainer = document.getElementById('track-container');
+      const canvas = createCanvas(BBOX.xr, BBOX.yb);
+      canvas.parent(trackContainer);
+      frameRate(30);
+      loop();
+    }
 
-// P5.js setup and draw functions
-window.setup = function setup() {
-  createCanvas(BBOX.xr, BBOX.yb);
-  frameRate(30);
-  loop();
-}
+    window.draw = function draw() {
+      background(COLORS.BACKGROUND);
+      if (trackResult) {
+        if (document.getElementById('showVoronoi').checked) drawVoronoiOrConvexHull();
+        if (document.getElementById('showPoints').checked) drawPoints();
+        if (document.getElementById('showEdges').checked) drawOriginalEdges();
+        if (document.getElementById('showSpline').checked) drawAnimatedSpline();
+      }
+    }
 
-window.draw = function draw() {
-  background(0);
-  if (splinePoints.length > 0) {
-    drawAnimatedSpline();
-  }
-}
+    // Drawing functions
+    function drawVoronoiOrConvexHull() {
+      stroke(COLORS.VORONOI);
+      strokeWeight(1);
+      if (trackResult.generator.diagram) {
+        // Voronoi mode
+        trackResult.generator.diagram.edges.forEach(edge => 
+          line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y)
+        );
+      } else if (trackResult.generator.dataSetHull) {
+        // Convex Hull mode
+        for (let i = 0; i < trackResult.generator.dataSetHull.length; i++) {
+          let nextIndex = (i + 1) % trackResult.generator.dataSetHull.length;
+          line(trackResult.generator.dataSetHull[i].x, trackResult.generator.dataSetHull[i].y, 
+               trackResult.generator.dataSetHull[nextIndex].x, trackResult.generator.dataSetHull[nextIndex].y);
+        }
+      }
+    }
 
-// Animation functions
-function drawAnimatedSpline() {
-  beginShape();
-  for (let i = 0; i < splinePoints.length; i++) {
-    let t = (i / splinePoints.length + frameCount * 0.02) % 1;
-    t = (t + 1) % 1; // Ensure t is always positive
-    
-    let colorIndex = floor(t * COLORS.length);
-    let nextColorIndex = (colorIndex + 1) % COLORS.length;
-    let colorT = (t * COLORS.length) % 1;
-    
-    let c = lerpColor(color(...COLORS[colorIndex]), color(...COLORS[nextColorIndex]), colorT);
-    
-    stroke(c);
-    strokeWeight(3);
-    point(splinePoints[i].x, splinePoints[i].y);
-  }
-  endShape(CLOSE);
-}
+    function drawPoints() {
+      const dataSet = trackResult.generator.dataSet;
+      fill(COLORS.POINTS);
+      noStroke();
+      dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
+    }
 
-// Initialization
-document.addEventListener('DOMContentLoaded', async () => {
-  tracks = await loadTrackData();
-  setupEventListeners();
-  displayTrack(currentTrackIndex);
-});
+    function drawOriginalEdges() {
+      const trackEdges = trackResult.generator.trackEdges;
+      stroke(COLORS.EDGES);
+      strokeWeight(2);
+      for (let i = 0; i < trackEdges.length; i++) {
+        let nextIndex = (i + 1) % trackEdges.length;
+        line(trackEdges[i].x, trackEdges[i].y, trackEdges[nextIndex].x, trackEdges[nextIndex].y);
+      }
+      strokeWeight(1);
+    }
+
+    function drawAnimatedSpline() {
+      beginShape();
+      for (let i = 0; i < splinePoints.length; i++) {
+        let t = (i / splinePoints.length + frameCount * 0.02) % 1;
+        t = (t + 1) % 1; // Ensure t is always positive
+        
+        let colorIndex = floor(t * COLORS.SPLINE.length);
+        let nextColorIndex = (colorIndex + 1) % COLORS.SPLINE.length;
+        let colorT = (t * COLORS.SPLINE.length) % 1;
+        
+        let c = lerpColor(color(...COLORS.SPLINE[colorIndex]), color(...COLORS.SPLINE[nextColorIndex]), colorT);
+        
+        stroke(c);
+        strokeWeight(3);
+        point(splinePoints[i].x, splinePoints[i].y);
+      }
+      endShape(CLOSE);
+    }
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', async () => {
+      setupEventListeners();
+      displayTrack(currentTrackIndex);
+    });
   </script>
 </body>
 </html>
