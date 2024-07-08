@@ -1,66 +1,192 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Crossover Lab</title>
   <script src="/src/lib/p5.js"></script>
   <script src="/src/lib/rhill-voronoi-core.js"></script>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      background-color: #f8f8f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      margin: 0 auto;
+      padding: 20px;
+      justify-content: center;
+      max-width: 70%;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+    }
+
+    .canvas-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      margin-top:10px;
+    }
+
+    .canvas-wrapper canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .controls-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .controls {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    label {
+      font-weight: bold;
+      color: #333;
+    }
+
+    input[type="text"], 
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @media screen and (min-width: 992px) {
+      .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+    }
+  </style>
 </head>
 <body>
-  <main>
-    <form id="trackForm">
-      <label for="seedInput1">Enter Seed for Parent 1:</label>
-      <input type="text" id="seedInput1" name="seedInput1">
-      <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
-      <input type="text" id="cellCountInput1" name="cellCountInput1">
-      
-      <label for="seedInput2">Enter Seed for Parent 2:</label>
-      <input type="text" id="seedInput2" name="seedInput2">
-      <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
-      <input type="text" id="cellCountInput2" name="cellCountInput2">
+  <div class="container">
+  <header>
+    <h1>Crossover Voronoi Lab</h1>
+  </header>
+  <div class="content">
+    <div class="controls-wrapper">
+      <div class="controls">
+        <form id="trackForm">
+          <label for="seedInput1">Enter Seed for Parent 1:</label>
+          <input type="text" id="seedInput1" name="seedInput1">
+          <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
+          <input type="text" id="cellCountInput1" name="cellCountInput1">
+          
+          <label for="seedInput2">Enter Seed for Parent 2:</label>
+          <input type="text" id="seedInput2" name="seedInput2">
+          <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
+          <input type="text" id="cellCountInput2" name="cellCountInput2">
 
-      <label for="crossoverMethod">Crossover Method:</label>
-      <select id="crossoverMethod" name="crossoverMethod">
-        <option value="crossover">Crossover</option>
-        <option value="crossover2">Crossover 2</option>
-        <option value="crossover3">Crossover 3</option>
-      </select>
-
-      <button type="submit">Generate Tracks</button>
-    </form>
-    <div>
-      <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi</label>
-      <label><input type="checkbox" id="showPoints" checked> Show Points</label>
-      <label><input type="checkbox" id="showEdges" checked> Show Edges</label>
-      <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
-      <label><input type="checkbox" id="regularize"> Regularize</label>
+          <label for="crossoverMethod">Crossover Method:</label>
+          <select id="crossoverMethod" name="crossoverMethod">
+            <option value="crossover">Crossover</option>
+            <option value="crossover2">Crossover 2</option>
+            <option value="crossover3">Crossover 3</option>
+          </select>
+          <button type="submit">Generate Tracks</button>
+      </form>
+      <div>
+        <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi</label>
+        <label><input type="checkbox" id="showPoints" checked> Show Points</label>
+        <label><input type="checkbox" id="showEdges" checked> Show Edges</label>
+        <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
+        <label><input type="checkbox" id="regularize"> Regularize</label>
+      </div>
+      </div>
     </div>
     <div class="canvas-container">
-      <div id="parent1"></div>
-      <div id="parent2"></div>
-      <div id="crossover"></div>
+      <div class="canvas-wrapper" id="parent1"></div>
+      <div class="canvas-wrapper" id="parent2"></div>
+      <div class="canvas-wrapper" id="crossover"></div>
     </div>
-  </main>
+  </div>
+</div>
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
 import { crossover, crossover2, crossover3 } from '../src/genetic/crossoverVoronoi.js';
 
 // Constants and global variables
 const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-const COLORS = {
-  VORONOI: [88, 86, 214, 150],    // Soft Blue with opacity
-  POINTS: [255, 255, 255, 150],   // White with opacity
-  EDGES: [76, 217, 100, 150],     // Muted Green with opacity
-  SELECTED: [103, 58, 183, 150],  // Deep Purple with opacity
-  BACKGROUND: [18, 18, 18],       // Dark Grey (Material Design background)
-  SPLINE: [
-    [88, 86, 214],   // Soft Blue (inspired by Apple iOS)
-    [255, 45, 85],   // Vibrant Coral (inspired by Apple iOS)
-    [103, 58, 183],  // Deep Purple (from Material Design)
-    [255, 196, 0]    // Warm Yellow (from Material Design)
-  ],
-  SEPARATION_LINE: [255, 0, 0]    // Red for separation line
-};
+    const COLORS = {
+      VORONOI: [76, 175, 80],    // Green  
+      POINTS: [33, 150, 243],    // Blue
+      EDGES: [255, 152, 0],      // Orange
+      SELECTED: [103, 58, 183],  // Purple
+      BACKGROUND: [248, 248, 248],  // Light Gray
+      SPLINE: [
+        [76, 175, 80],   // Green 
+        [33, 150, 243],  // Blue
+        [255, 152, 0],   // Orange  
+        [156, 39, 176]   // Purple
+      ],
+      SEPARATION_LINE: [244, 67, 54]  // Red
+    };
 
 let trackGenerators = {
   parent1: null,
@@ -128,15 +254,15 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
 }
 
 function setupCanvas(containerId, trackGenerator, splineTrack) {
-  p5Instances[containerId] = new p5((sketch) => {
-    sketch.setup = () => {
-      sketch.createCanvas(BBOX.xr, BBOX.yb).parent(containerId);
-      sketch.frameRate(30);
-      sketch.loop();
-    };
-    sketch.draw = () => drawCanvas(sketch, trackGenerator, splineTrack, containerId === 'crossover');
-  });
-}
+      p5Instances[containerId] = new p5((sketch) => {
+        sketch.setup = () => {
+          sketch.createCanvas(600, 600).parent(containerId);
+          sketch.frameRate(30);
+          sketch.loop();
+        };
+        sketch.draw = () => drawCanvas(sketch, trackGenerator, splineTrack, containerId === 'crossover');
+      });
+    }
 
 // Drawing functions
 function drawCanvas(sketch, trackGenerator, splineTrack, isCrossover) {
