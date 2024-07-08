@@ -133,16 +133,20 @@
       <div class="controls-wrapper">
         <div class="controls">
           <form id="trackForm">
+          <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+              
             <label for="seedInput1">Enter Seed for Parent 1:</label>
             <input type="text" id="seedInput1" name="seedInput1">
-            <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
-            <input type="text" id="cellCountInput1" name="cellCountInput1">
+            
             
             <label for="seedInput2">Enter Seed for Parent 2:</label>
             <input type="text" id="seedInput2" name="seedInput2">
-            <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
-            <input type="text" id="cellCountInput2" name="cellCountInput2">
-
+            
+            <label for="cellCountInput1">Enter Number of Cell Tracks for Parent 1:</label>
+              <input type="text" id="cellCountInput1" name="cellCountInput1" style="flex: 1;">
+              <label for="cellCountInput2">Enter Number of Cell Tracks for Parent 2:</label>
+              <input type="text" id="cellCountInput2" name="cellCountInput2" style="flex: 1;">
+            </div>
             <label for="crossoverMethod">Crossover Method:</label>
             <select id="crossoverMethod" name="crossoverMethod">
               <option value="voronoi">Voronoi</option>
