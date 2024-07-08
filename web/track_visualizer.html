@@ -49,7 +49,6 @@
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
 
-    // Update the color constants to match the overall color scheme
     const COLORS = {
       VORONOI: [76, 175, 80],    // Green
       POINTS: [33, 150, 243],    // Blue
@@ -172,7 +171,7 @@
       beginShape();
       for (let i = 0; i < splinePoints.length; i++) {
         let t = (i / splinePoints.length + frameCount * 0.02) % 1;
-        t = (t + 1) % 1; // Ensure t is always positive
+        t = (t + 1) % 1; 
         
         let colorIndex = floor(t * COLORS.SPLINE.length);
         let nextColorIndex = (colorIndex + 1) % COLORS.SPLINE.length;

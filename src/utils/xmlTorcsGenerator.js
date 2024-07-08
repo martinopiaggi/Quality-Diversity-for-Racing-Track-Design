@@ -45,7 +45,7 @@ export function exportTrackToXML(track, startIndex = 0, saveXMLalsoLocally = fal
             }
         }
     }
-    console.log(previousLength)
+    
     if (previousLength > 0) {
         addSection(segmentNumber, 'straight', previousLength, null);
         segmentNumber++;
