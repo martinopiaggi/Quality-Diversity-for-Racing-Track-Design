@@ -1,11 +1,10 @@
 import express from 'express';
 import { generateTrack } from '../trackGen/trackGenerator.js';
-import { crossover } from '../genetic/crossoverVoronoi.js';
+import { crossover, crossover2} from '../genetic/crossoverVoronoi.js';
 import { crossover as crossoverConvexHull } from '../genetic/crossoverConvexHull.js';
 import { mutation, mutationConvexHull } from '../genetic/mutation.js';
 import { BBOX, JSON_DEBUG } from '../utils/constants.js';
 import { simulate } from './simulateTrack.js';
-
 
 const app = express();
 app.use(express.json());
@@ -47,28 +46,54 @@ app.post('/evaluate', async (req, res) => {
 
 
 app.post('/crossover', async (req, res, next) => {
-    console.log("Crossover endpoint called")
+    console.log("Crossover endpoint called");
     try {
         const { parent1, parent2, mode } = req.body;
-        if (!parent1 || !parent2 || !parent1.dataSet || !parent2.dataSet || 
+        if (!parent1 || !parent2 || !parent1.dataSet || !parent2.dataSet ||
             !parent1.selectedCells || !parent2.selectedCells) {
             return res.status(400).json({ error: 'Invalid parent data' });
         }
 
         // Generate tracks for both parents
-        const { generator: trackGenerator1 } = await generateTrack(mode, BBOX, parent1.id, parent1.trackSize, false, parent1.dataSet, parent1.selectedCells);
-        const { generator: trackGenerator2 } = await generateTrack(mode, BBOX, parent2.id, parent2.trackSize, false, parent2.dataSet, parent2.selectedCells);
+        const [result1, result2] = await Promise.all([
+            Promise.race([
+                generateTrack(mode, BBOX, parent1.id, parent1.trackSize, false, parent1.dataSet, parent1.selectedCells),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Track generation timed out')), timeout))
+            ]),
+            Promise.race([
+                generateTrack(mode, BBOX, parent2.id, parent2.trackSize, false, parent2.dataSet, parent2.selectedCells),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Track generation timed out')), timeout))
+            ])
+        ]);
+    
+        const trackGenerator1 = result1.generator;
+        const trackGenerator2 = result2.generator;
+
 
         let result;
         if (mode === 'voronoi') {
-            console.log("CROSSOVER VORONOI")
-            result = crossover(trackGenerator1, trackGenerator2, true);
-            res.json({
-                offspring: {
-                    ds: result.ds,
-                    sel: result.sel
+            console.log("CROSSOVER VORONOI");
+
+            try {
+                if (Math.random() < 0.5) {
+                    result = crossover(trackGenerator1, trackGenerator2, true);
+                } else {
+                    result = crossover2(trackGenerator2, trackGenerator1, true);
                 }
-            });
+
+                res.json({
+                    offspring: {
+                        ds: result.ds,
+                        sel: result.sel
+                    }
+                });
+            } catch (error) {
+                console.error('Error during crossover:', error);
+                console.log('Parent 1:', JSON.stringify(parent1, null, 2));
+                console.log("------------------")
+                console.log('Parent 2:', JSON.stringify(parent2, null, 2));
+                return res.status(500).json({ error: 'Crossover failed.' });
+            }
         } else { // convexHull
             result = crossoverConvexHull(trackGenerator1, trackGenerator2, true);
             res.json({
@@ -89,8 +114,13 @@ app.post('/mutate', async (req, res, next) => {
         if (!individual || !individual.dataSet) {
             return res.status(400).json({ error: 'Invalid individual data' });
         }
+
         // Generate the initial track
-        const { generator: trackGenerator } = await generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, false, individual.dataSet, individual.selectedCells);
+        const timeout = 5000; 
+        const { generator: trackGenerator } = await Promise.race([
+            generateTrack(individual.mode, BBOX, individual.id, individual.trackSize, false, individual.dataSet, individual.selectedCells),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Track generation timed out')), timeout))
+        ]);
 
         if (individual.mode === 'voronoi') {
             const mutatedData = mutation(trackGenerator, intensityMutation);
