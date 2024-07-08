@@ -3,30 +3,56 @@
 <head>
   <title>Mutation Visualization</title>
   <script src="/src/lib/p5.js"></script>
+  <script src="/src/lib/rhill-voronoi-core.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="gallery-container">
-    <form id="trackForm">
-      <label for="seedInput">Enter Seed:</label>
-      <input type="text" id="seedInput" name="seedInput">
-      <label for="cellCountInput">Enter Number of Cell Tracks:</label>
-      <input type="text" id="cellCountInput" name="cellCountInput">
-      <label for="cellCountInput">Intensity mutation (def 10):</label>
-      <input type="text" id="intensityInput" name="intensityInput">
-      <label for="modeSelect">Select Track Generator Mode:</label>
-      <select id="modeSelect" name="modeSelect">
-        <option value="voronoi">Voronoi</option>
-        <option value="convexHull">Convex Hull</option>
-      </select>
-      <button type="submit">Generate Track</button>
-    </form>
-    <div id="track-container" class="track-container"></div>
+  <div class="container">
+    <div class="visualization">
+      <div class="canvas-wrapper">
+        <div id="track-container"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <form id="trackForm">
+        <label for="seedInput">Enter Seed:</label>
+        <input type="text" id="seedInput" name="seedInput">
+        <label for="cellCountInput">Enter Number of Cell Tracks:</label>
+        <input type="text" id="cellCountInput" name="cellCountInput">
+        <label for="cellCountInput">Intensity mutation (def 10):</label>
+        <input type="text" id="intensityInput" name="intensityInput">
+        <label for="modeSelect">Select Track Generator Mode:</label>
+        <select id="modeSelect" name="modeSelect">
+          <option value="voronoi">Voronoi</option>
+          <option value="convexHull">Convex Hull</option>
+        </select>
+        <button type="submit">Generate Track</button>
+      </form>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi</label>
+        <label><input type="checkbox" id="showPoints" checked> Show Points</label>
+        <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
+      </div>
+    </div>
   </div>
 
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
-    import { mutation, mutationConvexHull} from "../src/genetic/mutation.js"
+    import { mutation, mutationConvexHull} from "../src/genetic/mutation.js";
+
+    const COLORS = {
+      VORONOI: [76, 175, 80],    // Green
+      POINTS: [33, 150, 243],    // Blue
+      EDGES: [255, 152, 0],      // Orange
+      BACKGROUND: [248, 248, 248],  // Light Gray
+      SPLINE: [
+        [33, 150, 243],    // Green
+        [33, 150, 243],   // Blue
+        [255, 152, 0],    // Orange
+        [156, 39, 176]    // Purple
+      ]
+    };
+
     const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
     let trackResult; 
     let mode;
@@ -44,9 +70,9 @@
       strokeWeight(1);
       const diagram = trackResult.generator.diagram;
       if (!diagram) return;
-      stroke(255, 255, 255, 255); // White with reduced opacity
+      stroke(COLORS.VORONOI);
       diagram.edges.forEach(edge => {
-      line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+        line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
       });
     }
 
@@ -54,54 +80,38 @@
       strokeWeight(1);
       const dataSet = trackResult.generator.dataSet;
       if (!dataSet) return;
-      fill(255, 255, 255, 255); // White with reduced opacity
+      fill(COLORS.POINTS);
       noStroke();
       dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
     }
 
-
     async function genTrack(seed, trackSize, intensityMutation) {
       trackResult = await generateTrack(mode, BBOX, seed, trackSize);
       
-      if(mode=="voronoi"){
-        if(isNaN(intensityMutation))intensityMutation=10
-        const mutated = mutation(trackResult.generator,intensityMutation);
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds,mutated.sel);
-      }
-      else{
-        if(isNaN(intensityMutation))intensityMutation=10
-        const mutated = mutationConvexHull(trackResult.generator,intensityMutation);
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false,mutated.ds, mutated.hull);
+      if (mode === "voronoi") {
+        if (isNaN(intensityMutation)) intensityMutation = 10;
+        const mutated = mutation(trackResult.generator, intensityMutation);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.sel);
+      } else {
+        if (isNaN(intensityMutation)) intensityMutation = 10;
+        const mutated = mutationConvexHull(trackResult.generator, intensityMutation);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.hull);
       }      
       redraw();
     }
 
     window.setup = function setup() {
-      createCanvas(BBOX.xr, BBOX.yb);
+      const trackContainer = document.getElementById('track-container');
+      const canvas = createCanvas(BBOX.xr, BBOX.yb);
+      canvas.parent(trackContainer);
       noLoop();
-    }
-
-    window.draw = function draw() {
-      background(0);
-
-      if (trackResult.track) {
-        if(mode=="voronoi"){
-          drawVoronoi();
-        }
-        drawPoints();
-        strokeWeight(0.5);
-        noFill();
-        stroke(0, 255, 0);
-        strokeWeight(3);
-        drawSpline(trackResult.track);
-      }
-    }
+    };
 
     async function drawSpline(spline) {
       const resolvedSpline = await spline;
       beginShape();
-      let startColor = color(0, 255, 255);
-      let endColor = color(255, 0, 255);
+      let startColor = color(COLORS.SPLINE[0]);
+      let endColor = color(COLORS.SPLINE[3]);
       for (let i = 0; i < resolvedSpline.length; i++) {
         stroke(lerpColor(startColor, endColor, i / resolvedSpline.length));
         point(resolvedSpline[i].x, resolvedSpline[i].y);
@@ -109,8 +119,43 @@
       endShape(CLOSE);
     }
 
-    window.setup = setup;
-    window.draw = draw;
+    // Initialization
+    document.addEventListener('DOMContentLoaded', setupEventListeners);
+
+    function setupEventListeners() {
+      document.getElementById('trackForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const seed = parseFloat(document.getElementById('seedInput').value);
+        const trackSize = parseInt(document.getElementById('cellCountInput').value);
+        mode = document.getElementById('modeSelect').value;
+        const intensity = parseFloat(document.getElementById('intensityInput').value);
+        genTrack(seed, trackSize, intensity);
+      });
+
+      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => redraw());
+      });
+    }
+
+    window.draw = function draw() {
+      background(COLORS.BACKGROUND);
+
+      if (trackResult.track) {
+        if (mode === "voronoi" && document.getElementById('showVoronoi').checked) {
+          drawVoronoi();
+        }
+        if (document.getElementById('showPoints').checked) {
+          drawPoints();
+        }
+        if (document.getElementById('showSpline').checked) {
+          strokeWeight(0.5);
+          noFill();
+          stroke(COLORS.SPLINE[0]);
+          strokeWeight(3);
+          drawSpline(trackResult.track);
+        }
+      }
+    };
   </script>
 </body>
 </html>

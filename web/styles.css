@@ -1,47 +1,113 @@
 body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 20px;
-  }
-  
-.gallery-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80%;
-    margin-top: 20px;
+  font-family: Roboto, sans-serif;
+  line-height: 1.6;
+  background-color: #f8f8f8;
+  color: #333;
+  margin: 0;
+  padding: 0;
 }
-  
-.track-container {
-    margin-bottom: 20px;
-    text-align: center;
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-  
-.navigation {
-    display: flex;
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333;
+}
+
+.visualization {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.canvas-wrapper {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 20px;
+}
+
+.controls {
+  width: 100%;
+  max-width: 400px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+  align-items: center;
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+}
+
+label {
+  font-weight: bold;
+  color: #333;
+}
+
+input[type="text"], 
+select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media screen and (min-width: 992px) {
+  .container {
+    flex-direction: row;
     justify-content: space-between;
-    width: 100%;
-    margin-top: 10px;
-}
-  
-.stats {
-    margin-top: 20px;
-}
-  
-/* This is for crossover visualizer */
-.canvas-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
-  
-.canvas {
-    border: 1px solid #ccc;
-    margin: 10px;
+    align-items: flex-start;
+  }
+
+  .visualization {
+    margin-right: 2rem;
+    margin-bottom: 0;
+  }
+
+  .canvas-wrapper {
+    padding-right: 0;
+  }
 }
