@@ -6,3 +6,17 @@ export const MAPELITE_PATH = '../utils/mapelite.xml';
 export const MEMORY_LIMIT = '24m';
 export const OUTPUT_DIR = '../../data/tests';
 export const JSON_DEBUG = false;
+
+export const COLORS = {
+      SEPARATION_LINE: [255,0,0],
+      VORONOI: [180, 192, 165],    // Sage
+      POINTS: [113, 131, 85],     // Reseda Green
+      EDGES: [164, 176, 146],     // Sage
+      BACKGROUND: [248, 248, 248],  // Light Gray (original background color)
+      SPLINE: [
+        [247, 37, 133],   // Rose
+        [181, 23, 158],   // Fandango
+        [114, 9, 183],    // Grape
+        [76, 201, 240]    // Vivid Sky Blue
+      ]
+    };
