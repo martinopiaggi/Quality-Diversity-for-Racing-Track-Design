@@ -113,6 +113,19 @@
       gap: 0.5rem;
     }
 
+    .json-input {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .json-input textarea {
+      min-height: 10px;
+      resize: vertical;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
     @media screen and (min-width: 992px) {
       .container {
         flex-direction: row;
@@ -148,7 +161,9 @@
             </div>
             <label for="crossoverMethod">Crossover Method:</label>
             <select id="crossoverMethod" name="crossoverMethod">
-              <option value="voronoi">Voronoi</option>
+              <option value="voronoi">Voronoi (Method 1)</option>
+              <option value="voronoi2">Voronoi (Method 2)</option>
+              <option value="voronoi3">Voronoi (Method 3)</option>
               <option value="convexHull">Convex Hull</option>
             </select>
             <button type="submit">Generate Tracks</button>
@@ -159,6 +174,13 @@
             <label><input type="checkbox" id="showEdges" checked> Show Edges</label>
             <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
             <label><input type="checkbox" id="regularize"> Regularize</label>
+          </div>
+          <div class="json-input">
+            <label for="jsonInput1">Parent 1 JSON:</label>
+            <textarea id="jsonInput1" placeholder="Parent 1 Genotype in JSON format"></textarea>
+            <label for="jsonInput2">Parent 2 JSON:</label>
+            <textarea id="jsonInput2" placeholder="Parent 2 Genotype in JSON format"></textarea>
+            <button id="loadJSON">Load Parents</button>
           </div>
         </div>
       </div>
@@ -173,24 +195,8 @@
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
     import { crossover as voronoiCrossover, crossover2 as voronoiCrossover2, crossover3 as voronoiCrossover3 } from '../src/genetic/crossoverVoronoi.js';
     import { crossover as convexHullCrossover } from '../src/genetic/crossoverConvexHull.js';
-
-// Constants and global variables
-const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-    const COLORS = {
-      VORONOI: [76, 175, 80],    // Green  
-      POINTS: [33, 150, 243],    // Blue
-      EDGES: [255, 152, 0],      // Orange
-      SELECTED: [103, 58, 183],  // Purple
-      BACKGROUND: [248, 248, 248],  // Light Gray
-      SPLINE: [
-        [76, 175, 80],   // Green 
-        [33, 150, 243],  // Blue
-        [255, 152, 0],   // Orange  
-        [156, 39, 176]   // Purple
-      ],
-      SEPARATION_LINE: [244, 67, 54]  // Red
-    };
-
+    import { BBOX, COLORS } from "../src/utils/constants.js";
+    
 let trackGenerators = {
   parent1: null,
   parent2: null,
@@ -224,8 +230,8 @@ function handleFormSubmit(event) {
 
 
 // Track generation and canvas setup
-async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
-      const mode = crossoverMethod === 'voronoi' ? 'voronoi' : 'convexHull';
+async function genTrack(canvasId, seed, trackSize, crossoverMethod, dataSet = [], selectedCells = []) {
+      let mode = crossoverMethod === 'convexHull' ? 'convexHull' : 'voronoi';
       const defaultTrackSize = mode === 'voronoi' ? 3 : 25;
       trackSize = isNaN(trackSize) ? defaultTrackSize : trackSize;
 
@@ -259,7 +265,7 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod) {
         
         trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, result.ds, result.sel);
       } else {
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
       }
       
       setupCanvas(canvasId, trackResult.generator, trackResult.track);
@@ -336,7 +342,7 @@ function drawAnimatedSpline(sketch, splineTrack) {
     );
     
     sketch.stroke(c);
-    sketch.strokeWeight(3);
+    sketch.strokeWeight(4);
     sketch.point(splineTrack[i].x, splineTrack[i].y);
   }
   sketch.endShape(sketch.CLOSE);
@@ -368,8 +374,32 @@ function redrawAllCanvases() {
   Object.values(p5Instances).forEach(instance => instance.redraw());
 }
 
+async function loadJSONTrack() {
+      const jsonInput1 = document.getElementById('jsonInput1').value;
+      const jsonInput2 = document.getElementById('jsonInput2').value;
+      const crossoverMethod = document.getElementById('crossoverMethod').value;
+
+      try {
+        const trackData1 = jsonInput1 ? JSON.parse(jsonInput1) : null;
+        const trackData2 = jsonInput2 ? JSON.parse(jsonInput2) : null;
+
+        clearCanvases();
+
+        await genTrack('parent1', trackData1 ? trackData1.id : Math.random(), trackData1 ? trackData1.trackSize : 3, trackData1 ? trackData1.mode : crossoverMethod, trackData1 ? trackData1.dataSet : [], trackData1 ? trackData1.selectedCells : []);
+        await genTrack('parent2', trackData2 ? trackData2.id : Math.random(), trackData2 ? trackData2.trackSize : 3, trackData2 ? trackData2.mode : crossoverMethod, trackData2 ? trackData2.dataSet : [], trackData2 ? trackData2.selectedCells : []);
+
+        await genTrack('crossover', -1, -1, crossoverMethod);
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        alert('Invalid JSON format. Please check your input.');
+      }
+    }
+
 // Initialization
-document.addEventListener('DOMContentLoaded', setupEventListeners);
+document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
+    });
     
   </script>
 </body>
