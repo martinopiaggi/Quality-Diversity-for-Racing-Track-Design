@@ -19,7 +19,7 @@
         <input type="text" id="seedInput" name="seedInput">
         <label for="cellCountInput">Enter Number of Cell Tracks:</label>
         <input type="text" id="cellCountInput" name="cellCountInput">
-        <label for="cellCountInput">Intensity mutation (def 10):</label>
+        <label for="intensityInput">Intensity Mutation (default 10):</label>
         <input type="text" id="intensityInput" name="intensityInput">
         <label for="modeSelect">Select Track Generator Mode:</label>
         <select id="modeSelect" name="modeSelect">
@@ -38,33 +38,56 @@
 
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
-    import { mutation, mutationConvexHull} from "../src/genetic/mutation.js";
+    import { mutation, mutationConvexHull } from "../src/genetic/mutation.js";
+    import { BBOX, COLORS } from "../src/utils/constants.js";
 
-    const COLORS = {
-      VORONOI: [76, 175, 80],    // Green
-      POINTS: [33, 150, 243],    // Blue
-      EDGES: [255, 152, 0],      // Orange
-      BACKGROUND: [248, 248, 248],  // Light Gray
-      SPLINE: [
-        [33, 150, 243],    // Green
-        [33, 150, 243],   // Blue
-        [255, 152, 0],    // Orange
-        [156, 39, 176]    // Purple
-      ]
-    };
+    let trackResult;
+    let splinePoints = [];
 
-    const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-    let trackResult; 
-    let mode;
+    function setupEventListeners() {
+      document.getElementById('trackForm').addEventListener('submit', handleFormSubmit);
+      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', redraw);
+      });
+    }
 
-    document.getElementById('trackForm').addEventListener('submit', function(event) {
+    function handleFormSubmit(event) {
       event.preventDefault();
       const seed = parseFloat(document.getElementById('seedInput').value);
       const trackSize = parseInt(document.getElementById('cellCountInput').value);
-      mode = document.getElementById('modeSelect').value;
+      const mode = document.getElementById('modeSelect').value;
       const intensity = parseFloat(document.getElementById('intensityInput').value);
-      genTrack(seed, trackSize, intensity);
-    });
+      genTrack(seed, trackSize, intensity, mode);
+    }
+
+    async function genTrack(seed, trackSize, intensityMutation, mode) {
+      if (mode === "voronoi") {
+        if (isNaN(seed)) seed = 42;
+        if (isNaN(trackSize)) trackSize = 5;
+        if(trackSize>50){
+        alert('trackSize too high!');
+        trackSize = 5;
+        }
+      } else {
+        if (isNaN(seed)) seed = 42;
+        if (isNaN(trackSize)) trackSize = 50;
+      }
+      
+      trackResult = await generateTrack(mode, BBOX, seed, trackSize);
+
+      if (mode === "voronoi") {
+        if (isNaN(intensityMutation)) intensityMutation = 10;
+        const mutated = mutation(trackResult.generator, intensityMutation);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.sel);
+      } else {
+        if (isNaN(intensityMutation)) intensityMutation = 10;
+        const mutated = mutationConvexHull(trackResult.generator, intensityMutation);
+        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.hull);
+      }
+
+      splinePoints = await trackResult.track;
+      redraw();
+    }
 
     function drawVoronoi() {
       strokeWeight(1);
@@ -85,77 +108,51 @@
       dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
     }
 
-    async function genTrack(seed, trackSize, intensityMutation) {
-      trackResult = await generateTrack(mode, BBOX, seed, trackSize);
-      
-      if (mode === "voronoi") {
-        if (isNaN(intensityMutation)) intensityMutation = 10;
-        const mutated = mutation(trackResult.generator, intensityMutation);
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.sel);
-      } else {
-        if (isNaN(intensityMutation)) intensityMutation = 10;
-        const mutated = mutationConvexHull(trackResult.generator, intensityMutation);
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.hull);
-      }      
-      redraw();
+    function drawAnimatedSpline() {
+      beginShape();
+      for (let i = 0; i < splinePoints.length; i++) {
+        let t = (i / splinePoints.length + frameCount * 0.02) % 1;
+        t = (t + 1) % 1;
+
+        let colorIndex = floor(t * COLORS.SPLINE.length);
+        let nextColorIndex = (colorIndex + 1) % COLORS.SPLINE.length;
+        let colorT = (t * COLORS.SPLINE.length) % 1;
+
+        let c = lerpColor(color(...COLORS.SPLINE[colorIndex]), color(...COLORS.SPLINE[nextColorIndex]), colorT);
+
+        stroke(c);
+        strokeWeight(4);
+        point(splinePoints[i].x, splinePoints[i].y);
+      }
+      endShape(CLOSE);
     }
 
     window.setup = function setup() {
       const trackContainer = document.getElementById('track-container');
       const canvas = createCanvas(BBOX.xr, BBOX.yb);
       canvas.parent(trackContainer);
-      noLoop();
+      frameRate(60);
+      loop();
     };
-
-    async function drawSpline(spline) {
-      const resolvedSpline = await spline;
-      beginShape();
-      let startColor = color(COLORS.SPLINE[0]);
-      let endColor = color(COLORS.SPLINE[3]);
-      for (let i = 0; i < resolvedSpline.length; i++) {
-        stroke(lerpColor(startColor, endColor, i / resolvedSpline.length));
-        point(resolvedSpline[i].x, resolvedSpline[i].y);
-      }
-      endShape(CLOSE);
-    }
-
-    // Initialization
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
-
-    function setupEventListeners() {
-      document.getElementById('trackForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const seed = parseFloat(document.getElementById('seedInput').value);
-        const trackSize = parseInt(document.getElementById('cellCountInput').value);
-        mode = document.getElementById('modeSelect').value;
-        const intensity = parseFloat(document.getElementById('intensityInput').value);
-        genTrack(seed, trackSize, intensity);
-      });
-
-      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', () => redraw());
-      });
-    }
 
     window.draw = function draw() {
       background(COLORS.BACKGROUND);
 
-      if (trackResult.track) {
-        if (mode === "voronoi" && document.getElementById('showVoronoi').checked) {
+      if (trackResult && trackResult.track) {
+        if (document.getElementById('showVoronoi').checked) {
           drawVoronoi();
         }
         if (document.getElementById('showPoints').checked) {
           drawPoints();
         }
         if (document.getElementById('showSpline').checked) {
-          strokeWeight(0.5);
-          noFill();
-          stroke(COLORS.SPLINE[0]);
-          strokeWeight(3);
-          drawSpline(trackResult.track);
+          drawAnimatedSpline();
         }
       }
     };
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', setupEventListeners);
   </script>
 </body>
 </html>
