@@ -101,6 +101,19 @@
 
     // Track generation and display functions
     async function genTrack(seed, trackSize, mode, dataSet = [], selectedCells = []) {
+
+      if (mode === "voronoi") {
+        if (isNaN(seed)) seed = Math.random();
+        if (isNaN(trackSize)) trackSize = 5;
+        if(trackSize>50){
+        alert('trackSize too high!');
+        trackSize = 5;
+        }
+      } else {
+        if (isNaN(seed)) seed = Math.random();
+        if (isNaN(trackSize)) trackSize = 50;
+      }
+    
       trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
       splinePoints = await trackResult.track;
       redraw();
@@ -118,7 +131,7 @@
       const trackContainer = document.getElementById('track-container');
       const canvas = createCanvas(BBOX.xr, BBOX.yb);
       canvas.parent(trackContainer);
-      frameRate(30);
+      frameRate(60);
       loop();
     }
 

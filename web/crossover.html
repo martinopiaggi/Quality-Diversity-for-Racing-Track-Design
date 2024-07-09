@@ -223,17 +223,26 @@ function handleFormSubmit(event) {
       const crossoverMethod = document.getElementById('crossoverMethod').value;
 
       clearCanvases();
-      genTrack('parent1', isNaN(seed1) ? Math.random() : seed1, isNaN(trackSize1) ? 3 : trackSize1, crossoverMethod);
-      genTrack('parent2', isNaN(seed2) ? Math.random() : seed2, isNaN(trackSize2) ? 3 : trackSize2, crossoverMethod);
+      genTrack('parent1', seed1, trackSize1, crossoverMethod);
+      genTrack('parent2', seed2, trackSize2, crossoverMethod);
       genTrack('crossover', -1, -1, crossoverMethod);
     }
 
 
 // Track generation and canvas setup
 async function genTrack(canvasId, seed, trackSize, crossoverMethod, dataSet = [], selectedCells = []) {
+      if (isNaN(seed)) seed = Math.random();
+      
       let mode = crossoverMethod === 'convexHull' ? 'convexHull' : 'voronoi';
       const defaultTrackSize = mode === 'voronoi' ? 3 : 25;
       trackSize = isNaN(trackSize) ? defaultTrackSize : trackSize;
+
+      if (mode === "voronoi") {
+        if(trackSize>50){
+        alert('trackSize too high!');
+        trackSize = 5;
+        }
+      }
 
       let trackResult;
       if (canvasId === 'crossover') {
