@@ -65,7 +65,7 @@ export class ConvexHullTrackGenerator{
     expandAndDisplaceDataSet(d) {
         let rSet = new Array(d.length * 2);
         let disp = { x: 0, y: 1 };
-        let maxDisp = 3.0;
+        let maxDisp = 0.0; // If irregular track is needed. If 0 this method just expands number points
 
         for (let i = 0; i < d.length; ++i) {
             let dispLen = this.randomGen() * maxDisp;
