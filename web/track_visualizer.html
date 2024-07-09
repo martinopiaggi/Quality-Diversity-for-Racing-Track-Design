@@ -91,6 +91,7 @@
       const jsonInput = document.getElementById('jsonInput').value;
       try {
         const trackData = JSON.parse(jsonInput);
+        document.getElementById('modeSelect').value = trackData.mode;
         genTrack(trackData.id, trackData.trackSize, trackData.mode, trackData.dataSet, trackData.selectedCells);
       } catch (error) {
         console.error('Error parsing JSON:', error);
