@@ -36,7 +36,7 @@
         <textarea id="jsonInput" placeholder="Genotype in JSON format"></textarea>
         <button id="loadJSON">Load JSON</button>
       </div>
-
+      <button id="saveTrack">Save Track to Clipboard</button>
       <div class="checkbox-group">
         <label><input type="checkbox" id="showVoronoi" checked> Voronoi/Convex Hull</label>
         <label><input type="checkbox" id="showPoints" checked> Points</label>
@@ -48,17 +48,18 @@
 
   <script type="module">
     import { generateTrack } from '../src/trackGen/trackGenerator.js';
-
+    import { VoronoiTrackGenerator } from '../src/trackGen/voronoiTrackGenerator.js';
+    import { ConvexHullTrackGenerator } from '../src/trackGen/convexHullTrackGenerator.js';
     const COLORS = {
-      VORONOI: [76, 175, 80],    // Green
-      POINTS: [33, 150, 243],    // Blue
-      EDGES: [255, 152, 0],      // Orange
-      BACKGROUND: [248, 248, 248],  // Light Gray
+      VORONOI: [180, 192, 165],    // Sage
+      POINTS: [113, 131, 85],     // Reseda Green
+      EDGES: [164, 176, 146],     // Sage
+      BACKGROUND: [248, 248, 248],  // Light Gray (original background color)
       SPLINE: [
-      [33, 150, 243],    // Green
-        [33, 150, 243],   // Blue
-        [255, 152, 0],    // Orange
-        [156, 39, 176]    // Purple
+        [247, 37, 133],   // Rose
+        [181, 23, 158],   // Fandango
+        [114, 9, 183],    // Grape
+        [76, 201, 240]    // Vivid Sky Blue
       ]
     };
 
@@ -180,15 +181,46 @@
         let c = lerpColor(color(...COLORS.SPLINE[colorIndex]), color(...COLORS.SPLINE[nextColorIndex]), colorT);
         
         stroke(c);
-        strokeWeight(3);
+        strokeWeight(4);
         point(splinePoints[i].x, splinePoints[i].y);
       }
       endShape(CLOSE);
     }
 
+
+    async function handleSaveTrack() {
+      if (!trackResult) return;
+
+      let mode;
+        if (trackResult.generator instanceof VoronoiTrackGenerator) {
+          mode = 'voronoi';
+        } else if (trackResult.generator instanceof ConvexHullTrackGenerator) {
+          mode = 'convexHull';
+        } else {
+          console.error('Unknown track generator type');
+          return;
+        }
+        
+      const trackData = {
+        id: trackResult.generator.id,
+        mode: mode,
+        trackSize: trackResult.generator.trackSize,
+        dataSet: trackResult.generator.dataSet
+      };
+
+      if (mode === 'voronoi') {
+        trackData.selectedCells = trackResult.generator.selectedCells.map(cell => cell.site);
+      }
+
+      const jsonString = JSON.stringify(trackData, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      alert('Track data copied to clipboard!');
+    }
+
     // Initialization
     document.addEventListener('DOMContentLoaded', async () => {
       setupEventListeners();
+      document.getElementById('saveTrack').addEventListener('click', handleSaveTrack);
       displayTrack(currentTrackIndex);
     });
   </script>
