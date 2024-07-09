@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mutation Visualization</title>
   <script src="/src/lib/p5.js"></script>
   <script src="/src/lib/rhill-voronoi-core.js"></script>
@@ -29,9 +31,14 @@
         <button type="submit">Generate Track</button>
       </form>
       <div class="checkbox-group">
-        <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi</label>
+        <label><input type="checkbox" id="showVoronoi" checked> Show Voronoi/Convex Hull</label>
         <label><input type="checkbox" id="showPoints" checked> Show Points</label>
         <label><input type="checkbox" id="showSpline" checked> Show Spline</label>
+      </div>
+      <div class="json-input">
+        <label for="jsonInput">JSON Input:</label>
+        <textarea id="jsonInput" placeholder="Track Genotype in JSON format"></textarea>
+        <button id="loadJSON">Load JSON</button>
       </div>
     </div>
   </div>
@@ -43,12 +50,14 @@
 
     let trackResult;
     let splinePoints = [];
+    let p5Instance;
 
     function setupEventListeners() {
       document.getElementById('trackForm').addEventListener('submit', handleFormSubmit);
       document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', redraw);
+        checkbox.addEventListener('change', () => p5Instance.redraw());
       });
+      document.getElementById('loadJSON').addEventListener('click', loadJSONTrack);
     }
 
     function handleFormSubmit(event) {
@@ -60,98 +69,140 @@
       genTrack(seed, trackSize, intensity, mode);
     }
 
-    async function genTrack(seed, trackSize, intensityMutation, mode) {
-      if (isNaN(seed)) seed = 42;
+    async function genTrack(seed, trackSize, intensityMutation, mode, dataSet = [], selectedCells = []) {
+      if (isNaN(seed)) seed = Math.random();
       if (mode === "voronoi") {
         if (isNaN(trackSize)) trackSize = 5;
-        if(trackSize>50){
-        alert('trackSize too high!');
-        trackSize = 5;
+        if(trackSize > 50) {
+          alert('trackSize too high!');
+          trackSize = 5;
         }
       } else {
         if (isNaN(trackSize)) trackSize = 50;
       }
       
-      trackResult = await generateTrack(mode, BBOX, seed, trackSize);
-
+      // Generate initial track
+      let initialTrack = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
+      
+      // Apply mutation
+      if (isNaN(intensityMutation)) intensityMutation = 10;
+      
+      let mutatedData;
       if (mode === "voronoi") {
-        if (isNaN(intensityMutation)) intensityMutation = 10;
-        const mutated = mutation(trackResult.generator, intensityMutation);
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.sel);
+        mutatedData = mutation(initialTrack.generator, intensityMutation);
       } else {
-        if (isNaN(intensityMutation)) intensityMutation = 10;
-        const mutated = mutationConvexHull(trackResult.generator, intensityMutation);
-        trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutated.ds, mutated.hull);
+        mutatedData = mutationConvexHull(initialTrack.generator, intensityMutation);
       }
-
+      console.log(mutatedData.ds.length)
+      // Generate final track with mutated data
+      trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, mutatedData.ds, mutatedData.sel || mutatedData.hull);
+    
       splinePoints = await trackResult.track;
-      redraw();
+      p5Instance.redraw();
     }
 
     function drawVoronoi() {
-      strokeWeight(1);
+      p5Instance.strokeWeight(1);
       const diagram = trackResult.generator.diagram;
       if (!diagram) return;
-      stroke(COLORS.VORONOI);
+      p5Instance.stroke(COLORS.VORONOI);
       diagram.edges.forEach(edge => {
-        line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+        p5Instance.line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
       });
     }
 
     function drawPoints() {
-      strokeWeight(1);
+      p5Instance.strokeWeight(1);
       const dataSet = trackResult.generator.dataSet;
       if (!dataSet) return;
-      fill(COLORS.POINTS);
-      noStroke();
-      dataSet.forEach(pt => ellipse(pt.x, pt.y, 5, 5));
+      p5Instance.fill(COLORS.POINTS);
+      p5Instance.noStroke();
+      dataSet.forEach(pt => p5Instance.ellipse(pt.x, pt.y, 5, 5));
     }
 
     function drawAnimatedSpline() {
-      beginShape();
+      p5Instance.beginShape();
       for (let i = 0; i < splinePoints.length; i++) {
-        let t = (i / splinePoints.length + frameCount * 0.02) % 1;
+        let t = (i / splinePoints.length + p5Instance.frameCount * 0.02) % 1;
         t = (t + 1) % 1;
 
-        let colorIndex = floor(t * COLORS.SPLINE.length);
+        let colorIndex = p5Instance.floor(t * COLORS.SPLINE.length);
         let nextColorIndex = (colorIndex + 1) % COLORS.SPLINE.length;
         let colorT = (t * COLORS.SPLINE.length) % 1;
 
-        let c = lerpColor(color(...COLORS.SPLINE[colorIndex]), color(...COLORS.SPLINE[nextColorIndex]), colorT);
+        let c = p5Instance.lerpColor(
+          p5Instance.color(...COLORS.SPLINE[colorIndex]), 
+          p5Instance.color(...COLORS.SPLINE[nextColorIndex]), 
+          colorT
+        );
 
-        stroke(c);
-        strokeWeight(4);
-        point(splinePoints[i].x, splinePoints[i].y);
+        p5Instance.stroke(c);
+        p5Instance.strokeWeight(4);
+        p5Instance.point(splinePoints[i].x, splinePoints[i].y);
       }
-      endShape(CLOSE);
+      p5Instance.endShape(p5Instance.CLOSE);
     }
 
-    window.setup = function setup() {
+    function setup() {
       const trackContainer = document.getElementById('track-container');
-      const canvas = createCanvas(BBOX.xr, BBOX.yb);
-      canvas.parent(trackContainer);
-      frameRate(60);
-      loop();
-    };
+      p5Instance = new p5((p) => {
+        p.setup = () => {
+          const canvas = p.createCanvas(BBOX.xr, BBOX.yb);
+          canvas.parent(trackContainer);
+          p.frameRate(60);
+          p.loop();
+        };
 
-    window.draw = function draw() {
-      background(COLORS.BACKGROUND);
+        p.draw = () => {
+          p.background(COLORS.BACKGROUND);
+          if (trackResult && trackResult.track) {
+            if (document.getElementById('showVoronoi').checked) {
+              drawVoronoi();
+            }
+            if (document.getElementById('showPoints').checked) {
+              drawPoints();
+            }
+            if (document.getElementById('showSpline').checked) {
+              drawAnimatedSpline();
+            }
+          }
+        };
+      });
+    }
 
-      if (trackResult && trackResult.track) {
-        if (document.getElementById('showVoronoi').checked) {
-          drawVoronoi();
-        }
-        if (document.getElementById('showPoints').checked) {
-          drawPoints();
-        }
-        if (document.getElementById('showSpline').checked) {
-          drawAnimatedSpline();
-        }
+    async function loadJSONTrack() {
+      const jsonInput = document.getElementById('jsonInput').value;
+      const intensityInput = parseFloat(document.getElementById('intensityInput').value);
+      
+      try {
+        const trackData = JSON.parse(jsonInput);
+        document.getElementById('modeSelect').value = trackData.mode || 'voronoi';
+        document.getElementById('seedInput').value = trackData.id || '';
+        document.getElementById('cellCountInput').value = trackData.trackSize || '';
+        
+        // Use the intensity from the input field, or default to 10 if it's not a valid number
+        const intensity = isNaN(intensityInput) ? 10 : intensityInput;
+        document.getElementById('intensityInput').value = intensity;
+
+        await genTrack(
+          trackData.id, 
+          trackData.trackSize, 
+          intensity,
+          trackData.mode, 
+          trackData.dataSet, 
+          trackData.selectedCells || trackData.hull
+        );
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        alert('Invalid JSON format. Please check your input.');
       }
-    };
+    }
 
     // Initialization
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      setup();
+    });
   </script>
 </body>
 </html>

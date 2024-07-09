@@ -7,7 +7,7 @@ constructor(bbox, seed, trackSize, dataSet = [], selectedVoronoiSites = []) {
         this.randomGen = prng_alea(seed);
         this.voronoi = new Voronoi();
         this.trackSize = trackSize;
-        this.dataSet = dataSet.length > 0 ? [...dataSet, ...selectedVoronoiSites] : this.generatePoints();
+        this.dataSet = dataSet.length > 0 ? dataSet : this.generatePoints();
         this.diagram = this.voronoi.compute(this.dataSet, this.bbox);
         
         this.patchPath = [];

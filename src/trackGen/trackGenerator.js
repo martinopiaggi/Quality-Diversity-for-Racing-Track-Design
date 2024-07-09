@@ -15,7 +15,6 @@ async function importJsonUtils() {
   
 export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = JSON_DEBUG, dataSet = [], selected = []) {
     if (isNaN(seed)) seed = Math.random();
-
     switch (mode) {
         case 'voronoi':
             //in case of Voronoi select -> selected Voronoi cells

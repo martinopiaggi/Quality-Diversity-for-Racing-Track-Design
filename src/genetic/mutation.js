@@ -1,24 +1,26 @@
 export function mutation(individual, intensity) {
+  console.log(individual.dataSet.length);
+  console.log(individual.selectedCells.length);
   const selectedCells = individual.selectedCells.map(cell => ({...cell.site}));
   const dataSet = [...individual.dataSet];
-  
   const randomIndex = Math.floor(Math.random() * selectedCells.length);
   const deltaX = intensity * Math.random();
   const deltaY = intensity * Math.random();
-  
+  const dataSetIndex = dataSet.findIndex(point => 
+      point.x === selectedCells[randomIndex].x && 
+      point.y === selectedCells[randomIndex].y
+  );
   selectedCells[randomIndex].x += deltaX;
   selectedCells[randomIndex].y += deltaY;
-
-  const dataSetIndex = dataSet.findIndex(point => 
-    point.x === selectedCells[randomIndex].x - deltaX && 
-    point.y === selectedCells[randomIndex].y - deltaY
-  );
   
   if (dataSetIndex !== -1) {
-    dataSet[dataSetIndex] = {...selectedCells[randomIndex]};
-  }
   
-  return { sel: selectedCells, ds: dataSet };
+    // Remove the point from the dataset
+    dataSet.splice(dataSetIndex, 1);
+  }
+  // Add the mutated point to the dataset
+  dataSet.push(selectedCells[randomIndex]);
+  return { ds: dataSet, sel: selectedCells };
 }
 
 //let's move randomly a point in the convexHull
