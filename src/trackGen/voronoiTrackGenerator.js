@@ -29,7 +29,6 @@ constructor(bbox, seed, trackSize, dataSet = [], selectedVoronoiSites = []) {
             .filter(cell => cell);
 
         this.ensureConnectedCells(selectedCells);
-
         return selectedCells;
     }
 

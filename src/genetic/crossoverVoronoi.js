@@ -80,8 +80,7 @@ export function crossover(parent1, parent2, regularize = false) {
     }
     i--;
   }
-  
-  console.log("combinedDataset length" + combinedDataSet.length)
+ 
   return { ds: combinedDataSet, sel: combinedSelectedCells, lineParameters: { slope, intercept } };
 }
 
@@ -168,11 +167,12 @@ export function crossover2(parent1, parent2,regularize=false) {
   //push to selectedCellSites
   selectedCellSites.push(...parentSelected1.map(cell => cell.site),...remappedSelectedParent2)
 
-  //remove points in the combinedDataset that are too close to the selectedCellSites 
+  //Remove points in the combinedDataset that are too close to the selectedCellSites 
   combinedDataSet = combinedDataSet.filter(point => {
   for (const site of selectedCellSites) {
     const distance = calculateDistance(point, site);
     if (distance <= distanceThreshold) {
+      if(!isPointAlreadyInSet(point,selectedCellSites))
       return false;
     }
   }

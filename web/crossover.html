@@ -137,7 +137,6 @@ async function genTrack(canvasId, seed, trackSize, crossoverMethod, dataSet = []
           result = convexHullCrossover(parent1, parent2);
           lineParameters = result.lineParameters;
         }
-        
         trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, result.ds, result.sel);
       } else {
         trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
