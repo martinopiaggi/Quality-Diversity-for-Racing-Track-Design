@@ -1,0 +1,20 @@
+To rename this robot you have to ...
+
+... rename it in "identity.txt" ("#define simplix_V1_10_EXPORTS" to "#define newname_EXPORTS") ...
+
+... rename all files named "simplix_V1_10.*" to "newname.*"
+
+... rename in all project files "simplix_V1_10" to "newname" (ALL!: sln,vcproj,def,dsp,dsw,,xml) ...
+
+... rename in cpp/h files ...
+unitglobal.h(81):#define MyBotName "simplix_V1_10"                // Name of this bot
+unitglobal.h(82):#define ROBOT_DIR "drivers/simplix_V1_10"        // Sub path to dll
+unitmain.cpp(208):extern "C" int simplix_V1_10(tModInfo *ModInfo)
+
+... rename in def file ...
+LIBRARY	simplix_V1_10
+
+SECTIONS .data READ WRITE
+
+EXPORTS
+	simplix_V1_10

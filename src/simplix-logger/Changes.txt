@@ -1,0 +1,15 @@
+//--------------------------------------------------------------------------*
+// Changes:
+//
+// Version  : 1.10.001
+//
+// unitglobal.h: (Thanks to Markus Reese)
+// Use correct name "simplix_V1_10" for MyBotName and ROBOT_DIR
+//
+// unitpit.cpp:  
+// Swap side for avoid pitlanes depending on side of pits
+//
+// unitstrategy.cpp: (Thanks to John Isham)
+// Additional check for unreleased pit if car is out of race
+//
+//--------------------------------------------------------------------------*

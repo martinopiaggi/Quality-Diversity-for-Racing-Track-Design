@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeLite_Project Name="simplix" InternalType="">
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+    </Plugin>
+  </Plugins>
+  <Description/>
+  <Dependencies/>
+  <VirtualDirectory Name="0">
+    <File Name="0/Makefile"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="1">
+    <File Name="1/Makefile"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="car1-trb1">
+    <File Name="car1-trb1/Makefile"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="tracks">
+    <File Name="tracks/Makefile"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="simplix_codelite">
+    <File Name="unitcubicspline.cpp"/>
+    <File Name="unitvec2d.h"/>
+    <File Name="unitvec3d.h"/>
+    <File Name="tags"/>
+    <File Name=".cproject"/>
+    <File Name="unitopponent.h"/>
+    <File Name="unitlanepoint.cpp"/>
+    <File Name="unitpidctrl.cpp"/>
+    <File Name="unitdriver.cpp"/>
+    <File Name="Makefile"/>
+    <File Name="unitcollision.cpp"/>
+    <File Name="unitparam.h"/>
+    <File Name="unitparabel.cpp"/>
+    <File Name="unitteammanager.h"/>
+    <File Name="unitcommon.cpp"/>
+    <File Name="unitpit.cpp"/>
+    <File Name="unitpidctrl.h"/>
+    <File Name="unitmain.cpp"/>
+    <File Name="unitcarparam.cpp"/>
+    <File Name="unitcommondata.h"/>
+    <File Name="unitlinreg.cpp"/>
+    <File Name="unittmpcarparam.h"/>
+    <File Name="unitsection.cpp"/>
+    <File Name="unittmpcarparam.cpp"/>
+    <File Name="unitglobal.h"/>
+    <File Name="unitfixcarparam.h"/>
+    <File Name="unitfixcarparam.cpp"/>
+    <File Name="unitdriver.h"/>
+    <File Name="unitcommon.h"/>
+    <File Name="unitstrategy.cpp"/>
+    <File Name="unitopponent.cpp"/>
+    <File Name="unitcommondata.cpp"/>
+    <File Name="unitvec2d.cpp"/>
+    <File Name="unitpit.h"/>
+    <File Name="unitcollision.h"/>
+    <File Name="unitvec3d.cpp"/>
+    <File Name="unitparabel.h"/>
+    <File Name="unitparam.cpp"/>
+    <File Name="unitcubic.h"/>
+    <File Name="unitlane.h"/>
+    <File Name="unitlanepoint.h"/>
+    <File Name="unittrack.cpp"/>
+    <File Name="unitsysfoo.h"/>
+    <File Name="unitpitparam.cpp"/>
+    <File Name="unitcharacteristic.cpp"/>
+    <File Name="unitsection.h"/>
+    <File Name="unitcarparam.h"/>
+    <File Name="unitclothoid.cpp"/>
+    <File Name="unitstrategy.h"/>
+    <File Name="unitteammanager.cpp"/>
+    <File Name="unitclothoid.h"/>
+    <File Name=".project"/>
+    <File Name="unitcubicspline.h"/>
+    <File Name="unitpitparam.h"/>
+    <File Name="unitlane.cpp"/>
+    <File Name="unitsysfoo.cpp"/>
+    <File Name="unitcharacteristic.h"/>
+    <File Name="unitcubic.cpp"/>
+    <File Name="unitlinalg.h"/>
+    <File Name="unitlinalg.cpp"/>
+    <File Name="unitlinreg.h"/>
+    <File Name="unittrack.h"/>
+  </VirtualDirectory>
+  <Dependencies Name="Release"/>
+  <Settings Type="Dynamic Library">
+    <Configuration Name="Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Dynamic Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g" Required="yes">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="" IntermediateDirectory="./Debug" Command="" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
+        <PostConnectCommands></PostConnectCommands>
+        <StartupCommands></StartupCommands>
+      </Debugger>
+      <PreBuild>
+        <Command Enabled="yes">export TORCS_BASE=~/research/ongoing/championship2009/torcs-1.3.1/</Command>
+        <Command Enabled="yes">export MAKE_DEFAULT=$TORCS_BASE/Make-default.make</Command>
+      </PreBuild>
+      <PostBuild/>
+      <CustomBuild Enabled="yes">
+        <CleanCommand>make clean</CleanCommand>
+        <BuildCommand>make</BuildCommand>
+        <PreprocessFileCommand></PreprocessFileCommand>
+        <SingleFileCommand></SingleFileCommand>
+        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory>$(WorkspacePath)</WorkingDirectory>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild></CustomPostBuild>
+        <CustomPreBuild></CustomPreBuild>
+      </AdditionalRules>
+    </Configuration>
+    <Configuration Name="Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Dynamic Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="" Required="yes">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="-O2" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="" IntermediateDirectory="" Command="" CommandArguments="" WorkingDirectory="/home/daniele/research/ongoing/games/simplix/simplix_codelite" PauseExecWhenProcTerminates="yes"/>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
+        <PostConnectCommands></PostConnectCommands>
+        <StartupCommands></StartupCommands>
+      </Debugger>
+      <PreBuild>
+        <Command Enabled="yes">export TORCS_BASE=/home/daniele/research/ongoing/championship2009/torcs-1.3.1/</Command>
+        <Command Enabled="yes">export MAKE_DEFAULT=/home/daniele/research/ongoing/championship2009/torcs-1.3.1/Make-default.mk</Command>
+      </PreBuild>
+      <PostBuild/>
+      <CustomBuild Enabled="yes">
+        <Target Name="Install">make -f "Makefile" install</Target>
+        <CleanCommand>make -f "Makefile" clean</CleanCommand>
+        <BuildCommand>make -f "Makefile"</BuildCommand>
+        <PreprocessFileCommand></PreprocessFileCommand>
+        <SingleFileCommand></SingleFileCommand>
+        <MakefileGenerationCommand>cp Makefile simplix.mk</MakefileGenerationCommand>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory>/home/daniele/research/ongoing/games/simplix/simplix_codelite</WorkingDirectory>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild></CustomPostBuild>
+        <CustomPreBuild>
+
+</CustomPreBuild>
+      </AdditionalRules>
+    </Configuration>
+    <GlobalSettings>
+      <Compiler Options="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+  </Settings>
+</CodeLite_Project>
