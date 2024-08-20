@@ -310,7 +310,8 @@ static void logger(tCarElt* car){
 	  printf("Logging Finished at lap %d!\n", car->_laps);
 	}
 	logtimer++;
-}
+}
+
 //==========================================================================*
 // Aufbereitung der Namen
 // Prepare names
@@ -348,7 +349,7 @@ bool Prepare()
         "%s/%s/%d"                               // section from
 	    ,ROB_SECT_ROBOTS,ROB_LIST_INDEX,I);      // Index of driver
  
-	  char* DriverName = GfParmGetStr            // Get pointer to
+	  char* DriverName = (char*) GfParmGetStr            // Get pointer to
         (RobotSettings                           // drivers name
         , Section                                // defined in corresponding
         , ROB_ATTR_NAME, BotName[I]);            // section, BotName[I] as default

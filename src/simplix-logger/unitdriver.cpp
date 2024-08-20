@@ -295,14 +295,14 @@ void TDriver::SetBotName(char* Value)
   GfOut("\n\n\nPathFilename: %s\n",PathFilename);
   if (RobotSettings)
   {
-	oCarType = GfParmGetStr                      // Get pointer to
+	oCarType = (char*)GfParmGetStr                      // Get pointer to
       (RobotSettings                             // car type
       , Section                                  // defined in corresponding
       , ROB_ATTR_CAR, DEFAULTCARTYPE);           // section, default car type
 
 	oBotName = Value;                            // Get pointer to drivers name
 
-	oTeamName = GfParmGetStr                     // Get pointer to
+	oTeamName = (char*) GfParmGetStr                     // Get pointer to
       (RobotSettings                             // drivers team name
       , Section                                  // defined in corresponding
       , ROB_ATTR_TEAM, oCarType);                // section, car type as default
@@ -823,7 +823,7 @@ void TDriver::OwnCarOppIndex()
 void TDriver::InitDriveTrain()
 {
   oDriveTrainType = cDT_RWD;                     // Assume rear wheel drive
-  char* TrainType = GfParmGetStr(oCarHandle,     // but check it
+  char* TrainType = (char*) GfParmGetStr(oCarHandle,     // but check it
 	SECT_DRIVETRAIN, PRM_TYPE, VAL_TRANS_RWD);
 
   if (strcmp(TrainType, VAL_TRANS_FWD) == 0)     // If front wheel drive
