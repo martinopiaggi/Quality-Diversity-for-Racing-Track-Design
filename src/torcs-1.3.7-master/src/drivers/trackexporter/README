@@ -1,0 +1,12 @@
+README for trackexporter
+by Jacopo Sirianni
+
+
+This bot extracts parts of the track data structures outside Torcs.
+It takes data from the tTrack passed to the bot and exports them to ~/.torcs/tracks/trackName.csv.
+This bot automatically retires as soon as it joins the race.
+The data exported can be customized modifying the initTrack() method in trackexporter.cpp.
+
+
+
+Made for Torcs 1.3.6

@@ -33,9 +33,6 @@ RUN apt-get update && apt-get install -y \
 # Clone TORCS repository
 COPY torcs-1.3.7-master /torcs-code
 
-# Copy simplix-logger
-COPY simplix-logger /torcs-code/src/drivers/simplix-logger
-
 # Set working directory
 WORKDIR /torcs-code
 
