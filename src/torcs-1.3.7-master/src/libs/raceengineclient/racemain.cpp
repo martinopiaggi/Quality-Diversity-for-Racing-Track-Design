@@ -42,6 +42,12 @@
 
 #include "racemain.h"
 
+/* Logger */
+
+#include "logger.h"
+
+Logger* logger;
+
 /***************************************************************/
 /* ABANDON RACE HOOK */
 
@@ -326,6 +332,10 @@ static int reRaceRealStart(void)
 
 		GfuiScreenActivate(ReInfo->_reGameScreen);
 	}
+
+	/* Logger */
+	extern Logger* logger;
+	logger = new Logger(s, ReInfo->track->internalname);
 
 	return RM_SYNC | RM_NEXT_STEP;
 }

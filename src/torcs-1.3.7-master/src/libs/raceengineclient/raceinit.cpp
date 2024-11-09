@@ -47,6 +47,10 @@
 
 #include "raceinit.h"
 
+/* Logger */
+
+#include "logger.h"
+
 static const char *level_str[] = { ROB_VAL_ROOKIE, ROB_VAL_AMATEUR, ROB_VAL_SEMI_PRO, ROB_VAL_PRO };
 
 static tModList *reEventModList = 0;
@@ -860,6 +864,10 @@ ReRaceCleanDrivers(void)
 	ReInfo->s->cars = 0;
 	ReInfo->s->_ncars = 0;
 	GfModUnloadList(&ReRaceModList);
+
+	/* Logger */
+	extern Logger* logger;
+	delete logger;
 }
 
 

@@ -20,7 +20,8 @@ SOLIBRARY    = libraceengine.so
 
 SOLIBDIR     = .
 
-SOURCES      = singleplayer.cpp raceinit.cpp racemain.cpp racemanmenu.cpp racestate.cpp racegl.cpp \
+# Logger
+SOURCES      = logger.cpp singleplayer.cpp raceinit.cpp racemain.cpp racemanmenu.cpp racestate.cpp racegl.cpp \
 	       raceengine.cpp raceresults.cpp
 
 SOLIBS      = -lracescreens -lrobottools

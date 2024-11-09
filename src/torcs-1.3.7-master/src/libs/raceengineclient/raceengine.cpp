@@ -37,6 +37,10 @@
 #include "raceinit.h"
 #include "raceresults.h"
 
+/* Logger */
+
+#include "logger.h"
+
 #include "raceengine.h"
 
 #define image_width 640
@@ -718,6 +722,10 @@ ReOneStep(double deltaTimeIncrement)
 		ReRaceMsgUpdate();
 	}
 	ReSortCars();
+
+	/* Logger */
+	extern Logger* logger;
+	logger->log(s);
 }
 
 void
