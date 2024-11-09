@@ -28,6 +28,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
 #include "logger.h"
 #include <iostream>
 #include <stdlib.h>
@@ -84,17 +85,27 @@ void Logger::logRegularData(tSituation *s, int carIndex) {
             << s->cars[carIndex]->info.driverType << "," 
             << s->cars[carIndex]->info.skillLevel << ","
             << s->cars[carIndex]->pub.speed << "," 
+            << s->cars[carIndex]->pub.trkPos.toStart << "," 
+            << s->cars[carIndex]->pub.trkPos.toRight << "," 
             << s->cars[carIndex]->pub.trkPos.toMiddle << "," 
+            << s->cars[carIndex]->pub.trkPos.toLeft << "," 
             << s->cars[carIndex]->pub.state << ","
             << s->cars[carIndex]->race.distFromStartLine << "," 
             << s->cars[carIndex]->race.laps << "," 
             << s->cars[carIndex]->race.pos << "," 
             << s->cars[carIndex]->race.bestLapTime << "," 
             << s->cars[carIndex]->race.curLapTime << "," 
+            << s->cars[carIndex]->race.topSpeed << "," 
             << s->cars[carIndex]->race.timeBehindPrev << "," 
             << s->cars[carIndex]->race.timeBeforeNext << ","
+            << s->cars[carIndex]->priv.driverIndex << "," 
             << s->cars[carIndex]->priv.dammage << "," 
-            << s->cars[carIndex]->priv.fuel
+            << s->cars[carIndex]->priv.fuel << ","
+            // Control inputs (needed for blocks.py analysis)
+            << s->cars[carIndex]->ctrl.steer << "," 
+            << s->cars[carIndex]->ctrl.accelCmd << "," 
+            << s->cars[carIndex]->ctrl.brakeCmd << "," 
+            << s->cars[carIndex]->ctrl.gear
             << std::endl;
     }
 }
@@ -112,7 +123,7 @@ void Logger::checkAndLogOvertakes(tSituation *s) {
                     }
                 }
 
-                // Log overtake event
+                // Log overtake event with full position data
                 logFile << s->currentTime << ",overtake," 
                     << s->cars[i]->race.distFromStartLine << ","
                     << s->cars[i]->info.name << "," 
@@ -126,7 +137,12 @@ void Logger::checkAndLogOvertakes(tSituation *s) {
                     << s->cars[overtakenIndex]->pub.state << "," 
                     << s->cars[overtakenIndex]->priv.dammage << "," 
                     << s->cars[overtakenIndex]->priv.fuel << "," 
-                    << s->cars[overtakenIndex]->race.laps
+                    << s->cars[overtakenIndex]->race.laps << ","
+                    // Position matrix data for track visualization
+                    << s->cars[i]->pub.posMat[3][0] << "," 
+                    << s->cars[i]->pub.posMat[3][2] << "," 
+                    << s->cars[overtakenIndex]->pub.posMat[3][0] << "," 
+                    << s->cars[overtakenIndex]->pub.posMat[3][2]
                     << std::endl;
             }
             oldPositions[s->cars[i]->info.name] = s->cars[i]->race.pos;
