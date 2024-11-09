@@ -8,7 +8,9 @@
     a race and to store everything inside a text file named
     ~/.torcs/logs/yyyy-mm-dd hh:mm:ss trackName.csv
     Make sure that that directory exists before using this logger.
-    See the .cpp file to see/customize what is logged by this logger.
+    
+    This version includes optimizations to reduce file size while maintaining
+    data quality and compatibility with analysis tools.
 
  ***************************************************************************/
 
@@ -20,32 +22,30 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
-
-
 #ifndef _LOGGER_H_
 #define _LOGGER_H_
 
-
-
 #include <fstream>
 #include <map>
-
 #include <raceman.h>
 
+// Log every 2 seconds (100 simulation steps at 20ms each)
+const int LOGGER_SAMPLE_RATE = 100;
 
-class Logger
-{
-	std::ofstream logFile;
-	std::map<char*,int> oldPositions;
-	std::map<char*,bool> raceEndedMap;
-	
-	public:
-		Logger(tSituation *s, const char *trackName);
-		~Logger();
-		void log(tSituation *s);
+class Logger {
+private:
+    std::ofstream logFile;
+    std::map<char*, int> oldPositions;
+    std::map<char*, bool> raceEndedMap;
+    int skipCounter;
+
+    void logRegularData(tSituation *s, int carIndex);
+    void checkAndLogOvertakes(tSituation *s);
+
+public:
+    Logger(tSituation *s, const char *trackName);
+    ~Logger();
+    void log(tSituation *s);
 };
 
-
-
-#endif /* _LOGGER_H_ */ 
+#endif
