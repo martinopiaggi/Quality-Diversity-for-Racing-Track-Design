@@ -1,0 +1,330 @@
+diff -crNB ../torcs-1.3.6-pulito/src/libs/raceengineclient/logger.cpp ./src/libs/raceengineclient/logger.cpp
+*** ../torcs-1.3.6-pulito/src/libs/raceengineclient/logger.cpp	1970-01-01 01:00:00.000000000 +0100
+--- ./src/libs/raceengineclient/logger.cpp	2015-08-23 10:30:41.340023000 +0200
+***************
+*** 0 ****
+--- 1,157 ----
++ /***************************************************************************
++ 
++     Copyright (C) 2015 Jacopo Sirianni                               
++ 
++     Implementation of a logger for TORCS.
++     
++     Notes:
++     - the name of the log is hardcoded in the constructor
++     - the Logger::log() method does the actual logging given the current
++       situation
++     - the "verbose" section is **REALLY** verbose (it logs almost
++       everything) => make sure to have some free GBs or comment it
++     - particular attention has been put to the logging of overtakes
++ 
++     Changes from the old version:
++     - removed logging after the end of the last lap
++     - added logging of final gaps in a separate line
++     - removed ";" at the end of the line
++     - added folder creation and reviewed filename generation
++ 
++  ***************************************************************************/
++ 
++ /***************************************************************************
++  *                                                                         *
++  *   This program is free software; you can redistribute it and/or modify  *
++  *   it under the terms of the GNU General Public License as published by  *
++  *   the Free Software Foundation; either version 2 of the License, or     *
++  *   (at your option) any later version.                                   *
++  *                                                                         *
++  ***************************************************************************/
++ 
++ 
++ 
++ #include "logger.h"
++ 
++ #include <iostream>
++ #include <stdlib.h>
++ #include <string>
++ #include <time.h>
++ #include <vector>
++ 
++ 
++ 
++ Logger::Logger(tSituation *s, const char *trackName)
++ {
++ 	// Get the current time
++ 	
++ 	time_t rawtime;
++ 	struct tm * timeinfo;
++ 
++ 	time(&rawtime);
++ 	timeinfo = localtime(&rawtime);
++  	char timeString[20];
++  	strftime(timeString, 20, "%F %T", timeinfo);
++ 
++ 	// Make the log folder
++ 
++ 	std::string outputFolder(getenv("HOME"));
++ 	outputFolder.append("/.torcs/logs/");
++ 
++ 	/* GfCreateDir wants a non-const char* as input */
++ 	std::vector<char> outputFolderChars(outputFolder.begin(), outputFolder.end());
++ 	outputFolderChars.push_back('\0');
++ 
++ 	if (GfCreateDir(&outputFolderChars[0]) == GF_DIR_CREATED)
++ 	{
++ 		// Construct the (absolute) filename (~/.torcs/logs/yyyy-mm-dd hh:mm:ss trackName.csv)
++ 
++ 		std::string filePath(outputFolder);
++ 		filePath.append(timeString);
++ 		filePath.append(" ");
++ 		filePath.append(trackName);
++ 		filePath.append(".csv");
++ 	
++ 		// Create the log file
++ 	
++ 		logFile.open(filePath.c_str(), std::ios::out);
++ 
++ 		// Initialize starting positions
++ 	
++ 		for(int i = 0; i < s->_ncars; i++)
++ 		{
++ 			oldPositions.insert(std::pair<char*,int>(s->cars[i]->info.name, s->cars[i]->race.pos));
++ 			raceEndedMap.insert(std::pair<char*,bool>(s->cars[i]->info.name, false));
++ 		}
++ 	}
++ 	else
++ 	{
++ 		std::cerr << "ERROR: Logs folder not created!" << std::endl;
++ 		exit(-1);
++ 	}
++ }
++ 
++ 
++ 
++ Logger::~Logger()
++ {
++ 	logFile.close();
++ }
++ 
++ 
++ 
++ void Logger::log(tSituation *s)
++ {
++ 	for(int i = 0; i < s->_ncars; i++)
++ 	{
++ 		if(s->cars[i]->race.laps <= s->raceInfo.totLaps)
++ 		{
++ 			// (Really) verbose logging
++ 
++ 			logFile << s->currentTime << ","
++ 				<< s->cars[i]->info.name << "," << s->cars[i]->info.carName << "," << s->cars[i]->info.driverType << "," << s->cars[i]->info.skillLevel << ","
++ 				<< s->cars[i]->pub.speed << "," << s->cars[i]->pub.trkPos.toStart << "," << s->cars[i]->pub.trkPos.toRight << "," << s->cars[i]->pub.trkPos.toMiddle << "," << s->cars[i]->pub.trkPos.toLeft << "," << s->cars[i]->pub.state << ","
++ 				<< s->cars[i]->race.distFromStartLine << "," << s->cars[i]->race.laps << "," << s->cars[i]->race.pos << "," << s->cars[i]->race.bestLapTime << "," << s->cars[i]->race.curLapTime << "," << s->cars[i]->race.topSpeed << "," << s->cars[i]->race.timeBehindPrev << "," << s->cars[i]->race.timeBeforeNext << "," 
++ 				<< s->cars[i]->priv.driverIndex << "," << s->cars[i]->priv.dammage << "," << s->cars[i]->priv.fuel << ","
++ 				<< s->cars[i]->ctrl.steer << "," << s->cars[i]->ctrl.accelCmd << "," << s->cars[i]->ctrl.brakeCmd << "," << s->cars[i]->ctrl.gear
++ 				<< std::endl;
++ 
++ 			if(s->cars[i]->race.pos < oldPositions[s->cars[i]->info.name])
++ 			{
++ 				// i has overtaken, find the overtaken car
++ 
++ 				int overtakenIndex;
++ 
++ 				for(int j = 0; j < s->_ncars; j++)
++ 				{
++ 					if(s->cars[j]->race.pos == oldPositions[s->cars[i]->info.name])
++ 					{
++ 						overtakenIndex = j;
++ 						break;
++ 					}
++ 				}
++ 
++ 				// Log the overtake
++ 
++ 				logFile << s->currentTime << ",overtake," << s->cars[i]->race.distFromStartLine << ","
++ 					<< s->cars[i]->info.name << "," << s->cars[i]->info.carName << "," << s->cars[i]->pub.state << "," << s->cars[i]->priv.dammage << "," << s->cars[i]->priv.fuel << "," << s->cars[i]->race.laps << ","
++ 					<< s->cars[overtakenIndex]->info.name << "," << s->cars[overtakenIndex]->info.carName << "," << s->cars[overtakenIndex]->pub.state << "," << s->cars[overtakenIndex]->priv.dammage << "," << s->cars[overtakenIndex]->priv.fuel << "," << s->cars[overtakenIndex]->race.laps
++ 					<< s->cars[i]->pub.posMat[3][0] << "," << s->cars[i]->pub.posMat[3][2] << "," << s->cars[i]->pub.posMat[overtakenIndex][0] << "," << s->cars[overtakenIndex]->pub.posMat[3][2]
++ 					<< std::endl;
++ 			}
++ 
++ 			oldPositions[s->cars[i]->info.name] = s->cars[i]->race.pos;
++ 		}
++ 		else
++ 		{
++ 			// If the race has ended log the gap from the previous driver
++ 			// The current gap was not available at the previuos step of the simulation (e.g. if the race lasts for three laps, the gap is computed at the first step of lap four)
++ 
++ 			if(!raceEndedMap[s->cars[i]->info.name])
++ 			{
++ 				logFile << "timeBehindPrev," << s->cars[i]->info.name << "," << s->cars[i]->race.timeBehindPrev << std::endl;
++ 				raceEndedMap[s->cars[i]->info.name] = true;
++ 			}
++ 		}
++ 	}
++ }
+diff -crNB ../torcs-1.3.6-pulito/src/libs/raceengineclient/logger.h ./src/libs/raceengineclient/logger.h
+*** ../torcs-1.3.6-pulito/src/libs/raceengineclient/logger.h	1970-01-01 01:00:00.000000000 +0100
+--- ./src/libs/raceengineclient/logger.h	2015-04-19 17:48:38.542445000 +0200
+***************
+*** 0 ****
+--- 1,51 ----
++ /***************************************************************************
++ 
++     Copyright (C) 2015 Jacopo Sirianni                               
++ 
++     Header file of a logger for TORCS.
++ 
++     The goal of this logger is to log drivers' actions and status during
++     a race and to store everything inside a text file named
++     ~/.torcs/logs/yyyy-mm-dd hh:mm:ss trackName.csv
++     Make sure that that directory exists before using this logger.
++     See the .cpp file to see/customize what is logged by this logger.
++ 
++  ***************************************************************************/
++ 
++ /***************************************************************************
++  *                                                                         *
++  *   This program is free software; you can redistribute it and/or modify  *
++  *   it under the terms of the GNU General Public License as published by  *
++  *   the Free Software Foundation; either version 2 of the License, or     *
++  *   (at your option) any later version.                                   *
++  *                                                                         *
++  ***************************************************************************/
++ 
++ 
++ 
++ #ifndef _LOGGER_H_
++ #define _LOGGER_H_
++ 
++ 
++ 
++ #include <fstream>
++ #include <map>
++ 
++ #include <raceman.h>
++ 
++ 
++ class Logger
++ {
++ 	std::ofstream logFile;
++ 	std::map<char*,int> oldPositions;
++ 	std::map<char*,bool> raceEndedMap;
++ 	
++ 	public:
++ 		Logger(tSituation *s, const char *trackName);
++ 		~Logger();
++ 		void log(tSituation *s);
++ };
++ 
++ 
++ 
++ #endif /* _LOGGER_H_ */ 
+diff -crNB ../torcs-1.3.6-pulito/src/libs/raceengineclient/Makefile ./src/libs/raceengineclient/Makefile
+*** ../torcs-1.3.6-pulito/src/libs/raceengineclient/Makefile	2013-01-12 15:24:06.000000000 +0100
+--- ./src/libs/raceengineclient/Makefile	2015-08-23 10:36:28.752029000 +0200
+***************
+*** 20,26 ****
+  
+  SOLIBDIR     = .
+  
+! SOURCES      = singleplayer.cpp raceinit.cpp racemain.cpp racemanmenu.cpp racestate.cpp racegl.cpp \
+  	       raceengine.cpp raceresults.cpp
+  
+  SOLIBS      = -lracescreens -lrobottools
+--- 20,27 ----
+  
+  SOLIBDIR     = .
+  
+! # Logger
+! SOURCES      = logger.cpp singleplayer.cpp raceinit.cpp racemain.cpp racemanmenu.cpp racestate.cpp racegl.cpp \
+  	       raceengine.cpp raceresults.cpp
+  
+  SOLIBS      = -lracescreens -lrobottools
+diff -crNB ../torcs-1.3.6-pulito/src/libs/raceengineclient/raceengine.cpp ./src/libs/raceengineclient/raceengine.cpp
+*** ../torcs-1.3.6-pulito/src/libs/raceengineclient/raceengine.cpp	2014-04-15 11:34:17.000000000 +0200
+--- ./src/libs/raceengineclient/raceengine.cpp	2015-08-23 10:36:28.756029000 +0200
+***************
+*** 37,42 ****
+--- 37,46 ----
+  #include "raceinit.h"
+  #include "raceresults.h"
+  
++ /* Logger */
++ 
++ #include "logger.h"
++ 
+  #include "raceengine.h"
+  
+  static double	msgDisp;
+***************
+*** 660,665 ****
+--- 664,673 ----
+  		ReRaceMsgUpdate();
+  	}
+  	ReSortCars();
++ 
++ 	/* Logger */
++ 	extern Logger* logger;
++ 	logger->log(s);
+  }
+  
+  void
+diff -crNB ../torcs-1.3.6-pulito/src/libs/raceengineclient/raceinit.cpp ./src/libs/raceengineclient/raceinit.cpp
+*** ../torcs-1.3.6-pulito/src/libs/raceengineclient/raceinit.cpp	2014-04-12 15:55:33.000000000 +0200
+--- ./src/libs/raceengineclient/raceinit.cpp	2015-08-23 10:36:28.756029000 +0200
+***************
+*** 47,52 ****
+--- 47,56 ----
+  
+  #include "raceinit.h"
+  
++ /* Logger */
++ 
++ #include "logger.h"
++ 
+  static const char *level_str[] = { ROB_VAL_ROOKIE, ROB_VAL_AMATEUR, ROB_VAL_SEMI_PRO, ROB_VAL_PRO };
+  
+  static tModList *reEventModList = 0;
+***************
+*** 861,866 ****
+--- 865,874 ----
+  	ReInfo->s->cars = 0;
+  	ReInfo->s->_ncars = 0;
+  	GfModUnloadList(&ReRaceModList);
++ 
++ 	/* Logger */
++ 	extern Logger* logger;
++ 	delete logger;
+  }
+  
+  
+diff -crNB ../torcs-1.3.6-pulito/src/libs/raceengineclient/racemain.cpp ./src/libs/raceengineclient/racemain.cpp
+*** ../torcs-1.3.6-pulito/src/libs/raceengineclient/racemain.cpp	2014-04-15 11:34:17.000000000 +0200
+--- ./src/libs/raceengineclient/racemain.cpp	2015-08-23 10:36:28.756029000 +0200
+***************
+*** 42,47 ****
+--- 42,53 ----
+  
+  #include "racemain.h"
+  
++ /* Logger */
++ 
++ #include "logger.h"
++ 
++ Logger* logger;
++ 
+  /***************************************************************/
+  /* ABANDON RACE HOOK */
+  
+***************
+*** 327,332 ****
+--- 333,342 ----
+  		GfuiScreenActivate(ReInfo->_reGameScreen);
+  	}
+  
++ 	/* Logger */
++ 	extern Logger* logger;
++ 	logger = new Logger(s, ReInfo->track->internalname);
++ 
+  	return RM_SYNC | RM_NEXT_STEP;
+  }
+  
