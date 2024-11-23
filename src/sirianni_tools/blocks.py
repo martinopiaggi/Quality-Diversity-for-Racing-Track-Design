@@ -388,12 +388,21 @@ def computePrevBlockGrade(grades):
 
 
 def plotMetric(trackData, blockMetric, label, imagePath, integersInColorbar = False, clearFigure = True, customLevels=None):
-	metricMax = max(blockMetric)
-	if filter(lambda x: x > 0, blockMetric):
-		metricMin = min(filter(lambda x: x != 0, blockMetric))
-	else:
-		# All the elements are zeros
-		metricMin = 0
+    # Add safety check at the start
+    if not trackData or not list(blockMetric):
+    	print(f"Warning: Empty track data or metrics for {imagePath}, skipping plot")
+        return
+
+    metricMax = max(blockMetric)
+    
+	try:
+        # Filter non-zero values and find minimum, with safety check
+        nonZeroMetrics = list(filter(lambda x: x != 0, blockMetric))
+        metricMin = min(nonZeroMetrics) if nonZeroMetrics else 0
+    except ValueError:
+        # If all values are zero or sequence is empty
+        metricMin = 0
+        metricMax = 0
 
 	plt.axis("off")							# disable axis drawing
 	plt.gca().set_aspect("equal", adjustable = "box")		# set the same scale for x and y

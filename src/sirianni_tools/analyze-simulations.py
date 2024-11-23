@@ -35,35 +35,35 @@ args = parser.parse_args()
 
 
 for path in args.paths:
-	folderName = string.rstrip(os.path.relpath(path), "/")
+	folderName = os.path.relpath(path).rstrip("/")
 
 	print("\033[94m>>> Analyzing " + folderName + "...\033[0m")
 	utils.printHeading("Reading initialization data")
 
-	botSkills = []
-	with open(folderName + "/skills.csv", "r") as skillsFile:
-		for row in csv.reader(skillsFile):
-			botSkills.append((row[0], row[1]))
-	botSkills = sorted(botSkills, key = lambda record: record[1])
+	# hardcoded configuration:
+	botSkills = [
+		("damned", "medium"),
+		("bt", "medium"),
+		("tita", "medium"),
+		("olethros", "medium"),
+		("simplix", "medium")
+	]
 
 	logList = utils.getLogList(folderName)
 	driversList = utils.getDriversList(folderName + "/" + logList[0])
 
 	utils.printHeading("Analyzing track and track dynamics")
 	trackName = logList[0][20:-4]
+	
 	if not os.path.exists(utils.torcsTrackDirectory + trackName + ".csv"):
-		racegen.racegen(trackName, racegen.trackexporterBotList, 1, folderName + "/quickrace.xml")
-		subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + folderName + "/quickrace.xml", shell = True)
-		os.remove(folderName + "/quickrace.xml")
-		os.remove(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1])
+    	subprocess.check_call(utils.torcsCommand + " -r /usr/local/share/games/torcs/config/raceman/simplix-test.xml", shell = True)
 
 	trackData = track.analyzeTrack(utils.torcsTrackDirectory + trackName + ".csv", folderName + "/track")
 
 	if not os.path.exists(utils.torcsTrackDirectory + "/" + trackName + "_dynamics.csv"):
-		racegen.racegen(trackName, racegen.trackLogger, 1, folderName + "/quickrace.xml")
-		subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + folderName + "/quickrace.xml", shell=True)
-		os.remove(folderName + "/quickrace.xml")
-		shutil.move(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1], utils.torcsTrackDirectory + "/" + trackName + "_dynamics.csv")
+		subprocess.check_call(utils.torcsCommand + " -r /usr/local/share/games/torcs/config/raceman/simplix-test.xml", shell=True)
+		if utils.torcsLogPath and utils.getLogList(utils.torcsLogPath):
+			shutil.move(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1], utils.torcsTrackDirectory + "/" + trackName + "_dynamics.csv")
 
 	blocks.makeMetricsPlots(os.getcwd() + "/" + folderName, utils.torcsTrackDirectory, trackName, args.max_block_len)
 	

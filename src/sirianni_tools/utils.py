@@ -12,9 +12,9 @@ __email__ = "jacopo.sirianni@mail.polimi.it"
 
 
 
-torcsCommand = "~/tesi/bin/bin/torcs"
-torcsLogPath = "./logs_analysis/"
-torcsTrackDirectory = "./logs_analysis/"
+torcsCommand = "/usr/local/bin/torcs"
+torcsLogPath = "/root/.torcs/logs/"
+torcsTrackDirectory = "/root/.torcs/tracks/"
 maxBendRadius = 1200
 
 @enum.unique

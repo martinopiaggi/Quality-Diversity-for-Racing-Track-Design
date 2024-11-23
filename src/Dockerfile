@@ -28,7 +28,17 @@ RUN apt-get update && apt-get install -y \
     make \
     g++ \
     gdb \
+    python3 \
+    python3-pip \
+    && pip3 install matplotlib numpy scipy \
     && apt-get clean
+
+# Copy Sirianni tools into container
+COPY sirianni_tools /usr/local/lib/sirianni_tools
+
+# Add Sirianni tools to both PYTHONPATH (for imports) and PATH (for execution)
+ENV PYTHONPATH="${PYTHONPATH}:/usr/local/lib/sirianni_tools"
+ENV PATH="${PATH}:/usr/local/lib/sirianni_tools"
 
 # Clone TORCS repository
 COPY torcs-1.3.7-master /torcs-code
