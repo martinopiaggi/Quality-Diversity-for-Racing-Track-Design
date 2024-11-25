@@ -10,7 +10,9 @@ ENV MAKE_DEFAULT=/torcs-code/Make-default.mk
 ENV TORCS_BASE=/torcs-code/
 
 # Update and install dependencies
+# added nano for debug
 RUN apt-get update && apt-get install -y \
+    nano \
     libglib2.0-dev \
     libgl1-mesa-dev \
     libglu1-mesa-dev \

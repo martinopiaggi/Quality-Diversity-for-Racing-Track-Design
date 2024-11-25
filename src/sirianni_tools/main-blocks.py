@@ -30,22 +30,22 @@ args = parser.parse_args()
 print("==> Checking blocks folder existence")
 blocksFolder = "blocks"
 if not os.path.exists(blocksFolder):
-	os.makedirs(blocksFolder)
-	print("  -> Created directory " + blocksFolder)
+    os.makedirs(blocksFolder)
+    print("  -> Created directory " + blocksFolder)
 
 print("==> Analyzing track")
 if not os.path.exists(utils.torcsTrackDirectory + args.track + ".csv"):
-	# Export track data using trackexporter
-	racegen.racegen(args.track, racegen.trackexporterBotList, 1, "quickrace.xml")
-	subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/quickrace.xml", shell = True)
-	os.remove("quickrace.xml")
-	os.remove(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1])
+    # Export track data using trackexporter
+    racegen.racegen(args.track, racegen.trackexporterBotList, 1, "quickrace.xml")
+    subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/quickrace.xml", shell = True)
+    os.remove("quickrace.xml")
+    os.remove(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1])
 
 print("==> Analyzing track dynamics")
 if not os.path.exists(utils.torcsTrackDirectory + "/" + args.track + "_dynamics.csv"):
-	racegen.racegen(args.track, racegen.trackLogger, 1, "quickrace.xml")
-	subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + "/quickrace.xml", shell=True)
-	os.remove("quickrace.xml")
-	shutil.move(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1], utils.torcsTrackDirectory + "/" + args.track + "_dynamics.csv")
+    racegen.racegen(args.track, racegen.trackLogger, 1, "quickrace.xml")
+    subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + "/quickrace.xml", shell=True)
+    os.remove("quickrace.xml")
+    shutil.move(utils.torcsLogPath + utils.getLogList(utils.torcsLogPath)[-1], utils.torcsTrackDirectory + "/" + args.track + "_dynamics.csv")
 
 overtakes.makeBlocksDataWithoutOvertakes(blocksFolder, utils.torcsTrackDirectory, args.track, args.max_block_len)
