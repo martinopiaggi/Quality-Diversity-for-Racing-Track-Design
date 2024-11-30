@@ -65,7 +65,6 @@ def plotGaps(cumulative, gaps, filename):
     return [mean, var, skew]
 
 
-
 def makeGapsPlotsFromLogList(folder, logList, driverList):
     gapsDirectory = folder + "/gaps/"
     cumulativeGapsDirectory = folder + "/cumulative-gaps/"
@@ -77,7 +76,6 @@ def makeGapsPlotsFromLogList(folder, logList, driverList):
         
     allGaps = np.array([])
 
-    # Prevent broken pipe errors by using the system default behaviour
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
     for index, log in enumerate(logList):
@@ -86,28 +84,27 @@ def makeGapsPlotsFromLogList(folder, logList, driverList):
         gaps = np.array([])
         
         for driver in driverList:
-            tac = subprocess.Popen('tac "' + folder + "/" + log + '"', stdout = subprocess.PIPE, shell = True)
-            # The last line of the log contains the timeBehindPrev => -m 1 
-            grep = subprocess.Popen('grep "' + driver + '" -m 1', stdin = tac.stdout, stdout = subprocess.PIPE, shell = True)
-            # Close tac when grep exits (without reading all the pipe)
-            tac.stdout.close()
-            output = grep.communicate()[0]
-            
-            # If the driver does not end the race, output.decode("ascii") contains the usual data and not timeBehindPrev
-            # Getting the gap by analyzing the "normal" log string would be wrong because the gap is not meaningful for retired drivers
+            cmd = f'tac "{folder}/{log}" | grep -v "overtake" | grep "^[^,]*,{driver}," -m 1'
             try:
-                gaps = np.append(gaps, float(output.decode("ascii").split(",")[2]))
-            except ValueError:
+                output = subprocess.check_output(cmd, shell=True).decode('ascii').strip()
+                if output:
+                    data = output.split(',')
+                    if len(data) >= 15:
+                        time_ahead = float(data[15])  # Use time to car ahead
+                        if time_ahead > 0:  # Only add non-zero gaps
+                            gaps = np.append(gaps, time_ahead)
+            except Exception as e:
+                print(f"Warning: Could not get gap for {driver}: {e}")
                 continue
         
-        gapsDistribution = plotGaps(False, gaps, gapsDirectory + log + ".svg")
-        plotGaps(True, gaps, cumulativeGapsDirectory + log + ".svg")
-        
-        allGaps = np.append(allGaps, gaps)
+        if len(gaps) > 0:
+            gapsDistribution = plotGaps(False, gaps, gapsDirectory + log + ".svg")
+            plotGaps(True, gaps, cumulativeGapsDirectory + log + ".svg")
+            allGaps = np.append(allGaps, gaps)
         
     if len(logList) > 1:
-        print("==> Analyzing all the races together")
+        print("==> Analyzing all races together")
         gapsDistribution = plotGaps(False, allGaps, gapsDirectory + "gaps.svg")
         plotGaps(True, allGaps, cumulativeGapsDirectory + "gaps.svg")
 
-    return gapsDistribution
+    return gapsDistribution if len(allGaps) > 0 else [0, 0, 0]

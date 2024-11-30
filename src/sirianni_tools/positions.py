@@ -89,66 +89,40 @@ def plotPositionsVariationsBySkillLevel(variations, filename, skillLevels, botsN
 
 
 
-def makePositionsVariationsPlotsFromLogList(folder, logList, trackLength, lapPercentage, driversList, plotAllRacesOnly, botSkills):
-    print("\nDebug positions:")
-    print(f"Drivers list: {driversList}")
-    print(f"Bot skills: {botSkills}")
-    
-    allVariations = numpy.array([], dtype=numpy.int32)
-    
-    skillLevels = []
-    i = 0
-    while i < len(driversList):
-        # Find skill level for each driver
-        skillLevels.append([name for name, skill in botSkills].index(driversList[i]))
-        i += 1
-    
-    botNamesBySkill = [name for name, skill in botSkills]
-    
-    for index, log in enumerate(logList):
-        print(f"Processing log {log}")
-        variations = []
-        positions = []  # Initialize empty positions list
+def makePositionsVariationsPlotsFromLogList(folder, logList, trackLength, lapPercentage, driversList, plotAllRacesOnly, botSkills=None):
+    # Skip skill-based analyses if no skills provided
+    if not botSkills:
+        allVariations = numpy.array([], dtype=numpy.int32)
+        # Process variations based on positions only
+        for index, log in enumerate(logList):
+            variations = []
+            positions = []
+            
+            if lapPercentage == 0:
+                # Get final positions
+                for driver in driversList:
+                    try:
+                        cmd = f'tac "{folder}/{log}" | grep "{driver}" -m 1'
+                        output = subprocess.check_output(cmd, shell=True).decode('ascii')
+                        positions.append(str(output.split(",")[1]))
+                    except:
+                        continue
 
-        if lapPercentage == 0:
-            # Get final positions
-            for driver in driversList:
-                try:
-                    cmd = f'tac "{folder}/{log}" | grep "{driver}" -m 1'
-                    print(f"Running command: {cmd}")
-                    output = subprocess.check_output(cmd, shell=True).decode('ascii')
-                    print(f"Output: {output}")
-                    positions.append(str(output.split(",")[1]))
-                except Exception as e:
-                    print(f"Error getting position for {driver}: {e}")
-                    continue
-            
-        print(f"Positions collected: {positions}")
-        
-        # Only proceed if we have positions
-        if positions:
-            i = 0
-            while i < len(driversList):
-                try:
-                    position = positions.index(driversList[i])
-                    variations.append(i - position)
-                except ValueError as e:
-                    print(f"Could not find position for driver {driversList[i]}")
-                i += 1
-            
-            print(f"Variations calculated: {variations}")
-            
-            if variations:  # Only plot if we have variations
-                plotPositionsVariations(variations, posVarFolder + "/" + log + ".svg")
-                plotPositionsVariationsBySkillLevel(variations, posVarFolder + "/" + log + "-by-skill.svg", 
-                                                  skillLevels, botNamesBySkill)
-                
-            if len(variations) > 0:
-                allVariations = numpy.append(allVariations, variations)
-    
-    # Return default values if no variations were collected
-    if len(allVariations) == 0:
-        print("Warning: No variations collected")
-        return [0, 0, 0]
+            if positions:
+                i = 0
+                while i < len(driversList):
+                    try:
+                        position = positions.index(driversList[i])
+                        variations.append(i - position)
+                    except ValueError:
+                        pass
+                    i += 1
+                    
+                if variations:
+                    plotPositionsVariations(variations, folder + "/" + log + ".svg")
+                    allVariations = numpy.append(allVariations, variations)
 
-    return [numpy.mean(allVariations), numpy.var(allVariations), scipy.stats.skew(allVariations)]
+        if len(allVariations) == 0:
+            return [0, 0, 0]
+            
+        return [numpy.mean(allVariations), numpy.var(allVariations), scipy.stats.skew(allVariations)]

@@ -98,6 +98,18 @@ for path in args.paths:
                 "Positions variations (1/3 lap) mean", "Positions variations (1/3 lap) var", "Positions variations (1/3 lap) skew",
                 "Positions variations (half lap) mean", "Positions variations (half lap) var", "Positions variations (half lap) skew",
                 "Positions variations (1 lap) mean", "Positions variations (1 lap) var", "Positions variations (1 lap) skew"])
+        if trackData is None:
+            trackData = [0] * 35  # Based on headers length for track data
+        if positionsVariations is None:
+            positionsVariations = [0, 0, 0]  # mean, var, skew
+        if gapsDistribution is None:
+            gapsDistribution = [0, 0, 0]
+        if start30 is None:
+            start30 = [0, 0, 0]
+        if start50 is None:
+            start50 = [0, 0, 0]
+        if start100 is None:
+            start100 = [0, 0, 0]
         writer.writerow([trackName] + trackData + positionsVariations + gapsDistribution + start30 + start50 + start100)
 
     if args.json_output:

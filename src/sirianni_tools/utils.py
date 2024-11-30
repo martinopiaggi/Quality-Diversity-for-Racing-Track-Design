@@ -55,8 +55,22 @@ def getLogList(folder):
 
 
 def getDriversList(log):
-    return subprocess.check_output('awk -F "," \'{if($1 == -1.998) print $2; else exit 0}\' "' + log + '"', shell = True).splitlines()
-
+    """Extract driver list from TORCS log file."""
+    try:
+        with open(log, 'r') as f:
+            # Process first 10 lines which contain initial lineup
+            drivers = []
+            for _ in range(10):
+                line = f.readline().strip()
+                parts = line.split(',')
+                if len(parts) >= 2 and parts[0].startswith('-1.8'):
+                    driver = parts[1].strip()
+                    if driver not in drivers:
+                        drivers.append(driver)
+            return sorted(drivers)  # Sort to maintain consistent order
+    except Exception as e:
+        print(f"Error reading drivers from {log}: {e}")
+        return []
 
 
 def getTrackLength(trackName):
