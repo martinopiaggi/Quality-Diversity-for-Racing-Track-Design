@@ -16,7 +16,16 @@ __copyright__ = "Copyright 2015-2016, Jacopo Sirianni"
 __license__ = "GPL"
 __email__ = "jacopo.sirianni@mail.polimi.it"
 
-
+def get_driver_position(folder, log_file, driver):
+    try:
+        with open(os.path.join(folder, log_file), 'r') as f:
+            for line in reversed(f.readlines()):
+                parts = line.strip().split(',')
+                if len(parts) > 1 and parts[1] == driver:
+                    return int(parts[13])  # Position field
+    except Exception as e:
+        print(f"Error getting position for {driver}: {e}")
+    return None
 
 def plotPositionsVariations(variations, filename):
     if not variations:  # Handle empty sequence

@@ -530,280 +530,286 @@ def readDynamics(trackName, trackData):
 
 
 def makeMetricsPlots(folder, trackDirectory, trackName, maxBlockLength, generate_plots=True):
-    trackMetricsFolder = folder + "/track"
-    if not os.path.exists(trackMetricsFolder):
-        os.makedirs(trackMetricsFolder)
-    
-    trackData = readTrack(trackDirectory, trackName, maxBlockLength)
-    trackData = readDynamics(trackName, trackData)
+    try:
+        trackMetricsFolder = os.path.join(folder, "track")
+        if not os.path.exists(trackMetricsFolder):
+            os.makedirs(trackMetricsFolder)
+            
+        trackData = readTrack(trackDirectory, trackName, maxBlockLength)
+        if trackData is None:
+            return None
+            
+        trackData = readDynamics(trackName, trackData)
+        if not generate_plots:
+            return trackData
+                
+        blockInverseRadiuses = computeBlockInverseRadiuses(trackData)
+        plotMetric(trackData, blockInverseRadiuses, "Block inverse radiuses",  trackMetricsFolder + "/block-radiuses.svg")
+        plotMetric(trackData, computeBlockLengths(trackData), "Block lengths",  trackMetricsFolder + "/block-lengths.svg", True)
+        plotMetric(trackData, list(map(lambda x: x%2, range(len(trackData)))), "",  trackMetricsFolder + "/blocks.svg")
+        
+        customLevels = numpy.linspace(0, 0.1, 100)
+        plotMetric(trackData, computePrevBlockRadiusesMeans(blockInverseRadiuses), "Mean of the inverse radiuses of the previuos blocks",  trackMetricsFolder + "/prev-block-avg-radiuses.svg", customLevels=customLevels)
+        plotMetric(trackData, computePrevSegsRads(trackData,400), "Mean of the inverse radiuses of the previuos segments (thr = 400)", trackMetricsFolder + "/prev-segs-radiuses-400.svg", customLevels=customLevels)
+        plotMetric(trackData, computeNextSegsRads(trackData, 400), "Mean of the inverse radiuses of the next segments (thr = 400)", trackMetricsFolder + "/next-segs-radiuses-400.svg", customLevels=customLevels)
+        plotMetric(trackData, computePrevSegsRads(trackData, 200), "Mean of the inverse radiuses of the previuos segments (thr = 200)", trackMetricsFolder + "/prev-segs-radiuses-200.svg", customLevels=customLevels)
+        plotMetric(trackData, computeNextSegsRads(trackData, 200), "Mean of the inverse radiuses of the next segments (thr = 200)", trackMetricsFolder + "/next-segs-radiuses-200.svg", customLevels=customLevels)
+        plotMetric(trackData, computePrevSegsRads(trackData, 100),
+                "Mean of the inverse radiuses of the previuos segments (thr = 100)",
+                trackMetricsFolder + "/prev-segs-radiuses-100.svg", customLevels=customLevels)
+        plotMetric(trackData, computeNextSegsRads(trackData, 100),
+                "Mean of the inverse radiuses of the next segments (thr = 100)",
+                trackMetricsFolder + "/next-segs-radiuses-100.svg", customLevels=customLevels)
+        plotMetric(trackData, computePrevSegsRads(trackData, 50),
+                "Mean of the inverse radiuses of the previuos segments (thr = 50)",
+                trackMetricsFolder + "/prev-segs-radiuses-50.svg", customLevels=customLevels)
+        plotMetric(trackData, computeNextSegsRads(trackData, 50),
+                "Mean of the inverse radiuses of the next segments (thr = 50)",
+                trackMetricsFolder + "/next-segs-radiuses-50.svg", customLevels=customLevels)
 
-    if not generate_plots:
-        return trackData  # Return processed data without generating plots
+        plotMetric(trackData, computeNextBlockRadiusesMeans(blockInverseRadiuses), "Mean of the inverse radiuses of the next blocks",  trackMetricsFolder + "/next-block-avg-radiuses.svg", customLevels=customLevels)
 
-    blockInverseRadiuses = computeBlockInverseRadiuses(trackData)
-    plotMetric(trackData, blockInverseRadiuses, "Block inverse radiuses",  trackMetricsFolder + "/block-radiuses.svg")
-    plotMetric(trackData, computeBlockLengths(trackData), "Block lengths",  trackMetricsFolder + "/block-lengths.svg", True)
-    plotMetric(trackData, list(map(lambda x: x%2, range(len(trackData)))), "",  trackMetricsFolder + "/blocks.svg")
-    
-    customLevels = numpy.linspace(0, 0.1, 100)
-    plotMetric(trackData, computePrevBlockRadiusesMeans(blockInverseRadiuses), "Mean of the inverse radiuses of the previuos blocks",  trackMetricsFolder + "/prev-block-avg-radiuses.svg", customLevels=customLevels)
-    plotMetric(trackData, computePrevSegsRads(trackData,400), "Mean of the inverse radiuses of the previuos segments (thr = 400)", trackMetricsFolder + "/prev-segs-radiuses-400.svg", customLevels=customLevels)
-    plotMetric(trackData, computeNextSegsRads(trackData, 400), "Mean of the inverse radiuses of the next segments (thr = 400)", trackMetricsFolder + "/next-segs-radiuses-400.svg", customLevels=customLevels)
-    plotMetric(trackData, computePrevSegsRads(trackData, 200), "Mean of the inverse radiuses of the previuos segments (thr = 200)", trackMetricsFolder + "/prev-segs-radiuses-200.svg", customLevels=customLevels)
-    plotMetric(trackData, computeNextSegsRads(trackData, 200), "Mean of the inverse radiuses of the next segments (thr = 200)", trackMetricsFolder + "/next-segs-radiuses-200.svg", customLevels=customLevels)
-    plotMetric(trackData, computePrevSegsRads(trackData, 100),
-               "Mean of the inverse radiuses of the previuos segments (thr = 100)",
-               trackMetricsFolder + "/prev-segs-radiuses-100.svg", customLevels=customLevels)
-    plotMetric(trackData, computeNextSegsRads(trackData, 100),
-               "Mean of the inverse radiuses of the next segments (thr = 100)",
-               trackMetricsFolder + "/next-segs-radiuses-100.svg", customLevels=customLevels)
-    plotMetric(trackData, computePrevSegsRads(trackData, 50),
-               "Mean of the inverse radiuses of the previuos segments (thr = 50)",
-               trackMetricsFolder + "/prev-segs-radiuses-50.svg", customLevels=customLevels)
-    plotMetric(trackData, computeNextSegsRads(trackData, 50),
-               "Mean of the inverse radiuses of the next segments (thr = 50)",
-               trackMetricsFolder + "/next-segs-radiuses-50.svg", customLevels=customLevels)
+        plotMetric(trackData, blockInverseRadiuses[-1:]+blockInverseRadiuses[:-1], "Previous Block Inverse Radius",
+                trackMetricsFolder + "/prev-block-radius.svg", customLevels=customLevels)
+        plotMetric(trackData, blockInverseRadiuses[1:]+blockInverseRadiuses[:1], "Next Block Inverse Radius",
+                trackMetricsFolder + "/next-block-radius.svg", customLevels=customLevels)
 
-    plotMetric(trackData, computeNextBlockRadiusesMeans(blockInverseRadiuses), "Mean of the inverse radiuses of the next blocks",  trackMetricsFolder + "/next-block-avg-radiuses.svg", customLevels=customLevels)
+        grades=computeBlockGrade(trackData)
+        plotMetric(trackData, grades, "Block Grade", trackMetricsFolder + "/block-grade.svg")
+        plotMetric(trackData, grades[-1:] + grades[:-1], "Previous Block Grade", trackMetricsFolder + "/prev-block-grade.svg")
+        plotMetric(trackData, grades[1:] + grades[:1], "Next Block Grade", trackMetricsFolder + "/next-block-grade.svg")
 
-    plotMetric(trackData, blockInverseRadiuses[-1:]+blockInverseRadiuses[:-1], "Previous Block Inverse Radius",
-               trackMetricsFolder + "/prev-block-radius.svg", customLevels=customLevels)
-    plotMetric(trackData, blockInverseRadiuses[1:]+blockInverseRadiuses[:1], "Next Block Inverse Radius",
-               trackMetricsFolder + "/next-block-radius.svg", customLevels=customLevels)
+        width = computeBlockMetric(trackData, WIDTH)
+        plotMetric(trackData, width, "Block Width", trackMetricsFolder + "/block-width.svg")
+        plotMetric(trackData, width[-1:] + width[:-1], "Previous Block Width", trackMetricsFolder + "/prev-block-width.svg")
+        plotMetric(trackData, width[1:] + width[:1], "Next Block Width", trackMetricsFolder + "/next-block-width.svg")
 
-    grades=computeBlockGrade(trackData)
-    plotMetric(trackData, grades, "Block Grade", trackMetricsFolder + "/block-grade.svg")
-    plotMetric(trackData, grades[-1:] + grades[:-1], "Previous Block Grade", trackMetricsFolder + "/prev-block-grade.svg")
-    plotMetric(trackData, grades[1:] + grades[:1], "Next Block Grade", trackMetricsFolder + "/next-block-grade.svg")
+        accel = computeBlockAggregateMetric(trackData, ACCEL)
+        accel_avg = [i[0] for i in accel]
+        accel_std = [i[1] for i in accel]
+        accel_q1 = [i[2] for i in accel]
+        accel_q2 = [i[3] for i in accel]
+        accel_q3 = [i[4] for i in accel]
 
-    width = computeBlockMetric(trackData, WIDTH)
-    plotMetric(trackData, width, "Block Width", trackMetricsFolder + "/block-width.svg")
-    plotMetric(trackData, width[-1:] + width[:-1], "Previous Block Width", trackMetricsFolder + "/prev-block-width.svg")
-    plotMetric(trackData, width[1:] + width[:1], "Next Block Width", trackMetricsFolder + "/next-block-width.svg")
+        brake = computeBlockAggregateMetric(trackData, BRAKE)
+        brake_avg = [i[0] for i in brake]
+        brake_std = [i[1] for i in brake]
+        brake_q1 = [i[2] for i in brake]
+        brake_q2 = [i[3] for i in brake]
+        brake_q3 = [i[4] for i in brake]
 
-    accel = computeBlockAggregateMetric(trackData, ACCEL)
-    accel_avg = [i[0] for i in accel]
-    accel_std = [i[1] for i in accel]
-    accel_q1 = [i[2] for i in accel]
-    accel_q2 = [i[3] for i in accel]
-    accel_q3 = [i[4] for i in accel]
+        steer = computeBlockAggregateMetric(trackData, STEER)
+        steer_avg = [i[0] for i in steer]
+        steer_std = [i[1] for i in steer]
+        steer_q1 = [i[2] for i in steer]
+        steer_q2 = [i[3] for i in steer]
+        steer_q3 = [i[4] for i in steer]
 
-    brake = computeBlockAggregateMetric(trackData, BRAKE)
-    brake_avg = [i[0] for i in brake]
-    brake_std = [i[1] for i in brake]
-    brake_q1 = [i[2] for i in brake]
-    brake_q2 = [i[3] for i in brake]
-    brake_q3 = [i[4] for i in brake]
+        offset = computeBlockAggregateMetric(trackData, OFFSET)
+        offset_avg = [i[0] for i in offset]
+        offset_std = [i[1] for i in offset]
+        offset_q1 = [i[2] for i in offset]
+        offset_q2 = [i[3] for i in offset]
+        offset_q3 = [i[4] for i in offset]
 
-    steer = computeBlockAggregateMetric(trackData, STEER)
-    steer_avg = [i[0] for i in steer]
-    steer_std = [i[1] for i in steer]
-    steer_q1 = [i[2] for i in steer]
-    steer_q2 = [i[3] for i in steer]
-    steer_q3 = [i[4] for i in steer]
+        gear = computeBlockAggregateMetric(trackData, GEAR)
+        gear_avg = [i[0] for i in gear]
+        gear_std = [i[1] for i in gear]
+        gear_q1 = [i[2] for i in gear]
+        gear_q2 = [i[3] for i in gear]
+        gear_q3 = [i[4] for i in gear]
 
-    offset = computeBlockAggregateMetric(trackData, OFFSET)
-    offset_avg = [i[0] for i in offset]
-    offset_std = [i[1] for i in offset]
-    offset_q1 = [i[2] for i in offset]
-    offset_q2 = [i[3] for i in offset]
-    offset_q3 = [i[4] for i in offset]
+        speed = computeBlockAggregateMetric(trackData, SPEED)
+        speed_avg = [i[0] for i in speed]
+        speed_std = [i[1] for i in speed]
+        speed_q1 = [i[2] for i in speed]
+        speed_q2 = [i[3] for i in speed]
+        speed_q3 = [i[4] for i in speed]
 
-    gear = computeBlockAggregateMetric(trackData, GEAR)
-    gear_avg = [i[0] for i in gear]
-    gear_std = [i[1] for i in gear]
-    gear_q1 = [i[2] for i in gear]
-    gear_q2 = [i[3] for i in gear]
-    gear_q3 = [i[4] for i in gear]
+        plotMetric(trackData, accel_avg, "Avg Block Acceleration", trackMetricsFolder + "/block-accel-avg.svg")
+        plotMetric(trackData, accel_avg[-1:] + accel_avg[:-1], "Avg Prev Block Acceleration",
+                trackMetricsFolder + "/prev-block-accel-avg.svg")
+        plotMetric(trackData, accel_avg[1:] + accel_avg[:1], "Avg Next Block Acceleration",
+                trackMetricsFolder + "/next-block-accel-avg.svg")
 
-    speed = computeBlockAggregateMetric(trackData, SPEED)
-    speed_avg = [i[0] for i in speed]
-    speed_std = [i[1] for i in speed]
-    speed_q1 = [i[2] for i in speed]
-    speed_q2 = [i[3] for i in speed]
-    speed_q3 = [i[4] for i in speed]
+        plotMetric(trackData, accel_std, "STD Block Acceleration", trackMetricsFolder + "/block-accel-std.svg")
+        plotMetric(trackData, accel_std[-1:] + accel_std[:-1], "STD Prev Block Acceleration",
+                trackMetricsFolder + "/prev-block-accel-std.svg")
+        plotMetric(trackData, accel_std[1:] + accel_std[:1], "STD Next Block Acceleration",
+                trackMetricsFolder + "/next-block-accel-std.svg")
 
-    plotMetric(trackData, accel_avg, "Avg Block Acceleration", trackMetricsFolder + "/block-accel-avg.svg")
-    plotMetric(trackData, accel_avg[-1:] + accel_avg[:-1], "Avg Prev Block Acceleration",
-               trackMetricsFolder + "/prev-block-accel-avg.svg")
-    plotMetric(trackData, accel_avg[1:] + accel_avg[:1], "Avg Next Block Acceleration",
-               trackMetricsFolder + "/next-block-accel-avg.svg")
+        plotMetric(trackData, accel_q1, "Q1 Block Acceleration", trackMetricsFolder + "/block-accel-q1.svg")
+        plotMetric(trackData, accel_q1[-1:] + accel_q1[:-1], "Q1 Prev Block Acceleration",
+                trackMetricsFolder + "/prev-block-accel-q1.svg")
+        plotMetric(trackData, accel_q1[1:] + accel_q1[:1], "Q1 Next Block Acceleration",
+                trackMetricsFolder + "/next-block-accel-q1.svg")
 
-    plotMetric(trackData, accel_std, "STD Block Acceleration", trackMetricsFolder + "/block-accel-std.svg")
-    plotMetric(trackData, accel_std[-1:] + accel_std[:-1], "STD Prev Block Acceleration",
-               trackMetricsFolder + "/prev-block-accel-std.svg")
-    plotMetric(trackData, accel_std[1:] + accel_std[:1], "STD Next Block Acceleration",
-               trackMetricsFolder + "/next-block-accel-std.svg")
+        plotMetric(trackData, accel_q2, "Q2 Block Acceleration", trackMetricsFolder + "/block-accel-q2.svg")
+        plotMetric(trackData, accel_q2[-1:] + accel_q2[:-1], "Q2 Prev Block Acceleration",
+                trackMetricsFolder + "/prev-block-accel-q2.svg")
+        plotMetric(trackData, accel_q2[1:] + accel_q2[:1], "Q2 Next Block Acceleration",
+                trackMetricsFolder + "/next-block-accel-q2.svg")
 
-    plotMetric(trackData, accel_q1, "Q1 Block Acceleration", trackMetricsFolder + "/block-accel-q1.svg")
-    plotMetric(trackData, accel_q1[-1:] + accel_q1[:-1], "Q1 Prev Block Acceleration",
-               trackMetricsFolder + "/prev-block-accel-q1.svg")
-    plotMetric(trackData, accel_q1[1:] + accel_q1[:1], "Q1 Next Block Acceleration",
-               trackMetricsFolder + "/next-block-accel-q1.svg")
-
-    plotMetric(trackData, accel_q2, "Q2 Block Acceleration", trackMetricsFolder + "/block-accel-q2.svg")
-    plotMetric(trackData, accel_q2[-1:] + accel_q2[:-1], "Q2 Prev Block Acceleration",
-               trackMetricsFolder + "/prev-block-accel-q2.svg")
-    plotMetric(trackData, accel_q2[1:] + accel_q2[:1], "Q2 Next Block Acceleration",
-               trackMetricsFolder + "/next-block-accel-q2.svg")
-
-    plotMetric(trackData, accel_q3, "Q3 Block Acceleration", trackMetricsFolder + "/block-accel-q3.svg")
-    plotMetric(trackData, accel_q3[-1:] + accel_q3[:-1], "Q3 Prev Block Acceleration",
-               trackMetricsFolder + "/prev-block-accel-q3.svg")
-    plotMetric(trackData, accel_q3[1:] + accel_q3[:1], "Q3 Next Block Acceleration",
-               trackMetricsFolder + "/next-block-accel-q3.svg")
-
-
-    plotMetric(trackData, brake_avg, "Avg Block Brake", trackMetricsFolder + "/block-brake-avg.svg")
-    plotMetric(trackData, brake_avg[-1:] + brake_avg[:-1], "Avg Prev Block Brake",
-               trackMetricsFolder + "/prev-block-brake-avg.svg")
-    plotMetric(trackData, brake_avg[1:] + brake_avg[:1], "Avg Next Block Brake",
-               trackMetricsFolder + "/next-block-brake-avg.svg")
-
-    plotMetric(trackData, brake_std, "STD Block Brake", trackMetricsFolder + "/block-brake-std.svg")
-    plotMetric(trackData, brake_std[-1:] + brake_std[:-1], "STD Prev Block Brake",
-               trackMetricsFolder + "/prev-block-brake-std.svg")
-    plotMetric(trackData, brake_std[1:] + brake_std[:1], "STD Next Block Brake",
-               trackMetricsFolder + "/next-block-brake-std.svg")
-
-    plotMetric(trackData, brake_q1, "Q1 Block Brake", trackMetricsFolder + "/block-brake-q1.svg")
-    plotMetric(trackData, brake_q1[-1:] + brake_q1[:-1], "Q1 Prev Block Brake",
-               trackMetricsFolder + "/prev-block-brake-q1.svg")
-    plotMetric(trackData, brake_q1[1:] + brake_q1[:1], "Q1 Next Block Brake",
-               trackMetricsFolder + "/next-block-brake-q1.svg")
-
-    plotMetric(trackData, brake_q2, "Q2 Block Brake", trackMetricsFolder + "/block-brake-q2.svg")
-    plotMetric(trackData, brake_q2[-1:] + brake_q2[:-1], "Q2 Prev Block Brake",
-               trackMetricsFolder + "/prev-block-brake-q2.svg")
-    plotMetric(trackData, brake_q2[1:] + brake_q2[:1], "Q2 Next Block Brake",
-               trackMetricsFolder + "/next-block-brake-q2.svg")
-
-    plotMetric(trackData, brake_q3, "Q3 Block Brake", trackMetricsFolder + "/block-brake-q3.svg")
-    plotMetric(trackData, brake_q3[-1:] + brake_q3[:-1], "Q3 Prev Block Brake",
-               trackMetricsFolder + "/prev-block-brake-q3.svg")
-    plotMetric(trackData, brake_q3[1:] + brake_q3[:1], "Q3 Next Block Brake",
-               trackMetricsFolder + "/next-block-brake-q3.svg")
+        plotMetric(trackData, accel_q3, "Q3 Block Acceleration", trackMetricsFolder + "/block-accel-q3.svg")
+        plotMetric(trackData, accel_q3[-1:] + accel_q3[:-1], "Q3 Prev Block Acceleration",
+                trackMetricsFolder + "/prev-block-accel-q3.svg")
+        plotMetric(trackData, accel_q3[1:] + accel_q3[:1], "Q3 Next Block Acceleration",
+                trackMetricsFolder + "/next-block-accel-q3.svg")
 
 
-    plotMetric(trackData, steer_avg, "Avg Block Steer", trackMetricsFolder + "/block-steer-avg.svg")
-    plotMetric(trackData, steer_avg[-1:] + steer_avg[:-1], "Avg Prev Block Steer",
-               trackMetricsFolder + "/prev-block-steer-avg.svg")
-    plotMetric(trackData, steer_avg[1:] + steer_std[:1], "Avg Next Block Steer",
-               trackMetricsFolder + "/next-block-steer-avg.svg")
+        plotMetric(trackData, brake_avg, "Avg Block Brake", trackMetricsFolder + "/block-brake-avg.svg")
+        plotMetric(trackData, brake_avg[-1:] + brake_avg[:-1], "Avg Prev Block Brake",
+                trackMetricsFolder + "/prev-block-brake-avg.svg")
+        plotMetric(trackData, brake_avg[1:] + brake_avg[:1], "Avg Next Block Brake",
+                trackMetricsFolder + "/next-block-brake-avg.svg")
 
-    plotMetric(trackData, steer_std, "STD Block Steer", trackMetricsFolder + "/block-steer-std.svg")
-    plotMetric(trackData, steer_std[-1:] + steer_std[:-1], "STD Prev Block Steer",
-               trackMetricsFolder + "/prev-block-steer-std.svg")
-    plotMetric(trackData, steer_std[1:] + steer_avg[:1], "STD Next Block Steer",
-               trackMetricsFolder + "/next-block-steer-std.svg")
+        plotMetric(trackData, brake_std, "STD Block Brake", trackMetricsFolder + "/block-brake-std.svg")
+        plotMetric(trackData, brake_std[-1:] + brake_std[:-1], "STD Prev Block Brake",
+                trackMetricsFolder + "/prev-block-brake-std.svg")
+        plotMetric(trackData, brake_std[1:] + brake_std[:1], "STD Next Block Brake",
+                trackMetricsFolder + "/next-block-brake-std.svg")
 
-    plotMetric(trackData, steer_q1, "Q1 Block Steer", trackMetricsFolder + "/block-steer-q1.svg")
-    plotMetric(trackData, steer_q1[-1:] + steer_q1[:-1], "Q1 Prev Block Steer",
-               trackMetricsFolder + "/prev-block-steer-q1.svg")
-    plotMetric(trackData, steer_q1[1:] + steer_q1[:1], "Q1 Next Block Steer",
-               trackMetricsFolder + "/next-block-steer-q1.svg")
+        plotMetric(trackData, brake_q1, "Q1 Block Brake", trackMetricsFolder + "/block-brake-q1.svg")
+        plotMetric(trackData, brake_q1[-1:] + brake_q1[:-1], "Q1 Prev Block Brake",
+                trackMetricsFolder + "/prev-block-brake-q1.svg")
+        plotMetric(trackData, brake_q1[1:] + brake_q1[:1], "Q1 Next Block Brake",
+                trackMetricsFolder + "/next-block-brake-q1.svg")
 
-    plotMetric(trackData, steer_q2, "Q2 Block Steer", trackMetricsFolder + "/block-steer-q2.svg")
-    plotMetric(trackData, steer_q2[-1:] + steer_q2[:-1], "Q2 Prev Block Steer",
-               trackMetricsFolder + "/prev-block-steer-q2.svg")
-    plotMetric(trackData, steer_q2[1:] + steer_q2[:1], "Q2 Next Block Steer",
-               trackMetricsFolder + "/next-block-steer-q2.svg")
+        plotMetric(trackData, brake_q2, "Q2 Block Brake", trackMetricsFolder + "/block-brake-q2.svg")
+        plotMetric(trackData, brake_q2[-1:] + brake_q2[:-1], "Q2 Prev Block Brake",
+                trackMetricsFolder + "/prev-block-brake-q2.svg")
+        plotMetric(trackData, brake_q2[1:] + brake_q2[:1], "Q2 Next Block Brake",
+                trackMetricsFolder + "/next-block-brake-q2.svg")
 
-    plotMetric(trackData, steer_q3, "Q3 Block Steer", trackMetricsFolder + "/block-steer-q3.svg")
-    plotMetric(trackData, steer_q3[-1:] + steer_q3[:-1], "Q3 Prev Block Steer",
-               trackMetricsFolder + "/prev-block-steer-q3.svg")
-    plotMetric(trackData, steer_q3[1:] + steer_q3[:1], "Q3 Next Block Steer",
-               trackMetricsFolder + "/next-block-steer-q3.svg")
-
-
-    plotMetric(trackData, offset_avg, "Avg Block Offset", trackMetricsFolder + "/block-offset-avg.svg")
-    plotMetric(trackData, offset_avg[-1:] + offset_avg[:-1], "Avg Prev Block Offset",
-               trackMetricsFolder + "/prev-block-offset-avg.svg")
-    plotMetric(trackData, offset_avg[1:] + offset_avg[:1], "Average Next Block Offset",
-               trackMetricsFolder + "/next-block-offset-avg.svg")
-
-    plotMetric(trackData, offset_std, "STD Block Offset", trackMetricsFolder + "/block-offset-std.svg")
-    plotMetric(trackData, offset_std[-1:] + offset_std[:-1], "STD Prev Block Offset",
-               trackMetricsFolder + "/prev-block-offset-std.svg")
-    plotMetric(trackData, offset_std[1:] + offset_std[:1], "STD Next Block Offset",
-               trackMetricsFolder + "/next-block-offset-std.svg")
-
-    plotMetric(trackData, offset_q1, "Q1 Block Offset", trackMetricsFolder + "/block-offset-q1.svg")
-    plotMetric(trackData, offset_q1[-1:] + offset_q1[:-1], "Q1 Prev Block Offset",
-               trackMetricsFolder + "/prev-block-offset-q1.svg")
-    plotMetric(trackData, offset_q1[1:] + offset_q1[:1], "Q1 Next Block Offset",
-               trackMetricsFolder + "/next-block-offset-q1.svg")
-
-    plotMetric(trackData, offset_q2, "Q2 Block Offset", trackMetricsFolder + "/block-offset-q2.svg")
-    plotMetric(trackData, offset_q2[-1:] + offset_q2[:-1], "Q2 Prev Block Offset",
-               trackMetricsFolder + "/prev-block-offset-q2.svg")
-    plotMetric(trackData, offset_q2[1:] + offset_q2[:1], "Q2 Next Block Offset",
-               trackMetricsFolder + "/next-block-offset-q2.svg")
-
-    plotMetric(trackData, offset_q3, "Q3 Block Offset", trackMetricsFolder + "/block-offset-q3.svg")
-    plotMetric(trackData, offset_q3[-1:] + offset_q3[:-1], "Q3 Prev Block Offset",
-               trackMetricsFolder + "/prev-block-offset-q3.svg")
-    plotMetric(trackData, offset_q3[1:] + offset_q3[:1], "Q3 Next Block Offset",
-               trackMetricsFolder + "/next-block-offset-q3.svg")
+        plotMetric(trackData, brake_q3, "Q3 Block Brake", trackMetricsFolder + "/block-brake-q3.svg")
+        plotMetric(trackData, brake_q3[-1:] + brake_q3[:-1], "Q3 Prev Block Brake",
+                trackMetricsFolder + "/prev-block-brake-q3.svg")
+        plotMetric(trackData, brake_q3[1:] + brake_q3[:1], "Q3 Next Block Brake",
+                trackMetricsFolder + "/next-block-brake-q3.svg")
 
 
+        plotMetric(trackData, steer_avg, "Avg Block Steer", trackMetricsFolder + "/block-steer-avg.svg")
+        plotMetric(trackData, steer_avg[-1:] + steer_avg[:-1], "Avg Prev Block Steer",
+                trackMetricsFolder + "/prev-block-steer-avg.svg")
+        plotMetric(trackData, steer_avg[1:] + steer_std[:1], "Avg Next Block Steer",
+                trackMetricsFolder + "/next-block-steer-avg.svg")
 
-    plotMetric(trackData, gear_avg, "Avg Block Gear", trackMetricsFolder + "/block-gear-avg.svg")
-    plotMetric(trackData, gear_avg[-1:] + gear_avg[:-1], "Avg Prev Block Gear",
-               trackMetricsFolder + "/prev-block-gear-avg.svg")
-    plotMetric(trackData, gear_avg[1:] + gear_avg[:1], "Avg Next Block Gear",
-               trackMetricsFolder + "/next-block-gear-avg.svg")
+        plotMetric(trackData, steer_std, "STD Block Steer", trackMetricsFolder + "/block-steer-std.svg")
+        plotMetric(trackData, steer_std[-1:] + steer_std[:-1], "STD Prev Block Steer",
+                trackMetricsFolder + "/prev-block-steer-std.svg")
+        plotMetric(trackData, steer_std[1:] + steer_avg[:1], "STD Next Block Steer",
+                trackMetricsFolder + "/next-block-steer-std.svg")
 
-    plotMetric(trackData, gear_std, "STD Block Gear", trackMetricsFolder + "/block-gear-std.svg")
-    plotMetric(trackData, gear_std[-1:] + gear_std[:-1], "STD Prev Block Gear",
-               trackMetricsFolder + "/prev-block-gear-std.svg")
-    plotMetric(trackData, gear_std[1:] + gear_std[:1], "STD Next Block Gear",
-               trackMetricsFolder + "/next-block-gear-std.svg")
+        plotMetric(trackData, steer_q1, "Q1 Block Steer", trackMetricsFolder + "/block-steer-q1.svg")
+        plotMetric(trackData, steer_q1[-1:] + steer_q1[:-1], "Q1 Prev Block Steer",
+                trackMetricsFolder + "/prev-block-steer-q1.svg")
+        plotMetric(trackData, steer_q1[1:] + steer_q1[:1], "Q1 Next Block Steer",
+                trackMetricsFolder + "/next-block-steer-q1.svg")
 
-    plotMetric(trackData, gear_q1, "Q1 Block Gear", trackMetricsFolder + "/block-gear-q1.svg")
-    plotMetric(trackData, gear_q1[-1:] + gear_q1[:-1], "Q1 Prev Block Gear",
-               trackMetricsFolder + "/prev-block-gear-q1.svg")
-    plotMetric(trackData, gear_q1[1:] + gear_q1[:1], "Q1 Next Block Gear",
-               trackMetricsFolder + "/next-block-gear-q1.svg")
+        plotMetric(trackData, steer_q2, "Q2 Block Steer", trackMetricsFolder + "/block-steer-q2.svg")
+        plotMetric(trackData, steer_q2[-1:] + steer_q2[:-1], "Q2 Prev Block Steer",
+                trackMetricsFolder + "/prev-block-steer-q2.svg")
+        plotMetric(trackData, steer_q2[1:] + steer_q2[:1], "Q2 Next Block Steer",
+                trackMetricsFolder + "/next-block-steer-q2.svg")
 
-    plotMetric(trackData, gear_q2, "Q2 Block Gear", trackMetricsFolder + "/block-gear-q2.svg")
-    plotMetric(trackData, gear_q2[-1:] + gear_q2[:-1], "Q2 Prev Block Gear",
-               trackMetricsFolder + "/prev-block-gear-q2.svg")
-    plotMetric(trackData, gear_q2[1:] + gear_q2[:1], "Q2 Next Block Gear",
-               trackMetricsFolder + "/next-block-gear-q2.svg")
+        plotMetric(trackData, steer_q3, "Q3 Block Steer", trackMetricsFolder + "/block-steer-q3.svg")
+        plotMetric(trackData, steer_q3[-1:] + steer_q3[:-1], "Q3 Prev Block Steer",
+                trackMetricsFolder + "/prev-block-steer-q3.svg")
+        plotMetric(trackData, steer_q3[1:] + steer_q3[:1], "Q3 Next Block Steer",
+                trackMetricsFolder + "/next-block-steer-q3.svg")
 
-    plotMetric(trackData, gear_q3, "Q3 Block Gear", trackMetricsFolder + "/block-gear-q3.svg")
-    plotMetric(trackData, gear_q3[-1:] + gear_q3[:-1], "Q3 Prev Block Gear",
-               trackMetricsFolder + "/prev-block-gear-q3.svg")
-    plotMetric(trackData, gear_q3[1:] + gear_q3[:1], "Q3 Next Block Gear",
-               trackMetricsFolder + "/next-block-gear-q3.svg")
+
+        plotMetric(trackData, offset_avg, "Avg Block Offset", trackMetricsFolder + "/block-offset-avg.svg")
+        plotMetric(trackData, offset_avg[-1:] + offset_avg[:-1], "Avg Prev Block Offset",
+                trackMetricsFolder + "/prev-block-offset-avg.svg")
+        plotMetric(trackData, offset_avg[1:] + offset_avg[:1], "Average Next Block Offset",
+                trackMetricsFolder + "/next-block-offset-avg.svg")
+
+        plotMetric(trackData, offset_std, "STD Block Offset", trackMetricsFolder + "/block-offset-std.svg")
+        plotMetric(trackData, offset_std[-1:] + offset_std[:-1], "STD Prev Block Offset",
+                trackMetricsFolder + "/prev-block-offset-std.svg")
+        plotMetric(trackData, offset_std[1:] + offset_std[:1], "STD Next Block Offset",
+                trackMetricsFolder + "/next-block-offset-std.svg")
+
+        plotMetric(trackData, offset_q1, "Q1 Block Offset", trackMetricsFolder + "/block-offset-q1.svg")
+        plotMetric(trackData, offset_q1[-1:] + offset_q1[:-1], "Q1 Prev Block Offset",
+                trackMetricsFolder + "/prev-block-offset-q1.svg")
+        plotMetric(trackData, offset_q1[1:] + offset_q1[:1], "Q1 Next Block Offset",
+                trackMetricsFolder + "/next-block-offset-q1.svg")
+
+        plotMetric(trackData, offset_q2, "Q2 Block Offset", trackMetricsFolder + "/block-offset-q2.svg")
+        plotMetric(trackData, offset_q2[-1:] + offset_q2[:-1], "Q2 Prev Block Offset",
+                trackMetricsFolder + "/prev-block-offset-q2.svg")
+        plotMetric(trackData, offset_q2[1:] + offset_q2[:1], "Q2 Next Block Offset",
+                trackMetricsFolder + "/next-block-offset-q2.svg")
+
+        plotMetric(trackData, offset_q3, "Q3 Block Offset", trackMetricsFolder + "/block-offset-q3.svg")
+        plotMetric(trackData, offset_q3[-1:] + offset_q3[:-1], "Q3 Prev Block Offset",
+                trackMetricsFolder + "/prev-block-offset-q3.svg")
+        plotMetric(trackData, offset_q3[1:] + offset_q3[:1], "Q3 Next Block Offset",
+                trackMetricsFolder + "/next-block-offset-q3.svg")
 
 
 
-    plotMetric(trackData, speed_avg, "Average block speed [m/s]", trackMetricsFolder + "/block-speed-avg.svg")
-    plotMetric(trackData, speed_avg[-1:] + speed_avg[:-1], "Average previous block speed [m/s]", trackMetricsFolder + "/prev-block-speed-avg.svg")
-    plotMetric(trackData, speed_avg[1:] + speed_avg[:1], "Average next block speed [m/s]", trackMetricsFolder + "/next-block-speed-avg.svg")
+        plotMetric(trackData, gear_avg, "Avg Block Gear", trackMetricsFolder + "/block-gear-avg.svg")
+        plotMetric(trackData, gear_avg[-1:] + gear_avg[:-1], "Avg Prev Block Gear",
+                trackMetricsFolder + "/prev-block-gear-avg.svg")
+        plotMetric(trackData, gear_avg[1:] + gear_avg[:1], "Avg Next Block Gear",
+                trackMetricsFolder + "/next-block-gear-avg.svg")
 
-    plotMetric(trackData, speed_std, "Std Block Speed", trackMetricsFolder + "/block-speed-std.svg")
-    plotMetric(trackData, speed_std[-1:] + speed_std[:-1], "Std Prev Block Speed",
-               trackMetricsFolder + "/prev-block-speed-std.svg")
-    plotMetric(trackData, speed_std[1:] + speed_std[:1], "Std Next Block Speed",
-               trackMetricsFolder + "/next-block-speed-std.svg")
+        plotMetric(trackData, gear_std, "STD Block Gear", trackMetricsFolder + "/block-gear-std.svg")
+        plotMetric(trackData, gear_std[-1:] + gear_std[:-1], "STD Prev Block Gear",
+                trackMetricsFolder + "/prev-block-gear-std.svg")
+        plotMetric(trackData, gear_std[1:] + gear_std[:1], "STD Next Block Gear",
+                trackMetricsFolder + "/next-block-gear-std.svg")
 
-    plotMetric(trackData, speed_q1, "Q1 Block Speed", trackMetricsFolder + "/block-speed-q1.svg")
-    plotMetric(trackData, speed_q1[-1:] + speed_q1[:-1], "Q1 Prev Block Speed",
-               trackMetricsFolder + "/prev-block-speed-q1.svg")
-    plotMetric(trackData, speed_q1[1:] + speed_q1[:1], "Q1 Next Block Speed",
-               trackMetricsFolder + "/next-block-speed-q1.svg")
+        plotMetric(trackData, gear_q1, "Q1 Block Gear", trackMetricsFolder + "/block-gear-q1.svg")
+        plotMetric(trackData, gear_q1[-1:] + gear_q1[:-1], "Q1 Prev Block Gear",
+                trackMetricsFolder + "/prev-block-gear-q1.svg")
+        plotMetric(trackData, gear_q1[1:] + gear_q1[:1], "Q1 Next Block Gear",
+                trackMetricsFolder + "/next-block-gear-q1.svg")
 
-    plotMetric(trackData, speed_q2, "Q2 Block Speed", trackMetricsFolder + "/block-speed-q2.svg")
-    plotMetric(trackData, speed_q2[-1:] + speed_q2[:-1], "Q2 Prev Block Speed",
-               trackMetricsFolder + "/prev-block-speed-q2.svg")
-    plotMetric(trackData, speed_q2[1:] + speed_q2[:1], "Q2 Next Block Speed",
-               trackMetricsFolder + "/next-block-speed-q2.svg")
+        plotMetric(trackData, gear_q2, "Q2 Block Gear", trackMetricsFolder + "/block-gear-q2.svg")
+        plotMetric(trackData, gear_q2[-1:] + gear_q2[:-1], "Q2 Prev Block Gear",
+                trackMetricsFolder + "/prev-block-gear-q2.svg")
+        plotMetric(trackData, gear_q2[1:] + gear_q2[:1], "Q2 Next Block Gear",
+                trackMetricsFolder + "/next-block-gear-q2.svg")
 
-    plotMetric(trackData, speed_q3, "Q3 Block Speed", trackMetricsFolder + "/block-speed-q3.svg")
-    plotMetric(trackData, speed_q3[-1:] + speed_q3[:-1], "Q3 Prev Block Speed",
-               trackMetricsFolder + "/prev-block-speed-q3.svg")
-    plotMetric(trackData, speed_q3[1:] + speed_q3[:1], "Q3 Next Block Speed",
-               trackMetricsFolder + "/next-block-speed-q3.svg")
+        plotMetric(trackData, gear_q3, "Q3 Block Gear", trackMetricsFolder + "/block-gear-q3.svg")
+        plotMetric(trackData, gear_q3[-1:] + gear_q3[:-1], "Q3 Prev Block Gear",
+                trackMetricsFolder + "/prev-block-gear-q3.svg")
+        plotMetric(trackData, gear_q3[1:] + gear_q3[:1], "Q3 Next Block Gear",
+                trackMetricsFolder + "/next-block-gear-q3.svg")
+
+
+
+        plotMetric(trackData, speed_avg, "Average block speed [m/s]", trackMetricsFolder + "/block-speed-avg.svg")
+        plotMetric(trackData, speed_avg[-1:] + speed_avg[:-1], "Average previous block speed [m/s]", trackMetricsFolder + "/prev-block-speed-avg.svg")
+        plotMetric(trackData, speed_avg[1:] + speed_avg[:1], "Average next block speed [m/s]", trackMetricsFolder + "/next-block-speed-avg.svg")
+
+        plotMetric(trackData, speed_std, "Std Block Speed", trackMetricsFolder + "/block-speed-std.svg")
+        plotMetric(trackData, speed_std[-1:] + speed_std[:-1], "Std Prev Block Speed",
+                trackMetricsFolder + "/prev-block-speed-std.svg")
+        plotMetric(trackData, speed_std[1:] + speed_std[:1], "Std Next Block Speed",
+                trackMetricsFolder + "/next-block-speed-std.svg")
+
+        plotMetric(trackData, speed_q1, "Q1 Block Speed", trackMetricsFolder + "/block-speed-q1.svg")
+        plotMetric(trackData, speed_q1[-1:] + speed_q1[:-1], "Q1 Prev Block Speed",
+                trackMetricsFolder + "/prev-block-speed-q1.svg")
+        plotMetric(trackData, speed_q1[1:] + speed_q1[:1], "Q1 Next Block Speed",
+                trackMetricsFolder + "/next-block-speed-q1.svg")
+
+        plotMetric(trackData, speed_q2, "Q2 Block Speed", trackMetricsFolder + "/block-speed-q2.svg")
+        plotMetric(trackData, speed_q2[-1:] + speed_q2[:-1], "Q2 Prev Block Speed",
+                trackMetricsFolder + "/prev-block-speed-q2.svg")
+        plotMetric(trackData, speed_q2[1:] + speed_q2[:1], "Q2 Next Block Speed",
+                trackMetricsFolder + "/next-block-speed-q2.svg")
+
+        plotMetric(trackData, speed_q3, "Q3 Block Speed", trackMetricsFolder + "/block-speed-q3.svg")
+        plotMetric(trackData, speed_q3[-1:] + speed_q3[:-1], "Q3 Prev Block Speed",
+                trackMetricsFolder + "/prev-block-speed-q3.svg")
+        plotMetric(trackData, speed_q3[1:] + speed_q3[:1], "Q3 Next Block Speed",
+                trackMetricsFolder + "/next-block-speed-q3.svg")
+    except Exception as e:
+        print(f"Error in makeMetricsPlots: {e}")
+        return None
