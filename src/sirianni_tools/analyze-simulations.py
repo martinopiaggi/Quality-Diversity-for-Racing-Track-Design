@@ -8,6 +8,8 @@ import json  # Added missing import
 import os
 import subprocess
 import shutil
+import numpy as np
+import scipy.stats
 
 import blocks
 import gaps
@@ -76,7 +78,12 @@ for path in args.paths:
 
     # Get track data
     try:
-        trackData = track.analyzeTrack(track_path, os.path.join(folderName, "track"))
+        # Existing code
+        trackData = track.analyzeTrack(
+            track_path,
+            os.path.join(folderName, "track"),
+            generate_plots=not args.no_plots  # Respect the --no-plots flag
+        )
     except Exception as e:
         print(f"Error analyzing track: {e}")
         trackData = None
@@ -116,18 +123,22 @@ for path in args.paths:
         0,
         driversList,
         False,
-        botSkills
+        botSkills,
+        generate_plots=not args.no_plots
     )
+
 
     utils.printHeading("Analyzing gaps distribution")
     gapsDistribution = gaps.makeGapsPlotsFromLogList(
         os.getcwd() + "/" + folderName,
         logList,
-        driversList
+        driversList,
+        generate_plots=not args.no_plots
     )
 
+
     utils.printHeading("Analyzing overtakes")
-    overtakes.makeOvertakePlotsAndSegmentDataFile(
+    totalOvertakes = overtakes.makeOvertakePlotsAndSegmentDataFile(
         os.getcwd() + "/" + folderName,
         logList,
         utils.torcsTrackDirectory,
@@ -187,16 +198,25 @@ for path in args.paths:
         writer.writerow([trackName] + trackData + positionsVariations + 
                        gapsDistribution + start30 + start50 + start100)
 
+    
     if args.json_output:
+        radiuses = trackData[6] if trackData and len(trackData) > 6 else []
+        if radiuses:
+            avg_radius_mean = np.mean(radiuses)
+            avg_radius_var = np.var(radiuses)
+        else:
+            avg_radius_mean = avg_radius_var = 0
         raw_metrics = {
             'track_length': trackLength,
             'left_bends': trackData[2] if trackData else 0,
             'right_bends': trackData[3] if trackData else 0,
             'straight_sections': trackData[4] if trackData else 0,
-            'avg_radius': trackData[6] if trackData and len(trackData) > 6 else 0,  # Fixed: removed [0] access
+            'avg_radius_mean': avg_radius_mean,
+            'avg_radius_var': avg_radius_var,
             'gaps_mean': gapsDistribution[0] if gapsDistribution else 0,
             'gaps_var': gapsDistribution[1] if len(gapsDistribution) > 1 else 0,
             'positions_mean': positionsVariations[0] if positionsVariations else 0,
-            'positions_var': positionsVariations[1] if len(positionsVariations) > 1 else 0
+            'positions_var': positionsVariations[1] if len(positionsVariations) > 1 else 0,
+            'total_overtakes': totalOvertakes
         }
         print(json.dumps(raw_metrics, indent=2))

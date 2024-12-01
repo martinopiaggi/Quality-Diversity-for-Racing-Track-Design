@@ -29,54 +29,33 @@ def getTrackWidth(trackName):
             return float(f.readline().strip().rsplit(",")[1])
 
 
-
-# Adapted from Torcs (see libs/robottools/rttrack.cpp)
-def RtTrackLocal2Global(seg, toStart, toMiddle, width):
-    if seg[blocks.TYPE] == utils.SegmentType.straight.value:
-        CosA = math.cos(seg[blocks.ANGLE_ZS])
-        SinA = math.sin(seg[blocks.ANGLE_ZS])
-        tr = toMiddle + width / 2
-        x = seg[blocks.SRX] + toStart * CosA - tr * SinA
-        y = seg[blocks.SRY] + toStart * SinA + tr * CosA
-    elif seg[blocks.TYPE] == utils.SegmentType.left.value:
-        a = seg[blocks.ANGLE_ZS] + toStart / seg[blocks.RADIUS]
-        r = seg[blocks.RADIUS] - toMiddle
-        x = seg[blocks.CENTER_X] + r * math.sin(a)
-        y = seg[blocks.CENTER_Y] - r * math.cos(a)
-    else:
-        a = seg[blocks.ANGLE_ZS] - toStart / seg[blocks.RADIUS]
-        r = seg[blocks.RADIUS] + toMiddle
-        x = seg[blocks.CENTER_X] - r * math.sin(a)
-        y = seg[blocks.CENTER_Y] + r * math.cos(a)
-    return (x,y)
-
-
-
 def fillOvertakes(trackData, logFile):
-    """Fill track data with overtake information"""
     try:
         with open(logFile, 'r') as f:
             lines = f.readlines()
-            
-        overtake_count = 0
-        for line in lines:
-            if 'overtake' in line:
-                parts = line.strip().split(',')
-                if len(parts) >= 3:  # Verify we have enough parts
-                    length = float(parts[2])  # distance from start
-                    
-                    for seg in trackData:
-                        if seg[blocks.ENDLENGTH] >= length:
-                            seg[blocks.OVERTAKES] += 1
-                            overtake_count += 1
-                            break
-                            
-        print(f"Processed {overtake_count} overtakes in {logFile}")
-        return trackData
-        
+            overtake_count = 0
+            for line in lines:
+                if 'overtake' in line:
+                    parts = line.strip().split(',')
+                    if len(parts) >= 3:
+                        try:
+                            length = float(parts[2])  # Distance where overtake occurred
+                            for seg in trackData:
+                                if seg[blocks.ENDLENGTH] >= length:
+                                    seg[blocks.OVERTAKES] += 1
+                                    overtake_count += 1
+                                    break
+                        except ValueError:
+                            print(f"Warning: Invalid length value in line: {line.strip()}")
+                    else:
+                        print(f"Warning: Not enough data fields in line: {line.strip()}")
+            print(f"Processed {overtake_count} overtakes in {logFile}")
+        return trackData, overtake_count
     except Exception as e:
         print(f"Error processing overtakes: {e}")
-        return trackData
+        return trackData, 0
+
+
 
 def computeBlockOvertakes(trackData):
     """Compute overtakes per block"""
@@ -521,19 +500,6 @@ def makeBlocksDataFile(trackData, trackName, outputFolder, fillOvertakes, maxBlo
         print("  -> Created " + fileName)
 
 
-
-def dist2seg(dist, trackData):
-    segIndex = 0
-    curDist = trackData[segIndex][blocks.LENGTH]
-
-    while dist > curDist:
-        segIndex += 1
-        curDist += trackData[segIndex][blocks.LENGTH]
-
-    return trackData[segIndex]
-
-
-
 def drawCarPositions(trackData, logFile, trackName):
     records = []
     width = getTrackWidth(trackName)
@@ -624,6 +590,7 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
     allBlockData = blocks.readDynamics(trackName, allBlockData)
 
     # Process each log file
+    totalOvertakes = 0
     for index, log in enumerate(logList):
         print(f"==> Analyzing {log} ({index + 1}/{len(logList)})")
         
@@ -633,9 +600,10 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
             continue
             
         # Fill in overtakes data
-        trackData = fillOvertakes(trackData, os.path.join(folder, log))
-        allBlockData = fillOvertakes(allBlockData, os.path.join(folder, log))
-        
+        trackData, overtake_count = fillOvertakes(trackData, os.path.join(folder, log))
+        totalOvertakes += overtake_count
+        allBlockData, _ = fillOvertakes(allBlockData, os.path.join(folder, log))
+
         # Create plots for this log
         plotOvertakes(trackData, plotCarPositions, folder, [log], 
                      os.path.join(overtakesFolder, log), trackName)
@@ -648,6 +616,7 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
 
     # Create final data file
     makeBlocksDataFile(allBlockData, trackName, folder, True, maxBlockLength)
+    return totalOvertakes
 
 def plotOvertakes(blockData, plotCarPositions, folder, logList, path, trackName):
     blocks.plotMetric(blockData, computeBlockOvertakes(blockData), "Number of overtakes", path + ".svg", True, False)

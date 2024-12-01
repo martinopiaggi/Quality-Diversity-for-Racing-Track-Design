@@ -98,40 +98,68 @@ def plotPositionsVariationsBySkillLevel(variations, filename, skillLevels, botsN
 
 
 
-def makePositionsVariationsPlotsFromLogList(folder, logList, trackLength, lapPercentage, driversList, plotAllRacesOnly, botSkills=None):
-    # Skip skill-based analyses if no skills provided
-    if not botSkills:
-        allVariations = numpy.array([], dtype=numpy.int32)
-        # Process variations based on positions only
-        for index, log in enumerate(logList):
-            variations = []
-            positions = []
-            
-            if lapPercentage == 0:
-                # Get final positions
-                for driver in driversList:
-                    try:
-                        cmd = f'tac "{folder}/{log}" | grep "{driver}" -m 1'
-                        output = subprocess.check_output(cmd, shell=True).decode('ascii')
-                        positions.append(str(output.split(",")[1]))
-                    except:
-                        continue
+def makePositionsVariationsPlotsFromLogList(folder, logList, trackLength, lapPercentage, driversList, plotAllRacesOnly, botskills=None, generate_plots=True):
+    allVariations = numpy.array([], dtype=numpy.int32)
 
-            if positions:
-                i = 0
-                while i < len(driversList):
-                    try:
-                        position = positions.index(driversList[i])
-                        variations.append(i - position)
-                    except ValueError:
-                        pass
-                    i += 1
-                    
-                if variations:
-                    plotPositionsVariations(variations, folder + "/" + log + ".svg")
-                    allVariations = numpy.append(allVariations, variations)
+    for index, log in enumerate(logList):
+        print(f"==> Analyzing {log}")
+        variations = []
+        final_positions = []
 
-        if len(allVariations) == 0:
-            return [0, 0, 0]
-            
-        return [numpy.mean(allVariations), numpy.var(allVariations), scipy.stats.skew(allVariations)]
+        if lapPercentage == 0:
+            # Get final positions
+            for driver in driversList:
+                found = False
+                try:
+                    # Open the log file and read lines
+                    with open(os.path.join(folder, log), 'r') as f:
+                        lines = f.readlines()
+                    # Reverse the lines to start from the end
+                    for line in reversed(lines):
+                        data = line.strip().split(',')
+                        if len(data) > 1 and data[1] == driver:
+                            if len(data) >= 14:
+                                position = int(data[13])  # Adjust index if necessary
+                                final_positions.append((driver, position))
+                                found = True
+                            else:
+                                print(f"Warning: Not enough data fields for {driver} in {log}")
+                            break
+                    if not found:
+                        print(f"Driver {driver} not found in final positions.")
+                except Exception as e:
+                    print(f"Error processing {driver} in {log}: {e}")
+                    continue
+
+
+            if not final_positions:
+                print(f"Warning: No positions were successfully captured in {log}")
+                continue
+
+            # Calculate variations from starting positions
+            for i, driver in enumerate(driversList):
+                try:
+                    final_position = next(pos for drv, pos in final_positions if drv == driver)
+                    variation = i - (final_position - 1)  # Adjusting for 1-based indexing in positions
+                    variations.append(variation)
+                except StopIteration:
+                    print(f"Driver {driver} not found in final positions.")
+                    continue
+
+            if variations:
+                if generate_plots:
+                    plotPositionsVariations(variations, os.path.join(folder, f"{log}.svg"))
+                allVariations = numpy.append(allVariations, variations)
+            else:
+                print(f"No position variations to plot for {log}")
+
+    # If multiple logs, process overall variations
+    if len(allVariations) > 0:
+        print("==> Analyzing positions across all logs")
+        mean = numpy.mean(allVariations)
+        var = numpy.var(allVariations)
+        skew = scipy.stats.skew(allVariations)
+        return [mean, var, skew]
+    else:
+        print("No position variations found across all logs.")
+        return [0, 0, 0]

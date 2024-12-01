@@ -15,6 +15,7 @@ __copyright__ = "Copyright 2015-2016, Jacopo Sirianni"
 __license__ = "GPL"
 __email__ = "jacopo.sirianni@mail.polimi.it"
 
+MAX_GAP_TIME = 120 # Maximum realistic gap in seconds
 
 
 def plotGaps(cumulative, gaps, filename):
@@ -41,7 +42,7 @@ def plotGaps(cumulative, gaps, filename):
         
         plt.xlabel("Gaps [s]")
 
-    plt.ylabel("Number of drivers [1]")
+    plt.ylabel("Number of drivers")
     # Duplicated numbers look like bold (written multiple times), set() does not allow duplicates
     # 0 is added to the list in order to be visible also in the cumulative plot
     # The internal list() should not be necessary, but without it the concatenation does not work in this specific case (I do not know why)
@@ -65,46 +66,46 @@ def plotGaps(cumulative, gaps, filename):
     return [mean, var, skew]
 
 
-def makeGapsPlotsFromLogList(folder, logList, driverList):
-    gapsDirectory = folder + "/gaps/"
-    cumulativeGapsDirectory = folder + "/cumulative-gaps/"
+def makeGapsPlotsFromLogList(folder, logList, driverList, generate_plots=True):
+    gapsDirectory = os.path.join(folder, "gaps")
+    cumulativeGapsDirectory = os.path.join(folder, "cumulative-gaps")
+    os.makedirs(gapsDirectory, exist_ok=True)
+    os.makedirs(cumulativeGapsDirectory, exist_ok=True)
 
-    if not os.path.exists(gapsDirectory):
-        os.makedirs(gapsDirectory)
-    if not os.path.exists(cumulativeGapsDirectory):
-        os.makedirs(cumulativeGapsDirectory)
-        
     allGaps = np.array([])
 
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
-    for index, log in enumerate(logList):
-        print("==> Analyzing " + log + " (" + str(index + 1) + "/" + str(len(logList)) + ")")
-        
+    for log in logList:
+        print(f"==> Analyzing {log}")
         gaps = np.array([])
-        
         for driver in driverList:
-            cmd = f'tac "{folder}/{log}" | grep -v "overtake" | grep "^[^,]*,{driver}," -m 1'
+            cmd = f'tac "{os.path.join(folder, log)}" | grep -v "overtake" | grep "^[^,]*,{driver}," -m 1'
             try:
                 output = subprocess.check_output(cmd, shell=True).decode('ascii').strip()
                 if output:
                     data = output.split(',')
-                    if len(data) >= 15:
-                        time_ahead = float(data[15])  # Use time to car ahead
-                        if time_ahead > 0:  # Only add non-zero gaps
+                    if len(data) >= 16:
+                        time_ahead = float(data[15])  # Using time to car ahead
+                        if 0 < time_ahead < MAX_GAP_TIME:
                             gaps = np.append(gaps, time_ahead)
             except Exception as e:
                 print(f"Warning: Could not get gap for {driver}: {e}")
                 continue
-        
-        if len(gaps) > 0:
-            gapsDistribution = plotGaps(False, gaps, gapsDirectory + log + ".svg")
-            plotGaps(True, gaps, cumulativeGapsDirectory + log + ".svg")
-            allGaps = np.append(allGaps, gaps)
-        
-    if len(logList) > 1:
-        print("==> Analyzing all races together")
-        gapsDistribution = plotGaps(False, allGaps, gapsDirectory + "gaps.svg")
-        plotGaps(True, allGaps, cumulativeGapsDirectory + "gaps.svg")
 
-    return gapsDistribution if len(allGaps) > 0 else [0, 0, 0]
+        if len(gaps) > 0:
+            if generate_plots:
+                gapsDistribution = plotGaps(False, gaps, os.path.join(gapsDirectory, f"{log}.svg"))
+                plotGaps(True, gaps, os.path.join(cumulativeGapsDirectory, f"{log}.svg"))
+            allGaps = np.append(allGaps, gaps)
+        else:
+            print(f"No valid gaps found in {log}")
+
+
+    # Analyze all gaps together
+    if len(allGaps) > 0:
+        print("==> Analyzing gaps across all logs")
+        gapsDistribution = plotGaps(False, allGaps, os.path.join(gapsDirectory, "gaps.svg"))
+        plotGaps(True, allGaps, os.path.join(cumulativeGapsDirectory, "gaps.svg"))
+        return gapsDistribution
+    else:
+        print("No valid gaps found across all logs")
+        return [0, 0, 0]

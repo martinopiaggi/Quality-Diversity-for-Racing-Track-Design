@@ -198,15 +198,15 @@ def plotSegments(trackFile, outputPath, color1, color2):
 
 
 
-def analyzeTrack(trackFile, outputFolder):
+def analyzeTrack(trackFile, outputFolder, generate_plots=True):
     trackData = readTrack(trackFile)
-
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
-    plotSegmentTypes(trackFile, outputFolder + "/segment-types.svg")
-    plotSegments(trackFile, outputFolder + "/segments.svg", "k", "#666666")
-    plotSegments(trackFile, outputFolder + "/track.svg", "k", "k")
+    
+    if generate_plots:
+        plotSegmentTypes(trackFile, os.path.join(outputFolder, "segment-types.svg"))
+        plotSegments(trackFile, os.path.join(outputFolder, "segments.svg"), "k", "#666666")
+        plotSegments(trackFile, os.path.join(outputFolder, "track.svg"), "k", "k")
+    
+    return trackData
 
-    return trackData[0:6] + list(analyzeRadiuses(trackData[6])) + list(analyzeHeights(trackData[7])) +\
-        trackData[8:13] + list(analyzeRadiuses(trackData[13])) + list(analyzeHeights(trackData[14])) +\
-        trackData[15:20] + list(analyzeRadiuses(trackData[20])) + list(analyzeHeights(trackData[21]))
