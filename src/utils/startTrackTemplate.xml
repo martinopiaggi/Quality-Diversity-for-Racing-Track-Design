@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE params SYSTEM "../../../src/libs/tgf/params.dtd" [
-<!-- general definitions for tracks -->
-<!ENTITY default-surfaces SYSTEM "../../../data/tracks/surfaces.xml">
-<!ENTITY default-objects SYSTEM "../../../data/tracks/objects.xml">
-]>
+<!DOCTYPE params SYSTEM "../libs/tgf/params.dtd">
 
 <params name="output" type="trackdef" mode="mw">
   <section name="Surfaces">
@@ -17,7 +13,7 @@
 
   <section name="Header">
     <attstr name="name"        val="output"/>
-    <attstr name="category"    val="dirt"/>
+    <attstr name="category"    val="road"/>
     <attnum name="version"     val="4"/>
   </section>
 
