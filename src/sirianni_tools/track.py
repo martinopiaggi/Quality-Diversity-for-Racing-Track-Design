@@ -216,7 +216,7 @@ def plotsegmenttypes(trackfile, filename, utils):
                 
                 if segment_type == utils.SegmentType.left.value and radius < utils.maxBendRadius:
                     color = "r"
-                elif segment_type == utils.SegmentType.right.value and radius < utils.maxbendradius:
+                elif segment_type == utils.SegmentType.right.value and radius < utils.maxBendRadius:
                     color = "g"
                 else:
                     color = "k"
