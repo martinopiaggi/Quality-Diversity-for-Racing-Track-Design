@@ -58,7 +58,7 @@ export async function simulate(mode = MODE, trackSize = 0,
         throw err;
     } finally {
         if (containerId) {
-            await stopDockerContainer(containerId);
+            //await stopDockerContainer(containerId);
         }
     }
 }
@@ -66,7 +66,7 @@ export async function simulate(mode = MODE, trackSize = 0,
 async function startDockerContainer() {
     const containerId = await executeCommand(`docker run -d -it --memory ${MEMORY_LIMIT} ${DOCKER_IMAGE_NAME}`);
     console.log(`Docker container started with ID: ${containerId}`);
-    await executeCommand(`docker exec ${containerId} mkdir -p /usr/share/games/torcs/tracks/dirt/output`);
+    await executeCommand(`docker exec ${containerId} mkdir -p /usr/local/share/games/torcs/tracks/road/output`);
     return containerId;
 }
 
@@ -85,9 +85,9 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
     await fs.writeFile(tmpFilePath, trackXml);
 
     try {
-        await executeCommand(`docker cp ${tmpFilePath} ${containerId}:/usr/share/games/torcs/tracks/dirt/output/${seed}.xml`);
-        await executeCommand(`docker exec ${containerId} mv /usr/share/games/torcs/tracks/dirt/output/${seed}.xml /usr/share/games/torcs/tracks/dirt/output/output.xml`);
-        const trackgenOutput = await executeCommand(`docker exec ${containerId} xvfb-run /usr/games/trackgen -c dirt -n output`);
+        await executeCommand(`docker cp ${tmpFilePath} ${containerId}:/usr/local/share/games/torcs/tracks/road/output/${seed}.xml`);
+        await executeCommand(`docker exec ${containerId} mv /usr/local/share/games/torcs/tracks/road/output/${seed}.xml /usr/local/share/games/torcs/tracks/road/output/output.xml`);
+        const trackgenOutput = await executeCommand(`docker exec ${containerId} xvfb-run trackgen -c road -n output`);
         console.log(trackgenOutput);
 
         await fs.unlink(tmpFilePath);
@@ -99,8 +99,7 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 }
 
 async function runRaceSimulation(containerId,trackGenOutput) {
-    await executeCommand(`docker cp ${MAPELITE_PATH} ${containerId}:/usr/share/games/torcs/config/raceman/mapelite.xml`);
-    await executeCommand(`docker exec ${containerId} /usr/games/torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`);
+    await executeCommand(`docker exec ${containerId} torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`);
     console.log(`Race simulation completed inside Docker container ${containerId}`);
 
     const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackGenOutput);
