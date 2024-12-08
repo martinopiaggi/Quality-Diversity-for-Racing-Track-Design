@@ -13,6 +13,7 @@ ENV TORCS_BASE=/torcs-code/
 # added nano for debug
 RUN apt-get update && apt-get install -y \
     nano \
+    xvfb \
     libglib2.0-dev \
     libgl1-mesa-dev \
     libglu1-mesa-dev \
@@ -37,10 +38,6 @@ RUN apt-get update && apt-get install -y \
 
 # Copy Sirianni tools into container
 COPY sirianni_tools /usr/local/lib/sirianni_tools
-
-# Add Sirianni tools to both PYTHONPATH (for imports) and PATH (for execution)
-ENV PYTHONPATH="${PYTHONPATH}:/usr/local/lib/sirianni_tools"
-ENV PATH="${PATH}:/usr/local/lib/sirianni_tools"
 
 # Clone TORCS repository
 COPY torcs-1.3.7-master /torcs-code
