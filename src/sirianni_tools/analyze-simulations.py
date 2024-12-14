@@ -15,7 +15,7 @@ import blocks
 import gaps
 import overtakes
 import positions
-import track
+;
 import utils
 
 __author__ = "Jacopo Sirianni"
@@ -43,15 +43,6 @@ for path in args.paths:
     
     utils.printHeading("Reading initialization data")
 
-    # Fixed hardcoded configuration
-    botSkills = [
-        ("damned", "medium"),
-        ("bt", "medium"),
-        ("tita", "medium"),
-        ("olethros", "medium"),
-        ("simplix", "medium")
-    ]
-
     logList = utils.getLogList(folderName)
     if not logList:
         print(f"No logs found in {folderName}, skipping...")
@@ -65,16 +56,12 @@ for path in args.paths:
 
     utils.printHeading("Analyzing track and track dynamics")
     trackName = logList[0][20:-4]
-    
+    print(f"Track name: {trackName}")
     # Ensure track data exists
     track_path = os.path.join(utils.torcsTrackDirectory, f"{trackName}.csv")
     if not os.path.exists(track_path):
-        try:
-            subprocess.check_call(f"{utils.torcsCommand} -r /usr/local/share/games/torcs/config/raceman/simplix-test.xml", 
-                                shell=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error generating track data: {e}")
-            continue
+        print(f"Track data not found for {trackName}, skipping...")
+        continue
 
     # Get track data
     try:
@@ -90,15 +77,13 @@ for path in args.paths:
 
     # Handle dynamics data
     dynamics_path = os.path.join(utils.torcsTrackDirectory, f"{trackName}_dynamics.csv")
+    
     if not os.path.exists(dynamics_path):
-        try:
-            subprocess.check_call(f"{utils.torcsCommand} -r /usr/local/share/games/torcs/config/raceman/simplix-test.xml", 
-                                shell=True)
-            if utils.torcsLogPath and utils.getLogList(utils.torcsLogPath):
-                latest_log = utils.getLogList(utils.torcsLogPath)[-1]
-                shutil.move(os.path.join(utils.torcsLogPath, latest_log), dynamics_path)
-        except Exception as e:
-            print(f"Error handling dynamics data: {e}")
+        print(f"Dynamics data not found for {trackName}, skipping...")
+        continue
+    else:
+        print(f"Dynamics data path: {dynamics_path}")
+
 
     # Process blocks
     blocks.makeMetricsPlots(
@@ -123,7 +108,6 @@ for path in args.paths:
         0,
         driversList,
         False,
-        botSkills,
         generate_plots=not args.no_plots
     )
 
@@ -149,11 +133,11 @@ for path in args.paths:
 
     utils.printHeading("Analyzing race progress")
     start30 = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName, logList, trackLength, 0.3, driversList, False, botSkills)
+        os.getcwd() + "/" + folderName, logList, trackLength, 0.3, driversList, False,not args.no_plots)
     start50 = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName, logList, trackLength, 0.5, driversList, False, botSkills)
+        os.getcwd() + "/" + folderName, logList, trackLength, 0.5, driversList, False,not args.no_plots)
     start100 = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName, logList, trackLength, 1, driversList, False, botSkills)
+        os.getcwd() + "/" + folderName, logList, trackLength, 1, driversList, False,not args.no_plots)
 
     utils.printHeading("Collecting overall results")
     results_path = os.path.join(os.getcwd(), folderName, f"{trackName}-results.csv")

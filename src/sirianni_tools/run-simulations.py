@@ -22,9 +22,8 @@ parser.add_argument("-r", "--num-races", type=int, required=True, help="the numb
 parser.add_argument("-l", "--num-laps", type=int, required=True, help="the number of laps of each simulation")
 parser.add_argument("-b", "--num-bots", type=int, required=True, help="the number of bots to use for the simulation")
 parser.add_argument("-t", "--track-type", default="road", help="the type of tracks (default is road)")
-
 parser.add_argument("tracks", nargs="+",
-                    help="the name of the tracks used for the simulations (the same as the Torcs filenames, e.g. forza and not Forza)")
+                    help="the name of the tracks used for the simulations (e.g. forza)")
 
 args = parser.parse_args()
 
@@ -33,32 +32,12 @@ for track in args.tracks:
 
     print("==> Generating simulation folder")
     # Torcs does not find the race xml file if whitespaces are used
-    toolFolderName = time.strftime("%Y%m%d-%H:%M.%S-") + track
+    toolFolderName = time.strftime("%Y%m%d-%H%M%S-") + track
     os.makedirs(toolFolderName)
     print("  -> Created directory " + toolFolderName)
 
-    print("==> Determining bots' skills...")
-    i = 0
-    botSkills = []
-    while i < args.num_bots:
-        racegen.racegen(track, args.track_type, [racegen.defaultBotList[i]], 1, toolFolderName + "/quickrace.xml")
-        subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + toolFolderName + "/quickrace.xml",
-                              shell=True)
-        botName = str(
-            subprocess.check_output("tail -n 2 \"" + utils.torcsLogPath + os.listdir(utils.torcsLogPath)[-1] + "\"",
-                                    shell=True).splitlines()[0].decode("ascii").split(",")[1])
-        lapTime = float(
-            subprocess.check_output("tail -n 2 \"" + utils.torcsLogPath + os.listdir(utils.torcsLogPath)[-1] + "\"",
-                                    shell=True).splitlines()[0].decode("ascii").split(",")[0])
-        os.remove(utils.torcsLogPath + os.listdir(utils.torcsLogPath)[-1])
-        os.remove(toolFolderName + "/quickrace.xml")
-        print("  -> " + botName + " lap time: " + str(lapTime) + "s")
-        botSkills.append((botName, lapTime))
-        with open(toolFolderName + "/skills.csv", "a") as skillsFile:
-            skillsFile.write(botName + "," + str(lapTime) + "\n")
-        i += 1
-    botSkills = sorted(botSkills, key=lambda record: record[1])
-    print("  -> Bots in increasing skill level: " + str(botSkills))
+    # Remove the entire bot skill determination logic:
+    # No skill measurements, no skills.csv, no sorting by lap times.
 
     print("==> Generating race setup")
     racegen.racegen(track, args.track_type, racegen.defaultBotList[0:args.num_bots], args.num_laps, toolFolderName + "/quickrace.xml")
@@ -67,12 +46,10 @@ for track in args.tracks:
     utils.printHeading("Running the simulation")
 
     print("==> Executing TORCS...")
-    i = 1
-    while i <= args.num_races:
+    for i in range(1, args.num_races + 1):
         print("  -> Race " + str(i) + "/" + str(args.num_races))
         subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + toolFolderName + "/quickrace.xml",
                               shell=True)
-        i += 1
 
     os.remove(toolFolderName + "/quickrace.xml")
 

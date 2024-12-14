@@ -98,7 +98,7 @@ def plotPositionsVariationsBySkillLevel(variations, filename, skillLevels, botsN
 
 
 
-def makePositionsVariationsPlotsFromLogList(folder, logList, trackLength, lapPercentage, driversList, plotAllRacesOnly, botskills=None, generate_plots=True):
+def makePositionsVariationsPlotsFromLogList(folder, logList, trackLength, lapPercentage, driversList, plotAllRacesOnly, generate_plots=True):
     allVariations = numpy.array([], dtype=numpy.int32)
 
     for index, log in enumerate(logList):
