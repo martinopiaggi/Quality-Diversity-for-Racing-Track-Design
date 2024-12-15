@@ -15,6 +15,7 @@ __email__ = "jacopo.sirianni@mail.polimi.it"
 torcsCommand = "/usr/local/bin/torcs"
 torcsLogPath = "/root/.torcs/logs/"
 torcsTrackDirectory = "/root/.torcs/tracks/"
+torcsRacemanDirectory = "/usr/local/share/games/torcs/config/raceman/"
 maxBendRadius = 1200
 
 @enum.unique
