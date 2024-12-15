@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Run a sequence of simulated races"""
+"""Run track export or race simulations"""
 
 import argparse
 import os
@@ -16,46 +16,53 @@ __copyright__ = "Copyright 2015-2016, Jacopo Sirianni"
 __license__ = "GPL"
 __email__ = "jacopo.sirianni@mail.polimi.it"
 
-parser = argparse.ArgumentParser(description=__doc__)
 
-parser.add_argument("-r", "--num-races", type=int, required=True, help="the number of races to simulate")
-parser.add_argument("-l", "--num-laps", type=int, required=True, help="the number of laps of each simulation")
-parser.add_argument("-b", "--num-bots", type=int, required=True, help="the number of bots to use for the simulation")
-parser.add_argument("-t", "--track-type", default="road", help="the type of tracks (default is road)")
-parser.add_argument("tracks", nargs="+",
-                    help="the name of the tracks used for the simulations (e.g. forza)")
+def run_track_export(folder_name):
+    """Run a single lap with only trackexporter."""
+    print("==> Running track export...")
+    race_config = os.path.join(folder_name, "track_export.xml")
+    
+    # Generate config with only trackexporter
+    racegen.generate_track_export_xml(race_config)
+    
+    cmd = f"{utils.torcsCommand} -r {os.path.join(os.getcwd(), race_config)}"
+    subprocess.check_call(cmd, shell=True)
+    os.remove(race_config)
 
-args = parser.parse_args()
 
-for track in args.tracks:
-    utils.printHeading("Setting up the simulation")
+def run_race_simulation(folder_name, num_laps):
+    """Run main race simulation with all bots."""
+    print("==> Running race simulation...")
+    race_config = os.path.join(folder_name, "race_sim.xml")
+    
+    # Generate config with all racing bots
+    racegen.generate_race_xml(race_config,num_laps)
+    
+    cmd = f"{utils.torcsCommand} -r {os.path.join(os.getcwd(), race_config)}"
+    subprocess.check_call(cmd, shell=True)
 
-    print("==> Generating simulation folder")
-    # Torcs does not find the race xml file if whitespaces are used
-    toolFolderName = time.strftime("%Y%m%d-%H%M%S-") + track
-    os.makedirs(toolFolderName)
-    print("  -> Created directory " + toolFolderName)
 
-    # Remove the entire bot skill determination logic:
-    # No skill measurements, no skills.csv, no sorting by lap times.
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-r", "--num_laps", type=int, default=10,
+                        help="Number of laps to simulate (default: 10)")
+    parser.add_argument("--track-export", action="store_true",
+                        help="Run track export only")
+    
+    args = parser.parse_args()
+    
+    try:
+        if args.track_export:
+            run_track_export(utils.torcsRacemanDirectory)
+        else:
+            run_race_simulation(utils.torcsRacemanDirectory, args.num_laps)
+    except subprocess.CalledProcessError as e:
+        print(f"Error running TORCS: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        print("Done!")
 
-    print("==> Generating race setup")
-    racegen.racegen(track, args.track_type, racegen.defaultBotList[0:args.num_bots], args.num_laps, toolFolderName + "/quickrace.xml")
-    print("  -> Generated quickrace.xml")
 
-    utils.printHeading("Running the simulation")
-
-    print("==> Executing TORCS...")
-    for i in range(1, args.num_races + 1):
-        print("  -> Race " + str(i) + "/" + str(args.num_races))
-        subprocess.check_call(utils.torcsCommand + " -r " + os.getcwd() + "/" + toolFolderName + "/quickrace.xml",
-                              shell=True)
-
-    os.remove(toolFolderName + "/quickrace.xml")
-
-    print("==> Collecting the simulation results...")
-    if len(os.listdir(utils.torcsLogPath)) - 1 > args.num_races:
-        print("WARNING: log folder is not empty!")
-    for index, log in enumerate(os.listdir(utils.torcsLogPath)):
-        shutil.move(utils.torcsLogPath + log, toolFolderName)
-        print("  -> Moved " + log + " (" + str(index + 1) + "/" + str(args.num_races) + ")")
+if __name__ == "__main__":
+    main()
