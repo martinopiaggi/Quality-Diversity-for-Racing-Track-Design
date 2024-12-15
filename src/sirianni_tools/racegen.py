@@ -59,7 +59,7 @@ def generate_race_xml(path, num_laps=10):
     """Generate XML for race simulation with all standard bots"""
     # Generate drivers section with all racing bots
     drivers_section = ""
-    for i, (bot_name, bot_idx) in enumerate(RACING_BOTS, 1):
+    for i, (bot_name, bot_idx) in enumerate(RACING_BOTS):
         drivers_section += f'''
         <section name="{i}">
             <attnum name="idx" val="{bot_idx}"/>
