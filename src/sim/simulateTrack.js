@@ -99,7 +99,13 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 }
 
 async function runRaceSimulation(containerId,trackGenOutput) {
-    await executeCommand(`docker exec ${containerId} torcs -r /usr/share/games/torcs/config/raceman/mapelite.xml`);
+    // TODO Decide if we need a track export or multiple races.
+    // For track export (single lap), do:
+    // await executeCommand(`docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export`);
+
+    
+    await executeCommand(`docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py -r 10`);
+
     console.log(`Race simulation completed inside Docker container ${containerId}`);
 
     const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackGenOutput);
