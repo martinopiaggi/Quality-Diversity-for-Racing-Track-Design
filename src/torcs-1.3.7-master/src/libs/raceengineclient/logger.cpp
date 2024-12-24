@@ -43,7 +43,7 @@ Logger::Logger(tSituation *s, const char *trackName) : skipCounter(0) {
     time(&rawtime);
     timeinfo = localtime(&rawtime);
     char timeString[20];
-    strftime(timeString, 20, "%F %T", timeinfo);
+    strftime(timeString, sizeof(timeString), "%Y%m%d_dynamics", timeinfo);
 
     // Setup log directory
     std::string outputFolder(getenv("HOME"));
@@ -56,9 +56,9 @@ Logger::Logger(tSituation *s, const char *trackName) : skipCounter(0) {
 
     if (GfCreateDir(outputPath) == GF_DIR_CREATED) {
         std::string filePath(outputFolder);
-        filePath.append(timeString);
-        filePath.append(" ");
         filePath.append(trackName);
+        filePath.append("_");
+        filePath.append(timeString);
         filePath.append(".csv");
         logFile.open(filePath.c_str(), std::ios::out);
 
