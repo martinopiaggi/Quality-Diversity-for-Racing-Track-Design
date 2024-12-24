@@ -53,7 +53,7 @@ def getLogList(folder):
     try:
         return sorted([
             file for file in os.listdir(folder) 
-            if file.endswith('.csv') and file.startswith('2')
+            if file.endswith('.csv')
         ])
     except Exception as e:
         print(f"Warning: Error getting log list: {e}")
