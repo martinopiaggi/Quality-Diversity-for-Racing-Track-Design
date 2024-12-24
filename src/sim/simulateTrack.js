@@ -1,33 +1,52 @@
 import { exec } from 'child_process';
+import { promises as fs } from 'fs';
 import { generateTrack } from '../trackGen/trackGenerator.js';
 import * as xml from '../utils/xmlTorcsGenerator.js';
 import { saveFitnessToJson } from '../utils/jsonUtils.js';
-import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT, JSON_DEBUG } from '../utils/constants.js';
 
-import { BBOX, MODE, DOCKER_IMAGE_NAME, MAPELITE_PATH, MEMORY_LIMIT } from '../utils/constants.js';
+const executeCommand = (command) => {
+    return new Promise((resolve, reject) => {
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error(`Command failed: ${error.message}`));
+                return;
+            }
+            if (stderr) {
+                console.warn(`stderr: ${stderr}`);
+            }
+            resolve(stdout.trim());
+        });
+    });
+};
 
 const SIMULATION_TIMEOUT = 30000; // 30 seconds timeout
 
-export async function simulate(mode = MODE, trackSize = 0, 
-    dataSet = [], selected = [], seed = null, saveJson = false) {
-    
-    if(isNaN(trackSize)){
-        if(mode=='voronoi'){
-            if(selected.length > 0){
+export async function simulate(
+    mode = MODE,
+    trackSize = 0,
+    dataSet = [],
+    selected = [],
+    seed = null,
+    saveJson = false,
+    plot = false
+) {
+    if (isNaN(trackSize)) {
+        if (mode === 'voronoi') {
+            if (selected.length > 0) {
                 trackSize = selected.length;
-            }
-            else{
-                trackSize = Math.ceil(Math.random() * 4 ) + 1; 
+            } else {
+                trackSize = Math.ceil(Math.random() * 4) + 1;
             }
         } else {
             trackSize = 50;
         }
     }
 
-    if(seed === null) seed = Math.random();
-    
+    if (seed === null) seed = Math.random();
+
     const trackResults = await generateTrack(mode, BBOX, seed, trackSize, saveJson, dataSet, selected);
     const trackXml = xml.exportTrackToXML(trackResults.track);
 
@@ -39,26 +58,55 @@ export async function simulate(mode = MODE, trackSize = 0,
     try {
         containerId = await startDockerContainer();
         const trackGenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
-        
-        const fitness = await Promise.race([
+
+        await executeCommand(`docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export`);
+        console.log("Track export completed.");
+
+        const raceFitness = await Promise.race([
             runRaceSimulation(containerId, trackGenOutput),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Simulation timeout')), SIMULATION_TIMEOUT)
-            )
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Simulation timeout')), SIMULATION_TIMEOUT))
         ]);
 
-        if (saveJson) {
-            await saveFitnessToJson(seed, mode, trackResults.generator.trackSize, fitness.length, fitness.deltaX, fitness.deltaY, fitness.deltaAngleDegrees);
+        console.log(`Race simulation completed inside Docker container ${containerId}`);
+
+        // Now run the analysis with fallback track-length and json output
+        const analyzeCmd = `docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/analyze-simulations.py -B 200 --json-output -c /root/.torcs/logs`;
+        const analyzeOutput = await executeCommand(analyzeCmd);
+
+        let rawMetrics = {};
+        const jsonStart = analyzeOutput.indexOf('===JSON_START===');
+        const jsonEnd = analyzeOutput.indexOf('===JSON_END===', jsonStart);
+        
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+        const jsonString = analyzeOutput.substring(jsonStart + '===JSON_START==='.length, jsonEnd).trim();
+        rawMetrics = JSON.parse(jsonString);
+        } else {
+        throw new Error('JSON markers not found in analysis output.');
         }
 
-        return {fitness: fitness        };
+
+        // Combine the metrics:
+        const fitness = {
+            length: raceFitness.length,
+            deltaX: raceFitness.deltaX,
+            deltaY: raceFitness.deltaY,
+            deltaAngleDegrees: raceFitness.deltaAngleDegrees,
+            ...rawMetrics
+        };
+
+        if (saveJson) {
+            await saveFitnessToJson(seed, mode, trackResults.generator.trackSize, fitness.track_length || fitness.length, fitness.deltaX, fitness.deltaY, fitness.deltaAngleDegrees);
+        }
+
+        return { fitness };
 
     } catch (err) {
         console.error(`Error: ${err.message}`);
         throw err;
     } finally {
         if (containerId) {
-            //await stopDockerContainer(containerId);
+            // Optionally stop/remove container if needed
+            // await stopDockerContainer(containerId);
         }
     }
 }
@@ -98,18 +146,10 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
     }
 }
 
-async function runRaceSimulation(containerId,trackGenOutput) {
-    // TODO Decide if we need a track export or multiple races.
-    // For track export (single lap), do:
-    // await executeCommand(`docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export`);
-
-    
+async function runRaceSimulation(containerId, trackGenOutput) {
     await executeCommand(`docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py -r 10`);
 
-    console.log(`Race simulation completed inside Docker container ${containerId}`);
-
     const { length, deltaX, deltaY, deltaAngle, deltaAngleDegrees } = parseTrackgenOutput(trackGenOutput);
-
     return { length, deltaX, deltaY, deltaAngleDegrees };
 }
 
@@ -128,25 +168,7 @@ function parseTrackgenOutput(trackgenOutput) {
     };
 }
 
-
-// Utility function to execute shell commands
-function executeCommand(command) {
-    return new Promise((resolve, reject) => {
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                reject(new Error(`Command failed: ${error.message}`));
-                return;
-            }
-            if (stderr) {
-                reject(new Error(`stderr: ${stderr}`));
-                return;
-            }
-            resolve(stdout.trim());
-        });
-    });
-}
-
-if (process.argv[1].indexOf('simulateTrack.js') !== -1) {
-    //it means it is run directly as a script and not by another module
+if (process.argv[1].includes('simulateTrack.js')) {
+    // If needed to run directly
     simulate().catch(err => console.error(`Unhandled error: ${err.message}`));
 }

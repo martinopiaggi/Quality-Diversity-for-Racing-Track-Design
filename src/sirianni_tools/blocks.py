@@ -16,7 +16,6 @@ __license__ = "GPL"
 __email__ = "jacopo.sirianni@mail.polimi.it"
 
 
-
 # Segment's indexes (see readTrack(), different from utils.SegmentData)
 
 SLX = 0
@@ -474,7 +473,8 @@ def readDynamics(trackName, trackData):
 
     seg = 0
 
-    with open(utils.torcsTrackDirectory + "/" + trackName + "_dynamics.csv",'r') as csvfile:
+    with open(os.path.join(utils.torcsLogPath, sorted([f for f in os.listdir(utils.torcsLogPath) 
+        if f.startswith(trackName) and f.endswith('_dynamics.csv')])[-1]), 'r') as csvfile:
         data = csv.reader(csvfile,delimiter=',')
         for row in data:
             if len(row)!=26:

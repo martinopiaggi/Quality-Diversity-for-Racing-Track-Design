@@ -23,7 +23,7 @@ __copyright__ = "Copyright 2015-2016, Jacopo Sirianni"
 __license__ = "GPL"
 __email__ = "jacopo.sirianni@mail.polimi.it"
 
-parser = argparse.ArgumentParser(description = __doc__)
+parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("-B", "--max-block-len", type=int, default=200, 
                     help="the maximum block's length (used for the heatmaps and the segment data file, default: %(default)s)")
 parser.add_argument("-c", "--plot-cars", action="store_true", 
@@ -33,38 +33,40 @@ parser.add_argument("--json-output", action="store_true",
 parser.add_argument("paths", nargs="+", 
                     help="the list of paths which contain the simulation logs")
 parser.add_argument("--no-plots", action="store_true", 
-                    help="Skip plot generation")
-
+                    help="skip plot generation")
 args = parser.parse_args()
 
 for path in args.paths:
-    folderName = os.path.relpath(path).rstrip("/")
-    print("\033[94m>>> Analyzing " + folderName + "...\033[0m")
+    folder_name = os.path.relpath(path).rstrip("/")
+    print("\033[94m>>> Analyzing " + folder_name + "...\033[0m")
     
     utils.printHeading("Reading initialization data")
 
-    logList = utils.getLogList(folderName)
-    if not logList:
-        print(f"No logs found in {folderName}, skipping...")
+    log_list = utils.getLogList(folder_name)
+    if not log_list:
+        print(f"No logs found in {folder_name}, skipping...")
         continue
 
     try:
-        driversList = utils.getDriversList(os.path.join(folderName, logList[0]))
+        drivers_list = utils.getDriversList(os.path.join(folder_name, log_list[0]))
     except Exception as e:
         print(f"Error reading drivers list: {e}")
         continue
 
     utils.printHeading("Analyzing track and track dynamics")
     # Get track data if available
-    trackName = logList[0][20:-4]
-    track_path = os.path.join(utils.torcsTrackDirectory, f"{trackName}.csv")
-    
-    trackData = None
+
+    log_filename = os.path.basename(log_list[0])  # e.g., 'output_20230425.csv'
+    track_name = log_filename.split("_")[0].split(".")[0] # 'output'
+
+    track_path = os.path.join(utils.torcsTrackDirectory, f"{track_name}.csv")
+    print(f"Track path: {track_path}")
+    track_data = None
     if os.path.exists(track_path):
         try:
-            trackData = track.analyzeTrack(
+            track_data = track.analyzeTrack(
                 track_path,
-                os.path.join(folderName, "track"),
+                os.path.join(folder_name, "track"),
                 generate_plots=not args.no_plots
             )
         except Exception as e:
@@ -73,13 +75,13 @@ for path in args.paths:
         print("Note: Track data not found. Continuing with limited analysis.")
 
     # Get block metrics if track data available
-    blockData = None
-    if trackData is not None:
+    block_data = None
+    if track_data is not None:
         try:
-            blockData = blocks.makeMetricsPlots(
-                os.getcwd() + "/" + folderName,
+            block_data = blocks.makeMetricsPlots(
+                os.getcwd() + "/" + folder_name,
                 utils.torcsTrackDirectory,
-                trackName,
+                track_name,
                 args.max_block_len,
                 generate_plots=not args.no_plots
             )
@@ -88,37 +90,38 @@ for path in args.paths:
 
     # These analyses work without track data
     utils.printHeading("Analyzing positions and gaps")
+    
+    # Handle track length consistently
+    track_length = None
     try:
-        trackLength = utils.getTrackLength(trackName) if os.path.exists(track_path) else 1000  # Default length if no track data
+        track_length = utils.getTrackLength(track_name)
     except Exception as e:
-        print(f"Warning: Error getting track length: {e}")
-        trackLength = 1000  # Default length
+        print(f"Warning: Error getting track length, using default: {e}")
+        track_length = 1000.0  # fallback value
 
-    positionsVariations = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName,
-        logList,
-        0,
-        driversList,
-        False,
+    positions_variations = positions.makePositionsVariationsPlotsFromLogList(
+        os.path.join(os.getcwd(), folder_name),
+        log_list[0],  # Single log file
+        track_length,
+        0,            # lappercentage as float (0 means end of race)
+        drivers_list,
         generate_plots=not args.no_plots
     )
-
 
     utils.printHeading("Analyzing gaps distribution")
-    gapsDistribution = gaps.makeGapsPlotsFromLogList(
-        os.getcwd() + "/" + folderName,
-        logList,
-        driversList,
+    gaps_distribution = gaps.makeGapsPlotsFromLogList(
+        os.getcwd() + "/" + folder_name,
+        log_list,
+        drivers_list,
         generate_plots=not args.no_plots
     )
 
-
     utils.printHeading("Analyzing overtakes")
-    totalOvertakes = overtakes.makeOvertakePlotsAndSegmentDataFile(
-        os.getcwd() + "/" + folderName,
-        logList,
+    total_overtakes = overtakes.makeOvertakePlotsAndSegmentDataFile(
+        os.getcwd() + "/" + folder_name,
+        log_list,
         utils.torcsTrackDirectory,
-        trackName,
+        track_name,
         args.max_block_len,
         args.plot_cars
     )
@@ -126,14 +129,14 @@ for path in args.paths:
     # Race progress analysis
     utils.printHeading("Analyzing race progress")
     start30 = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName, logList, 0.3, driversList, False, not args.no_plots)
+        os.getcwd() + "/" + folder_name, log_list[0], track_length, 0.3, drivers_list, not args.no_plots)
     start50 = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName, logList, 0.5, driversList, False, not args.no_plots)
+        os.getcwd() + "/" + folder_name, log_list[0], track_length, 0.5, drivers_list, not args.no_plots)
     start100 = positions.makePositionsVariationsPlotsFromLogList(
-        os.getcwd() + "/" + folderName, logList, 1, driversList, False, not args.no_plots)
+        os.getcwd() + "/" + folder_name, log_list[0], track_length, 1, drivers_list, not args.no_plots)
 
     utils.printHeading("Collecting overall results")
-    results_path = os.path.join(os.getcwd(), folderName, f"{trackName}-results.csv")
+    results_path = os.path.join(os.getcwd(), folder_name, f"{track_name}-results.csv")
     with open(results_path, "w", newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=";")
         # Keep all original headers
@@ -159,12 +162,12 @@ for path in args.paths:
                 "Positions variations (1 lap) skew"])
 
         # Handle None values
-        if trackData is None:
-            trackData = [0] * 35
-        if positionsVariations is None:
-            positionsVariations = [0, 0, 0]
-        if gapsDistribution is None:
-            gapsDistribution = [0, 0, 0]
+        if track_data is None:
+            track_data = [0] * 35
+        if positions_variations is None:
+            positions_variations = [0, 0, 0]
+        if gaps_distribution is None:
+            gaps_distribution = [0, 0, 0]
         if start30 is None:
             start30 = [0, 0, 0]
         if start50 is None:
@@ -172,28 +175,30 @@ for path in args.paths:
         if start100 is None:
             start100 = [0, 0, 0]
 
-        writer.writerow([trackName] + trackData + positionsVariations + 
-                       gapsDistribution + start30 + start50 + start100)
+        writer.writerow([track_name] + track_data + positions_variations + 
+                       gaps_distribution + start30 + start50 + start100)
 
     # JSON output with available metrics
     if args.json_output:
         raw_metrics = {
-            'track_length': trackLength,
-            'positions_mean': positionsVariations[0] if positionsVariations else 0,
-            'positions_var': positionsVariations[1] if len(positionsVariations) > 1 else 0,
-            'gaps_mean': gapsDistribution[0] if gapsDistribution else 0,
-            'gaps_var': gapsDistribution[1] if len(gapsDistribution) > 1 else 0,
-            'total_overtakes': totalOvertakes
+            'track_length': track_length,
+            'positions_mean': positions_variations[0] if positions_variations else 0,
+            'positions_var': positions_variations[1] if len(positions_variations) > 1 else 0,
+            'gaps_mean': gaps_distribution[0] if gaps_distribution else 0,
+            'gaps_var': gaps_distribution[1] if len(gaps_distribution) > 1 else 0,
+            'total_overtakes': total_overtakes
         }
 
         # Add track metrics if available
-        if trackData:
+        if track_data:
             raw_metrics.update({
-                'left_bends': trackData[2],
-                'right_bends': trackData[3],
-                'straight_sections': trackData[4],
-                'avg_radius_mean': np.mean(trackData[6]) if len(trackData) > 6 and trackData[6] else 0,
-                'avg_radius_var': np.var(trackData[6]) if len(trackData) > 6 and trackData[6] else 0,
+                'left_bends': track_data[2],
+                'right_bends': track_data[3],
+                'straight_sections': track_data[4],
+                'avg_radius_mean': np.mean(track_data[6]) if len(track_data) > 6 and track_data[6] else 0,
+                'avg_radius_var': np.var(track_data[6]) if len(track_data) > 6 and track_data[6] else 0,
             })
             
+        print("===JSON_START===")
         print(json.dumps(raw_metrics, indent=2))
+        print("===JSON_END===")

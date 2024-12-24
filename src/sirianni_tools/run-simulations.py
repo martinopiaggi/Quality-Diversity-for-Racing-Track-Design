@@ -4,7 +4,7 @@
 
 import argparse
 import os
-import shutil
+import sys
 import subprocess
 import time
 
@@ -36,32 +36,36 @@ def run_race_simulation(folder_name, num_laps):
     race_config = os.path.join(folder_name, "race_sim.xml")
     
     # Generate config with all racing bots
-    racegen.generate_race_xml(race_config,num_laps)
+    racegen.generate_race_xml(race_config, num_laps)
     
     cmd = f"{utils.torcsCommand} -r {os.path.join(os.getcwd(), race_config)}"
     subprocess.check_call(cmd, shell=True)
+    print("Race simulation completed.")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-r", "--num_laps", type=int, default=10,
-                        help="Number of laps to simulate (default: 10)")
-    parser.add_argument("--track-export", action="store_true",
-                        help="Run track export only")
-    
+    parser.add_argument("-r", "--num_laps", type=int, default=10, help="number laps simulate (default: 10)")
+    parser.add_argument("--track-export", action="store_true", help="run track export only")
     args = parser.parse_args()
-    
-    try:
-        if args.track_export:
-            run_track_export(utils.torcsRacemanDirectory)
-        else:
-            run_race_simulation(utils.torcsRacemanDirectory, args.num_laps)
-    except subprocess.CalledProcessError as e:
-        print(f"Error running TORCS: {e}")
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        print("Done!")
+
+    # Determine folder_name (usually torcs raceman directory), adapt as needed
+    folder_name = utils.torcsRacemanDirectory  # Ensure this is correctly defined in utils.py
+
+    if args.track_export:
+        # Directly run track export without calling run-simulations again
+        try:
+            run_track_export(folder_name)
+        except subprocess.CalledProcessError as e:
+            print(f"Error running track export: {e}")
+            sys.exit(1)
+    else:
+        # Run race simulation 
+        try:
+            run_race_simulation(folder_name, args.num_laps)
+        except subprocess.CalledProcessError as e:
+            print(f"Error running race simulation: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":

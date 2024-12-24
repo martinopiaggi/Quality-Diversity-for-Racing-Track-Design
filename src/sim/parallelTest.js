@@ -5,7 +5,7 @@ import { JSON_DEBUG } from '../utils/constants.js';
 
 const execPromise = promisify(exec);
 const TIMEOUT = 35000; // Increased to 35 seconds to account for the 30-second simulation timeout
-const TOTAL_SIMULATIONS = 1;
+const TOTAL_SIMULATIONS = 10;
 const CONCURRENCY_LIMIT = 25; // Number of parallel simulations
 
 async function runSimulation(simulationIndex) {
