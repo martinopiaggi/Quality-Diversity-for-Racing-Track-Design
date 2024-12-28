@@ -9,7 +9,6 @@ import os
 
 # Fixed bot configuration - these are always used for racing
 RACING_BOTS = [
-    ("simplix_V1_10", "0"),
     ("bt", "1"),
     ("tita", "4"),
     ("olethros", "2"),
