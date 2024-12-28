@@ -579,7 +579,7 @@ def drawCarPositions(trackData, logFile, trackName):
         print(f"Warning: Error processing log file {logFile}: {e}")
         return False
 
-def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackName, maxBlockLength, plotCarPositions):
+def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackName, maxBlockLength):
     """Main function to analyze and plot overtakes"""
     overtakesFolder = os.path.join(folder, "overtakes")
     if not os.path.exists(overtakesFolder):
@@ -605,43 +605,21 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
         allBlockData, _ = fillOvertakes(allBlockData, os.path.join(folder, log))
 
         # Create plots for this log
-        plotOvertakes(trackData, plotCarPositions, folder, [log], 
+        plotOvertakes(trackData, folder, [log], 
                      os.path.join(overtakesFolder, log), trackName)
 
     # Process combined data if we have multiple logs
     if len(logList) > 1:
         print("==> Analyzing races together")
-        plotOvertakes(allBlockData, plotCarPositions, folder, logList,
+        plotOvertakes(allBlockData, folder, logList,
                      os.path.join(overtakesFolder, "overtakes"), trackName)
 
     # Create final data file
     makeBlocksDataFile(allBlockData, trackName, folder, True, maxBlockLength)
     return totalOvertakes
 
-def plotOvertakes(blockData, plotCarPositions, folder, logList, path, trackName):
+def plotOvertakes(blockData, folder, logList, path, trackName):
     blocks.plotMetric(blockData, computeBlockOvertakes(blockData), "Number of overtakes", path + ".svg", True, False)
-
-    if plotCarPositions:
-        playerFound = False
-
-        for log in logList:
-            playerFoundInCurrentLog = drawCarPositions(blockData, folder + "/" + log, trackName)
-            playerFound = playerFound or playerFoundInCurrentLog
-
-        patches = [matplotlib.patches.Patch(color = "#5555ff"), matplotlib.patches.Patch(color = "k"), matplotlib.patches.Patch(color = "#007700"), matplotlib.patches.Patch(color = "#666666")]
-
-        if playerFound:
-            legend = plt.legend(patches, ["Overtakee", "Overtaken", "Human overtakee", "Human overtaken"], loc = 8, bbox_to_anchor=(0.5, -0.5))
-        else:
-            legend = plt.legend(patches, ["Overtakee", "Overtaken"], loc = 8, bbox_to_anchor=(0.5, -0.5))
-
-        plt.savefig(path + "-with-cars.svg", bbox_extra_artists = (legend,), bbox_inches = "tight")
-        print("  -> Created " + path.split("/")[-2] + "/" + path.split("/")[-1] + "-with-cars.svg")
-    
-    plt.clf()
-
-
-
 
 
 def makeBlocksDataWithoutOvertakes(folder, trackDirectory, trackName, maxBlockLength):
