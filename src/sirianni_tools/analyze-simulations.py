@@ -26,8 +26,6 @@ __email__ = "jacopo.sirianni@mail.polimi.it"
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("-B", "--max-block-len", type=int, default=200, 
                     help="the maximum block's length (used for the heatmaps and the segment data file, default: %(default)s)")
-parser.add_argument("-c", "--plot-cars", action="store_true", 
-                    help="make additional overtakes plots with cars positions (default: %(default)s)")
 parser.add_argument("--json-output", action="store_true", 
                     help="Output raw metrics in JSON format")
 parser.add_argument("paths", nargs="+", 
@@ -122,8 +120,7 @@ for path in args.paths:
         log_list,
         utils.torcsTrackDirectory,
         track_name,
-        args.max_block_len,
-        args.plot_cars
+        args.max_block_len
     )
 
     # Race progress analysis
