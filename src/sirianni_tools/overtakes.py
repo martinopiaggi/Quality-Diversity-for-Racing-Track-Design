@@ -579,6 +579,35 @@ def drawCarPositions(trackData, logFile, trackName):
         print(f"Warning: Error processing log file {logFile}: {e}")
         return False
 
+
+
+def copy_overtakes_data(source_data, target_data):
+    """
+    Copy overtakes data from source track data to target track data.
+    
+    Args:
+        source_data: List of track segments with overtakes data
+        target_data: List of track segments to copy overtakes to
+        
+    Returns:
+        Updated target_data with copied overtakes
+    """
+    if len(source_data) != len(target_data):
+        print(f"Warning: Source ({len(source_data)}) and target ({len(target_data)}) segment counts don't match")
+        return target_data
+        
+    for i in range(len(source_data)):
+        # Ensure we have enough fields in both source and target segments
+        while len(source_data[i]) <= blocks.OVERTAKES:
+            source_data[i].append(0)
+        while len(target_data[i]) <= blocks.OVERTAKES:
+            target_data[i].append(0)
+            
+        # Copy the overtakes count
+        target_data[i][blocks.OVERTAKES] = source_data[i][blocks.OVERTAKES]
+        
+    return target_data
+
 def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackName, maxBlockLength):
     """Main function to analyze and plot overtakes"""
     overtakesFolder = os.path.join(folder, "overtakes")
@@ -599,10 +628,12 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
         if trackData is None:
             continue
             
-        # Fill in overtakes data
+        # Fill in overtakes data for this log
         trackData, overtake_count = fillOvertakes(trackData, os.path.join(folder, log))
         totalOvertakes += overtake_count
-        allBlockData, _ = fillOvertakes(allBlockData, os.path.join(folder, log))
+        
+        # Copy overtakes data to the cumulative allBlockData
+        allBlockData = copy_overtakes_data(trackData, allBlockData)
 
         # Create plots for this log
         plotOvertakes(trackData, folder, [log], 
@@ -617,6 +648,7 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
     # Create final data file
     makeBlocksDataFile(allBlockData, trackName, folder, True, maxBlockLength)
     return totalOvertakes
+
 
 def plotOvertakes(blockData, folder, logList, path, trackName):
     blocks.plotMetric(blockData, computeBlockOvertakes(blockData), "Number of overtakes", path + ".svg", True, False)
