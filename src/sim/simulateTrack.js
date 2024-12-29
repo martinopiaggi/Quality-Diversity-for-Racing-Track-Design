@@ -130,8 +130,8 @@ export async function simulate(
     console.error(`Error: ${err.message}`);
     throw err;
   } finally {
-    // Optionally remove container if you like
-    // if (containerId) { await stopDockerContainer(containerId); }
+    // Optionally comment this to not stop the container for debugging
+    if (containerId) { await stopDockerContainer(containerId); }
   }
 }
 
