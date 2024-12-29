@@ -17,6 +17,38 @@ __email__ = "jacopo.sirianni@mail.polimi.it"
 
 MAX_GAP_TIME = 120 # Maximum realistic gap in seconds
 
+def fillGaps(logFile):
+    """
+    Similar to fillOvertakes in overtake.py:
+    - Read lines from logFile,
+    - If line starts with 'timeBehindPrev,DriverName,<gap>',
+      parse that gap and store it in a dictionary keyed by driverName
+    - Return the dictionary of final gaps
+    """
+
+    gaps_dict = {}  # e.g., {'driverName': 12.058, ...}
+    try:
+        with open(logFile, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("timeBehindPrev,"):
+                    # Example line: "timeBehindPrev,tita 4,0"
+                    parts = line.split(',')
+                    if len(parts) >= 3:
+                        driver_name = parts[1].strip()
+                        try:
+                            gap_val = float(parts[2].strip())
+                            # Only keep if gap_val is > 0 and < MAX_GAP_TIME
+                            if 0 < gap_val < MAX_GAP_TIME:
+                                gaps_dict[driver_name] = gap_val
+                        except ValueError:
+                            print(f"Warning: invalid gap value in line: {line}")
+                    else:
+                        print(f"Warning: not enough fields in line: {line}")
+    except Exception as e:
+        print(f"Error reading logFile {logFile}: {e}")
+
+    return gaps_dict
 
 def plotGaps(cumulative, gaps, filename):
     # The first player has gap 0 from himself, do not consider it
@@ -67,45 +99,65 @@ def plotGaps(cumulative, gaps, filename):
 
 
 def makeGapsPlotsFromLogList(folder, logList, driverList, generate_plots=True):
+    """
+    Rewritten in the "style" of overtake.py:
+    - For each log, call fillGaps(logFile)
+    - Accumulate the final gaps in an array
+    - Then plot them
+    """
+
     gapsDirectory = os.path.join(folder, "gaps")
     cumulativeGapsDirectory = os.path.join(folder, "cumulative-gaps")
     os.makedirs(gapsDirectory, exist_ok=True)
     os.makedirs(cumulativeGapsDirectory, exist_ok=True)
 
-    allGaps = np.array([])
+    all_gaps = []
 
     for log in logList:
         print(f"==> Analyzing {log}")
-        gaps = np.array([])
-        for driver in driverList:
-            cmd = f'tac "{os.path.join(folder, log)}" | grep -v "overtake" | grep "^[^,]*,{driver}," -m 1'
-            try:
-                output = subprocess.check_output(cmd, shell=True).decode('ascii').strip()
-                if output:
-                    data = output.split(',')
-                    if len(data) >= 16:
-                        time_ahead = float(data[15])  # Using time to car ahead
-                        if 0 < time_ahead < MAX_GAP_TIME:
-                            gaps = np.append(gaps, time_ahead)
-            except Exception as e:
-                print(f"Warning: Could not get gap for {driver}: {e}")
-                continue
+        logFilePath = os.path.join(folder, log)
 
-        if len(gaps) > 0:
-            if generate_plots:
-                gapsDistribution = plotGaps(False, gaps, os.path.join(gapsDirectory, f"{log}.svg"))
-                plotGaps(True, gaps, os.path.join(cumulativeGapsDirectory, f"{log}.svg"))
-            allGaps = np.append(allGaps, gaps)
-        else:
-            print(f"No valid gaps found in {log}")
+        # Get final gap lines from fillGaps
+        final_gaps_for_log = fillGaps(logFilePath)  # returns dict {driverName: gapVal}
+        if not final_gaps_for_log:
+            print(f"No final gap lines found in {log}")
+            continue
 
+        # Filter only drivers you care about, e.g. driverList
+        # or accept all
+        single_log_gaps = []
+        for driver_name, gap_val in final_gaps_for_log.items():
+            # If you only want specific drivers:
+            if driver_name in driverList:
+                single_log_gaps.append(gap_val)
 
-    # Analyze all gaps together
-    if len(allGaps) > 0:
-        print("==> Analyzing gaps across all logs")
-        gapsDistribution = plotGaps(False, allGaps, os.path.join(gapsDirectory, "gaps.svg"))
-        plotGaps(True, allGaps, os.path.join(cumulativeGapsDirectory, "gaps.svg"))
-        return gapsDistribution
-    else:
-        print("No valid gaps found across all logs")
-        return [0, 0, 0]
+        single_log_gaps = [g for g in single_log_gaps if 0 < g < MAX_GAP_TIME]
+        if len(single_log_gaps) == 0:
+            print(f"No valid (nonzero) final gaps found in {log}")
+            continue
+
+        # Plot per-log
+        single_log_gaps = np.array(single_log_gaps, dtype=float)
+        all_gaps.extend(single_log_gaps)
+        
+        if generate_plots:
+            # Plot normal histogram
+            outPath = os.path.join(gapsDirectory, f"{log}.svg")
+            plotGaps(False, single_log_gaps, outPath)
+            # Plot cumulative
+            outPath2 = os.path.join(cumulativeGapsDirectory, f"{log}.svg")
+            plotGaps(True, single_log_gaps, outPath2)
+
+    # End for each log
+    if len(all_gaps) == 0:
+        print("No final gaps found across all logs")
+        return [0,0,0]
+    
+    # Otherwise, analyze all together
+    print("==> Analyzing final gaps across all logs")
+    all_gaps = np.array(all_gaps, dtype=float)
+    outPath = os.path.join(gapsDirectory, "all_gaps.svg")
+    mean_var_skew = plotGaps(False, all_gaps, outPath)
+    outPath2 = os.path.join(cumulativeGapsDirectory, "all_gaps.svg")
+    plotGaps(True, all_gaps, outPath2)
+    return mean_var_skew
