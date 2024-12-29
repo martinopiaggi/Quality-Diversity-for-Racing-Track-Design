@@ -77,15 +77,13 @@ def main():
     # The usual torcs raceman directory from utils:
     folder_name = utils.torcsRacemanDirectory
 
-    # 1) Possibly do the track export
     if args.track_export:
         try:
             run_track_export(folder_name)
         except subprocess.CalledProcessError as e:
             print(f"Error running track export: {e}")
             sys.exit(1)
-    else:
-    # 2) Possibly do the real race if requested
+    
     if args.num_laps > 0:
         try:
             run_race_simulation(folder_name, args.num_laps)
