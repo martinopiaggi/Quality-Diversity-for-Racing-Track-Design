@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 
 """Analyzer of the data collected during the races"""
-
+import math
 import argparse
 import csv
 import json
 import os
-import subprocess
-import shutil
 import numpy as np
-import scipy.stats
-
+import entropy
+import logging
 import blocks
 import gaps
 import overtakes
 import positions
 import track
 import utils
+
+logging.basicConfig(level=logging.INFO, 
+                   format='%(asctime)s - %(levelname)s - %(message)s')
 
 __author__ = "Jacopo Sirianni"
 __copyright__ = "Copyright 2015-2016, Jacopo Sirianni"
@@ -175,10 +176,35 @@ for path in args.paths:
         writer.writerow([track_name] + track_data + positions_variations + 
                        gaps_distribution + start30 + start50 + start100)
 
+    
+    def get_entropy_metrics(block_data):
+        """Compute all entropy metrics with proper error handling."""
+        metrics = {}
+        
+        if block_data is None:
+            logging.warning("No block data available - skipping entropy metrics")
+            return metrics
+            
+        entropy_functions = {
+            'speed_entropy': entropy.compute_speed_entropy,
+            'curvature_entropy': entropy.compute_curvature_entropy,
+            'acceleration_entropy': entropy.compute_acceleration_entropy,
+            'braking_entropy': entropy.compute_braking_entropy
+        }
+        
+        for metric_name, entropy_func in entropy_functions.items():
+            try:
+                value = entropy_func(block_data)
+                metrics[metric_name] = value if value is not None else 0.0
+            except Exception as e:
+                logging.error(f"Error computing {metric_name}: {str(e)}")
+                metrics[metric_name] = 0.0
+                
+        return metrics
+    
     # JSON output with available metrics
     if args.json_output:
         raw_metrics = {
-            'track_length': track_length,
             'positions_mean': positions_variations[0] if positions_variations else 0,
             'positions_var': positions_variations[1] if len(positions_variations) > 1 else 0,
             'gaps_mean': gaps_distribution[0] if gaps_distribution else 0,
@@ -187,7 +213,7 @@ for path in args.paths:
         }
 
         # Add track metrics if available
-        if track_data:
+        if track_data is not None:
             raw_metrics.update({
                 'left_bends': track_data[2],
                 'right_bends': track_data[3],
@@ -195,6 +221,10 @@ for path in args.paths:
                 'avg_radius_mean': np.mean(track_data[6]) if len(track_data) > 6 and track_data[6] else 0,
                 'avg_radius_var': np.var(track_data[6]) if len(track_data) > 6 and track_data[6] else 0,
             })
+            
+            # Add entropy metrics
+            entropy_metrics = get_entropy_metrics(block_data)
+            raw_metrics.update(entropy_metrics)
             
         print("===JSON_START===")
         print(json.dumps(raw_metrics, indent=2))
