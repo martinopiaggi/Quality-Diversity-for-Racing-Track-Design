@@ -78,7 +78,7 @@ export async function simulate(
     //    - track-export
     //    - full race (10 laps)
     //    - JSON analysis
-    const simCommand = `docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export -r 10 --json`;
+    const simCommand = `docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export -r 10 --json ${plot ? '' : '--plots'}`;
     const simulationOutput = await Promise.race([
       executeCommand(simCommand),
       new Promise((_, reject) =>
@@ -131,7 +131,7 @@ export async function simulate(
     throw err;
   } finally {
     // Optionally comment this to not stop the container for debugging
-    if (containerId) { await stopDockerContainer(containerId); }
+    //if (containerId) { await stopDockerContainer(containerId); }
   }
 }
 

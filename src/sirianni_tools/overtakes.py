@@ -608,7 +608,7 @@ def copy_overtakes_data(source_data, target_data):
         
     return target_data
 
-def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackName, maxBlockLength):
+def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackName, maxBlockLength, generate_plots=True):
     """Main function to analyze and plot overtakes"""
     overtakesFolder = os.path.join(folder, "overtakes")
     if not os.path.exists(overtakesFolder):
@@ -637,20 +637,21 @@ def makeOvertakePlotsAndSegmentDataFile(folder, logList, trackDirectory, trackNa
 
         # Create plots for this log
         plotOvertakes(trackData, folder, [log], 
-                     os.path.join(overtakesFolder, log), trackName)
-
+                     os.path.join(overtakesFolder, log), trackName, generate_plots)
+        
     # Process combined data if we have multiple logs
     if len(logList) > 1:
         print("==> Analyzing races together")
-        plotOvertakes(allBlockData, folder, logList,
-                     os.path.join(overtakesFolder, "overtakes"), trackName)
+        plotOvertakes(allBlockData, folder, logList, os.path.join(overtakesFolder, "overtakes"), trackName, generate_plots)
 
     # Create final data file
     makeBlocksDataFile(allBlockData, trackName, folder, True, maxBlockLength)
     return totalOvertakes
 
 
-def plotOvertakes(blockData, folder, logList, path, trackName):
+def plotOvertakes(blockData, folder, logList, path, trackName, generate_plots=True):
+    if not generate_plots:
+        return
     blocks.plotMetric(blockData, computeBlockOvertakes(blockData), "Number of overtakes", path + ".svg", True, False)
 
 

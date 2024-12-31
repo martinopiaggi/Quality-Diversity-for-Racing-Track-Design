@@ -121,7 +121,8 @@ for path in args.paths:
         log_list,
         utils.torcsTrackDirectory,
         track_name,
-        args.max_block_len
+        args.max_block_len,
+        generate_plots=not args.no_plots
     )
 
     # Race progress analysis

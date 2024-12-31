@@ -42,7 +42,7 @@ def run_race_simulation(folder_name, num_laps):
     subprocess.check_call(cmd, shell=True)
     print("Race simulation completed.")
     
-def run_analysis(folder_name, json_output=True):
+def run_analysis(folder_name, no_plots=True, json_output=True):
     """
     Run analysis script on the logs, returning output as string.
     By default uses JSON output from analyze-simulations.py.
@@ -53,6 +53,10 @@ def run_analysis(folder_name, json_output=True):
         "/usr/local/lib/sirianni_tools/analyze-simulations.py",
         "-B", "200"
     ]
+
+    if no_plots:
+        cmd.append("--no-plots")
+
     if json_output:
         cmd.append("--json-output")
     # We assume logs are in utils.torcsLogPath, e.g. /root/.torcs/logs
@@ -72,6 +76,7 @@ def main():
                         help="run single-lap track export (with trackexporter bot).")
     parser.add_argument("--json", action="store_true",
                         help="run analysis afterwards and print JSON to stdout.")
+    parser.add_argument("--plots", action="store_true", help="enable plots (default: no plots)")
     args = parser.parse_args()
 
     # The usual torcs raceman directory from utils:
@@ -94,7 +99,9 @@ def main():
     # 3) Possibly do analysis in JSON mode
     if args.json:
         try:
-            analysis_output = run_analysis(folder_name, json_output=True)
+            analysis_output = run_analysis(folder_name,
+                                           no_plots=(not args.plots),  # if --plots is NOT passed, we do no_plots=True
+                                           json_output=True)
             print(analysis_output)  # So the caller can capture / parse it
         except subprocess.CalledProcessError as e:
             print(f"Error running analysis: {e}")
