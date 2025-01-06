@@ -134,50 +134,6 @@ for path in args.paths:
     start100 = positions.makePositionsVariationsPlotsFromLogList(
         os.getcwd() + "/" + folder_name, log_list[0], track_length, 1, drivers_list, not args.no_plots)
 
-    utils.printHeading("Collecting overall results")
-    results_path = os.path.join(os.getcwd(), folder_name, f"{track_name}-results.csv")
-    with open(results_path, "w", newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=";")
-        # Keep all original headers
-        writer.writerow(["Track", "Length", "Width",
-                "LeftBendsCount", "RightBendsCount", "StraightsCount", "StraightsLength",
-                "Radiuses mean", "Radiuses var", "Radiuses skew",
-                "Heights mean", "Heights var", "Heights skew",
-                "Length (1/3 lap)", "LeftBendsCount (1/3 lap)", "RightBendsCount (1/3 lap)",
-                "StraightsCount (1/3 lap)", "StraightsLength (1/3 lap)",
-                "Radiuses mean (1/3 lap)", "Radiuses var (1/3 lap)", "Radiuses skew (1/3 lap)",
-                "Heights mean (1/3 lap)", "Heights var (1/3 lap)", "Heights skew (1/3 lap)",
-                "Length (half lap)", "LeftBendsCount (half lap)", "RightBendsCount (half lap)",
-                "StraightsCount (half lap)", "StraightsLength (half lap)",
-                "Radiuses mean (half lap)", "Radiuses var (half lap)", "Radiuses skew (half lap)",
-                "Heights mean (half lap)", "Heights var (half lap)", "Heights skew (half lap)",
-                "Positions variations mean", "Positions variations var", "Positions variations skew",
-                "Gaps mean", "Gaps var", "Gaps skew",
-                "Positions variations (1/3 lap) mean", "Positions variations (1/3 lap) var",
-                "Positions variations (1/3 lap) skew",
-                "Positions variations (half lap) mean", "Positions variations (half lap) var",
-                "Positions variations (half lap) skew",
-                "Positions variations (1 lap) mean", "Positions variations (1 lap) var",
-                "Positions variations (1 lap) skew"])
-
-        # Handle None values
-        if track_data is None:
-            track_data = [0] * 35
-        if positions_variations is None:
-            positions_variations = [0, 0, 0]
-        if gaps_distribution is None:
-            gaps_distribution = [0, 0, 0]
-        if start30 is None:
-            start30 = [0, 0, 0]
-        if start50 is None:
-            start50 = [0, 0, 0]
-        if start100 is None:
-            start100 = [0, 0, 0]
-
-        writer.writerow([track_name] + track_data + positions_variations + 
-                       gaps_distribution + start30 + start50 + start100)
-
-    
     def get_entropy_metrics(block_data):
         """Compute all entropy metrics with proper error handling."""
         metrics = {}
