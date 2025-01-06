@@ -38,6 +38,7 @@ app.post('/evaluate', async (req, res) => {
         res.json({
             fitness: simulationResult.fitness
         });
+        console.log("Returning fitness from /evaluate: ", JSON.stringify(simulationResult.fitness));
     } catch (error) {
         console.error('Error in /evaluate:', error);
         res.status(500).json({ error: error.message });

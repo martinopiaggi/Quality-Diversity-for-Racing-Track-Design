@@ -1,12 +1,10 @@
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import { simulate } from './simulateTrack.js';
-import { JSON_DEBUG } from '../utils/constants.js';
+import { JSON_DEBUG,  SIMULATION_TIMEOUT, } from '../utils/constants.js';
 
-const execPromise = promisify(exec);
-const TIMEOUT = 35000; // Increased to 35 seconds to account for the 30-second simulation timeout
-const TOTAL_SIMULATIONS = 50;
-const CONCURRENCY_LIMIT = 25; // Number of parallel simulations
+const TOTAL_SIMULATIONS = 100;
+const CONCURRENCY_LIMIT = 5; // Number of parallel simulations
 
 async function runSimulation(simulationIndex) {
     try {
@@ -19,9 +17,9 @@ async function runSimulation(simulationIndex) {
 
         // Run the simulation
         const { fitness } = await Promise.race([
-            simulate(mode, trackSize, [], [], seed, JSON_DEBUG),
+            simulate(mode, trackSize, [], [], seed, JSON_DEBUG, false),
             new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Simulation timeout')), TIMEOUT)
+                setTimeout(() => reject(new Error('Simulation timeout')), SIMULATION_TIMEOUT)
             )
         ]);
 
@@ -42,7 +40,6 @@ async function runSimulations() {
         }
     }
     await Promise.all(simulationPromises); // Await any remaining simulations
-    console.log('All simulations completed.');
 }
 
 runSimulations().catch(err => console.error(`Unexpected error: ${err.message}`));

@@ -9,10 +9,10 @@ import {
   BBOX,
   MODE,
   DOCKER_IMAGE_NAME,
-  MAPELITE_PATH,
   MEMORY_LIMIT,
-  JSON_DEBUG
+  SIMULATION_TIMEOUT,
 } from '../utils/constants.js';
+
 
 const executeCommand = (command) => {
   return new Promise((resolve, reject) => {
@@ -28,8 +28,6 @@ const executeCommand = (command) => {
     });
   });
 };
-
-const SIMULATION_TIMEOUT = 30000; // 30 seconds timeout
 
 export async function simulate(
   mode = MODE,
@@ -78,7 +76,7 @@ export async function simulate(
     //    - track-export
     //    - full race (10 laps)
     //    - JSON analysis
-    const simCommand = `docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export -r 10 --json ${plot ? '' : '--plots'}`;
+    const simCommand = `docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export -r 5 --json ${plot ? '' : '--plots'}`;
     const simulationOutput = await Promise.race([
       executeCommand(simCommand),
       new Promise((_, reject) =>
@@ -88,17 +86,16 @@ export async function simulate(
 
     // 6) The simulationOutput should contain lines from the script + JSON. So parse them:
     let rawMetrics = {};
-    const jsonStart = simulationOutput.indexOf('===JSON_START===');
-    const jsonEnd = simulationOutput.indexOf('===JSON_END===', jsonStart);
+    const jsonStart = simulationOutput.indexOf('===FINAL_JSON_START===');
+    const jsonEnd = simulationOutput.indexOf('===FINAL_JSON_END===', jsonStart);
     if (jsonStart !== -1 && jsonEnd !== -1) {
       const jsonString = simulationOutput
-        .substring(jsonStart + '===JSON_START==='.length, jsonEnd)
+        .substring(jsonStart + '===FINAL_JSON_START==='.length, jsonEnd)
         .trim();
       rawMetrics = JSON.parse(jsonString);
     } else {
       throw new Error('JSON markers not found in run-simulations.py output.');
     }
-
 
     //    parseTrackgenOutput is optional if you want track length from trackGenOutput
     const { length, deltaX, deltaY, deltaAngleDegrees } = parseTrackgenOutput(trackGenOutput);
@@ -116,10 +113,26 @@ export async function simulate(
         seed,
         mode,
         trackResults.generator.trackSize,
-        fitness.track_length || fitness.length,
-        fitness.deltaX,
-        fitness.deltaY,
-        fitness.deltaAngleDegrees
+        {
+          length: fitness.track_length || fitness.length,
+          deltaX: fitness.deltaX,
+          deltaY: fitness.deltaY,
+          deltaAngleDegrees: fitness.deltaAngleDegrees,
+          speed_entropy: fitness.speed_entropy,
+          acceleration_entropy: fitness.acceleration_entropy,
+          braking_entropy: fitness.braking_entropy,
+          positions_mean: fitness.positions_mean,
+          avg_radius_mean: fitness.avg_radius_mean,
+          gaps_mean: fitness.gaps_mean,
+          right_bends: fitness.right_bends,
+          avg_radius_var: fitness.avg_radius_var,
+          total_overtakes: fitness.total_overtakes,
+          straight_sections: fitness.straight_sections,
+          gaps_var: fitness.gaps_var,
+          left_bends: fitness.left_bends,
+          positions_var: fitness.positions_var,
+          curvature_entropy: fitness.curvature_entropy
+        }
       );
     }
 
@@ -131,7 +144,7 @@ export async function simulate(
     throw err;
   } finally {
     // Optionally comment this to not stop the container for debugging
-    //if (containerId) { await stopDockerContainer(containerId); }
+    if (containerId) { await stopDockerContainer(containerId); }
   }
 }
 
