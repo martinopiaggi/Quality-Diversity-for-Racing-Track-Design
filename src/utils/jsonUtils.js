@@ -1,8 +1,7 @@
 // jsonUtils.js
 import { promises as fs } from 'fs';
 import path from 'path';
-
-const OUTPUT_DIR = "../../data/tests"
+import {OUTPUT_DIR} from './constants.js'; 
 
 async function readJsonFile(jsonFilePath) {
     try {
@@ -59,7 +58,7 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
 }
 
 
-export async function saveFitnessToJson(seed, mode, trackSize, length, deltaX, deltaY, deltaAngleDegrees) {
+export async function saveFitnessToJson(seed, mode, trackSize, fitness) {
     const jsonFileName = `${seed}.json`;
     const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
     
@@ -69,10 +68,24 @@ export async function saveFitnessToJson(seed, mode, trackSize, length, deltaX, d
         jsonContent.mode = mode;
         jsonContent.trackSize = trackSize;
         jsonContent.fitness = {
-            length,
-            deltaX,
-            deltaY,
-            deltaAngleDegrees
+            length: fitness.length,
+            deltaX: fitness.deltaX,
+            deltaY: fitness.deltaY,
+            deltaAngleDegrees: fitness.deltaAngleDegrees,
+            speed_entropy: fitness.speed_entropy,
+            acceleration_entropy: fitness.acceleration_entropy,
+            braking_entropy: fitness.braking_entropy,
+            positions_mean: fitness.positions_mean,
+            avg_radius_mean: fitness.avg_radius_mean,
+            gaps_mean: fitness.gaps_mean,
+            right_bends: fitness.right_bends,
+            avg_radius_var: fitness.avg_radius_var,
+            total_overtakes: fitness.total_overtakes,
+            straight_sections: fitness.straight_sections,
+            gaps_var: fitness.gaps_var,
+            left_bends: fitness.left_bends,
+            positions_var: fitness.positions_var,
+            curvature_entropy: fitness.curvature_entropy
         };
     } else {
         jsonContent = {
@@ -80,10 +93,24 @@ export async function saveFitnessToJson(seed, mode, trackSize, length, deltaX, d
             mode,
             trackSize,
             fitness: {
-                length,
-                deltaX,
-                deltaY,
-                deltaAngleDegrees
+                length: fitness.length,
+                deltaX: fitness.deltaX,
+                deltaY: fitness.deltaY,
+                deltaAngleDegrees: fitness.deltaAngleDegrees,
+                speed_entropy: fitness.speed_entropy,
+                acceleration_entropy: fitness.acceleration_entropy,
+                braking_entropy: fitness.braking_entropy,
+                positions_mean: fitness.positions_mean,
+                avg_radius_mean: fitness.avg_radius_mean,
+                gaps_mean: fitness.gaps_mean,
+                right_bends: fitness.right_bends,
+                avg_radius_var: fitness.avg_radius_var,
+                total_overtakes: fitness.total_overtakes,
+                straight_sections: fitness.straight_sections,
+                gaps_var: fitness.gaps_var,
+                left_bends: fitness.left_bends,
+                positions_var: fitness.positions_var,
+                curvature_entropy: fitness.curvature_entropy
             },
             dataSet: []
         };

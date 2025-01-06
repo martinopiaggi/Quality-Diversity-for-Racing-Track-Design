@@ -1,100 +1,147 @@
-import fs from 'fs/promises';
-import path from 'path';
+const fs = require('fs/promises');
+const path = require('path');
 
-const JSON_DIR = './tests'; // Directory containing JSON files
+const JSON_DIR = './tests';
 
 async function collectData() {
     try {
         const files = await fs.readdir(JSON_DIR);
         const jsonFiles = files.filter(file => file.endsWith('.json'));
 
-        let totalDeltaX = 0;
-        let totalDeltaY = 0;
-        let totalLength = 0;
-        let totalDeltaAngleDegrees = 0;
+        // Initialize accumulators for all metrics
+        const metrics = {
+            length: { total: 0, sum_squares: 0 },
+            deltaX: { total: 0, sum_squares: 0 },
+            deltaY: { total: 0, sum_squares: 0 },
+            deltaAngleDegrees: { total: 0, sum_squares: 0 },
+            speed_entropy: { total: 0, sum_squares: 0 },
+            acceleration_entropy: { total: 0, sum_squares: 0 },
+            braking_entropy: { total: 0, sum_squares: 0 },
+            positions_mean: { total: 0, sum_squares: 0 },
+            avg_radius_mean: { total: 0, sum_squares: 0 },
+            gaps_mean: { total: 0, sum_squares: 0 },
+            right_bends: { total: 0, sum_squares: 0 },
+            avg_radius_var: { total: 0, sum_squares: 0 },
+            total_overtakes: { total: 0, sum_squares: 0 },
+            straight_sections: { total: 0, sum_squares: 0 },
+            gaps_var: { total: 0, sum_squares: 0 },
+            left_bends: { total: 0, sum_squares: 0 },
+            positions_var: { total: 0, sum_squares: 0 },
+            curvature_entropy: { total: 0, sum_squares: 0 }
+        };
+
         let count = 0;
-        let sumOfSquaresDeltaX = 0;
-        let sumOfSquaresDeltaY = 0;
-        let sumOfSquaresDeltaAngleDegrees = 0;
         let perfectTrackCount = 0;
         let veryBadTrackCount = 0;
         let perfectTracks = [];
         let veryBadTracks = [];
 
+        // First pass: collect sums for averages
         for (const file of jsonFiles) {
             const filePath = path.join(JSON_DIR, file);
             const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+            
+            if (!data.fitness) continue; // Skip if no fitness data
 
-            totalDeltaX += data.deltaX;
-            totalDeltaY += data.deltaY;
-            totalLength += data.length;
-            totalDeltaAngleDegrees += data.deltaAngleDegrees;
+            const fitness = data.fitness;
+            count++;
 
-            if (Math.abs(data.deltaX) < 1 && Math.abs(data.deltaY) < 1 && Math.abs(data.deltaAngleDegrees) < 10) {
+            // Update all metrics
+            for (const [key, value] of Object.entries(metrics)) {
+                if (fitness[key] !== null && fitness[key] !== undefined) {
+                    value.total += fitness[key];
+                }
+            }
+
+            // Track quality checks
+            if (Math.abs(fitness.deltaX) < 1 && 
+                Math.abs(fitness.deltaY) < 1 && 
+                Math.abs(fitness.deltaAngleDegrees) < 10) {
                 perfectTrackCount++;
                 perfectTracks.push({
-                    seed: data.seed,
+                    seed: data.id,
                     trackSize: data.trackSize,
-                    mode: data.MODE,
+                    mode: data.mode,
+                    metrics: { ...fitness }
                 });
             }
 
-            if ((Math.abs(data.deltaX) + Math.abs(data.deltaY) > 6)) {
+            if ((Math.abs(fitness.deltaX) + Math.abs(fitness.deltaY) > 6)) {
                 veryBadTrackCount++;
                 veryBadTracks.push({
-                    seed: data.seed,
+                    seed: data.id,
                     trackSize: data.trackSize,
-                    mode: data.MODE,
-                    deltaX: data.deltaX,
-                    deltaY: data.deltaY,
-                    deltaAngleDegrees: data.deltaAngleDegrees
+                    mode: data.mode,
+                    metrics: { ...fitness }
                 });
             }
-
-            count++;
         }
 
-        const averageDeltaX = totalDeltaX / count;
-        const averageDeltaY = totalDeltaY / count;
-        const averageLength = totalLength / count;
-        const averageDeltaAngleDegrees = totalDeltaAngleDegrees / count;
+        // Calculate averages
+        const averages = {};
+        for (const [key, value] of Object.entries(metrics)) {
+            averages[key] = value.total / count;
+        }
 
+        // Second pass: calculate variances
         for (const file of jsonFiles) {
             const filePath = path.join(JSON_DIR, file);
             const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+            
+            if (!data.fitness) continue;
+            
+            const fitness = data.fitness;
 
-            sumOfSquaresDeltaX += Math.pow(data.deltaX - averageDeltaX, 2);
-            sumOfSquaresDeltaY += Math.pow(data.deltaY - averageDeltaY, 2);
-            sumOfSquaresDeltaAngleDegrees += Math.pow(data.deltaAngleDegrees - averageDeltaAngleDegrees, 2);
+            // Update sum of squares for all metrics
+            for (const [key, value] of Object.entries(metrics)) {
+                if (fitness[key] !== null && fitness[key] !== undefined) {
+                    value.sum_squares += Math.pow(fitness[key] - averages[key], 2);
+                }
+            }
         }
 
-        const varianceDeltaX = Math.sqrt(sumOfSquaresDeltaX / (count - 1));
-        const varianceDeltaY = Math.sqrt(sumOfSquaresDeltaY / (count - 1));
-        const varianceDeltaAngleDegrees = Math.sqrt(sumOfSquaresDeltaAngleDegrees / (count - 1));
+        // Calculate standard deviations
+        const stdDevs = {};
+        for (const [key, value] of Object.entries(metrics)) {
+            stdDevs[key] = Math.sqrt(value.sum_squares / (count - 1));
+        }
 
-        console.log(`Number of JSON files: ${count}`);
-        console.log(`Average length: ${averageLength}`);
-        console.log(`Average deltaX: ${averageDeltaX}`);
-        console.log(`Average deltaY: ${averageDeltaY}`);
-        console.log(`Average deltaAngleDegrees: ${averageDeltaAngleDegrees}`);
-        console.log(`Variance deltaX: ${varianceDeltaX}`);
-        console.log(`Variance deltaY: ${varianceDeltaY}`);
-        console.log(`Variance deltaAngleDegrees: ${varianceDeltaAngleDegrees}`);
-        console.log(`Number of perfect tracks: ${perfectTrackCount}`);
+        // Print results
+        console.log(`\nAnalysis Results (${count} valid tracks):`);
+        console.log('\nBasic Statistics:');
+        for (const [key, avg] of Object.entries(averages)) {
+            console.log(`${key}:`);
+            console.log(`  Average: ${avg.toFixed(4)}`);
+            console.log(`  Std Dev: ${stdDevs[key].toFixed(4)}`);
+        }
+
+        console.log('\nTrack Quality Analysis:');
+        console.log(`Perfect Tracks: ${perfectTrackCount}`);
+        console.log(`Problematic Tracks: ${veryBadTrackCount}`);
 
         if (perfectTrackCount > 0) {
-            console.log('Perfect tracks details:');
+            console.log('\nPerfect Tracks Details:');
             perfectTracks.forEach(track => {
-                console.log(`Seed: ${track.seed}, Track Size: ${track.trackSize}, Mode: ${track.mode}`);
+                console.log(`\nSeed: ${track.seed}`);
+                console.log(`Track Size: ${track.trackSize}`);
+                console.log(`Mode: ${track.mode}`);
+                console.log('Key Metrics:');
+                console.log(`  Length: ${track.metrics.length.toFixed(2)}`);
+                console.log(`  Speed Entropy: ${track.metrics.speed_entropy.toFixed(2)}`);
+                console.log(`  Curvature Entropy: ${track.metrics.curvature_entropy.toFixed(2)}`);
             });
         }
 
-        console.log(`Number of very bad tracks: ${veryBadTrackCount}`);
-
         if (veryBadTrackCount > 0) {
-            console.log('Very bad tracks details:');
+            console.log('\nProblematic Tracks Details:');
             veryBadTracks.forEach(track => {
-                console.log(`Seed: ${track.seed}, Track Size: ${track.trackSize}, Mode: ${track.mode}, deltaX: ${track.deltaX}, deltaY: ${track.deltaY}, deltaAngleDegrees: ${track.deltaAngleDegrees}`);
+                console.log(`\nSeed: ${track.seed}`);
+                console.log(`Track Size: ${track.trackSize}`);
+                console.log(`Mode: ${track.mode}`);
+                console.log('Issues:');
+                console.log(`  Delta X: ${track.metrics.deltaX.toFixed(2)}`);
+                console.log(`  Delta Y: ${track.metrics.deltaY.toFixed(2)}`);
+                console.log(`  Delta Angle: ${track.metrics.deltaAngleDegrees.toFixed(2)}`);
             });
         }
 
