@@ -13,7 +13,6 @@ import {
   SIMULATION_TIMEOUT,
 } from '../utils/constants.js';
 
-
 const executeCommand = (command) => {
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
@@ -38,7 +37,6 @@ export async function simulate(
   saveJson = false,
   plot = false
 ) {
-  // 1) Decide trackSize:
   if (isNaN(trackSize)) {
     if (mode === 'voronoi') {
       if (selected.length > 0) {
@@ -52,30 +50,21 @@ export async function simulate(
   }
   if (seed === null) seed = Math.random();
 
-  // 2) Generate track geometry in Node (on the host):
   const trackResults = await generateTrack(
     mode, BBOX, seed, trackSize,
     saveJson, dataSet, selected
   );
   const trackXml = xml.exportTrackToXML(trackResults.track);
-
   console.log(`SEED: ${seed}`);
   console.log(`MODE: ${mode}`);
   console.log(`trackSize: ${trackSize}`);
 
   let containerId;
   try {
-    // 3) Start Docker container
     containerId = await startDockerContainer();
-
-    // 4) Copy the track XML into the container, run trackgen inside
     const trackGenOutput = await generateAndMoveTrackFiles(containerId, trackXml, seed);
     console.log(trackGenOutput);
 
-    // 5) Now run the entire simulation pipeline in one command:
-    //    - track-export
-    //    - full race (10 laps)
-    //    - JSON analysis
     const simCommand = `docker exec ${containerId} python3 /usr/local/lib/sirianni_tools/run-simulations.py --track-export -r 5 --json ${plot ? '' : '--plots'}`;
     const simulationOutput = await Promise.race([
       executeCommand(simCommand),
@@ -83,8 +72,6 @@ export async function simulate(
         setTimeout(() => reject(new Error('Simulation timeout')), SIMULATION_TIMEOUT)
       )
     ]);
-
-    // 6) The simulationOutput should contain lines from the script + JSON. So parse them:
     let rawMetrics = {};
     const jsonStart = simulationOutput.indexOf('===FINAL_JSON_START===');
     const jsonEnd = simulationOutput.indexOf('===FINAL_JSON_END===', jsonStart);
@@ -96,18 +83,45 @@ export async function simulate(
     } else {
       throw new Error('JSON markers not found in run-simulations.py output.');
     }
-
-    //    parseTrackgenOutput is optional if you want track length from trackGenOutput
     const { length, deltaX, deltaY, deltaAngleDegrees } = parseTrackgenOutput(trackGenOutput);
+    const {
+      speed_entropy = 0,
+      acceleration_entropy = 0,
+      braking_entropy = 0,
+      positions_mean = 0,
+      avg_radius_mean = 0,
+      gaps_mean = 0,
+      right_bends = 0,
+      avg_radius_var = 0,
+      total_overtakes = 0,
+      straight_sections = 0,
+      gaps_var = 0,
+      left_bends = 0,
+      positions_var = 0,
+      curvature_entropy = 0,
+      ...rest
+    } = rawMetrics;
     const fitness = {
       length,
       deltaX,
       deltaY,
       deltaAngleDegrees,
-      ...rawMetrics
+      speed_entropy,
+      acceleration_entropy,
+      braking_entropy,
+      positions_mean,
+      avg_radius_mean,
+      gaps_mean,
+      right_bends,
+      avg_radius_var,
+      total_overtakes,
+      straight_sections,
+      gaps_var,
+      left_bends,
+      positions_var,
+      curvature_entropy,
+      ...rest
     };
-
-    // 8) Optionally save the final JSON
     if (saveJson) {
       await saveFitnessToJson(
         seed,
@@ -135,16 +149,14 @@ export async function simulate(
         }
       );
     }
-
-    // 9) Return your final results
     return { fitness };
-
   } catch (err) {
     console.error(`Error: ${err.message}`);
     throw err;
   } finally {
-    // Optionally comment this to not stop the container for debugging
-    if (containerId) { await stopDockerContainer(containerId); }
+    if (containerId) {
+      await stopDockerContainer(containerId);
+    }
   }
 }
 
@@ -172,7 +184,6 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
   const tmpDir = os.tmpdir();
   const tmpFilePath = path.join(tmpDir, `${seed}.xml`);
   await fs.writeFile(tmpFilePath, trackXml);
-
   try {
     await executeCommand(
       `docker cp ${tmpFilePath} ` +
@@ -195,7 +206,6 @@ async function generateAndMoveTrackFiles(containerId, trackXml, seed) {
 }
 
 function parseTrackgenOutput(trackgenOutput) {
-  // Optional: parse length, deltaX, deltaY from trackgenOutput
   const lengthMatch = trackgenOutput.match(/length\s*=\s*([\d.]+)/);
   const deltaXMatch = trackgenOutput.match(/Delta X\s*=\s*(-?[\d.]+)/);
   const deltaYMatch = trackgenOutput.match(/Delta Y\s*=\s*(-?[\d.]+)/);
@@ -209,6 +219,5 @@ function parseTrackgenOutput(trackgenOutput) {
 }
 
 if (process.argv[1].includes('simulateTrack.js')) {
-  // If needed to run directly from CLI
   simulate().catch(err => console.error(`Unhandled error: ${err.message}`));
 }

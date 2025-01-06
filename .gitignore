@@ -8,3 +8,7 @@ web/data
 data/tests/*
 data/tests/
 .vscode/
+
+mapelite/first_test/
+
+src/data/tests/
