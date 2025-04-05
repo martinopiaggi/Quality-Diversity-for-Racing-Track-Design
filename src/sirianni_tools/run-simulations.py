@@ -136,8 +136,8 @@ def main():
     parser.add_argument("--json", action="store_true",
                         help="run analysis afterwards and print JSON to stdout.")
     parser.add_argument("--plots", action="store_true", help="enable plots (default: no plots)")
-    parser.add_argument("--repetitions", type=int, default=3,
-                        help="Number of times to run the race+analysis (default=3).")
+    parser.add_argument("--repetitions", type=int, default=1,
+                        help="Number of times to run the race+analysis (default=1).")
     args = parser.parse_args()
 
     # The usual torcs raceman directory from utils:

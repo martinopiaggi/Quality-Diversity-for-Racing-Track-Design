@@ -32,7 +32,8 @@ export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = JSON
 
     //process to reduce the approximation error using "findMaxCurveBeforeStraight" heuristic
     const segmentLength = 10;
-    const minIndex = utils.findMaxCurveBeforeStraight(splineTrack, segmentLength);
+    //const minIndex = utils.findMaxCurveBeforeStraight(splineTrack, segmentLength);
+    const minIndex = Math.floor(Math.random() * splineTrack.length);
     splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
     
     if (saveJSON) {
