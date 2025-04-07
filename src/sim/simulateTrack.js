@@ -41,9 +41,7 @@ export async function simulate(
     if (mode === 'voronoi') {
       if (selected.length > 0) {
         trackSize = selected.length;
-      } else {
-        trackSize = Math.ceil(Math.random() * 4) + 1;
-      }
+      } 
     } else {
       trackSize = 50;
     }
@@ -54,7 +52,7 @@ export async function simulate(
     mode, BBOX, seed, trackSize,
     saveJson, dataSet, selected
   );
-  const trackXml = xml.exportTrackToXML(trackResults.track);
+  const trackXml = xml.exportTrackToXML(trackResults.track, Math.floor(Math.random() * trackResults.track.length), false);
   console.log(`SEED: ${seed}`);
   console.log(`MODE: ${mode}`);
   console.log(`trackSize: ${trackSize}`);
