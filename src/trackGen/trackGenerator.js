@@ -14,7 +14,7 @@ async function importJsonUtils() {
 }
   
 export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = JSON_DEBUG, dataSet = [], selected = []) {
-    if (isNaN(seed)) seed = Math.random();
+    if (saveJSON) await importJsonUtils();
     switch (mode) {
         case 'voronoi':
             //in case of Voronoi select -> selected Voronoi cells
@@ -36,7 +36,6 @@ export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = JSON
     splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
     
     if (saveJSON) {
-        await importJsonUtils();
         if(mode === 'voronoi') 
             savePointsToJson(seed, trackGenerator.dataSet, trackGenerator.selectedCells.map(cell => cell.site));
         else
