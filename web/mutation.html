@@ -92,7 +92,7 @@
       
       let mutatedData;
       if (mode === "voronoi") {
-        mutatedData = mutation(initialTrack.generator, intensityMutation);
+        mutatedData = mutationVoronoi(initialTrack.generator, intensityMutation);
       } else {
         mutatedData = mutationConvexHull(initialTrack.generator, intensityMutation);
       }
