@@ -23,17 +23,6 @@ def validate_block_data(block_data):
     return True
 
 def compute_distribution_entropy(values, bins='auto', name='metric'):
-    """
-    Compute Shannon entropy of a distribution of values.
-    
-    Args:
-        values: List/array of numerical values
-        bins: Number of bins or 'auto' for automatic binning
-        name: Name of metric for logging
-    
-    Returns:
-        float: Shannon entropy of the distribution, or None if insufficient data
-    """
     if not values:
         logging.warning(f"No {name} data available for entropy calculation")
         return None
@@ -47,11 +36,13 @@ def compute_distribution_entropy(values, bins='auto', name='metric'):
         return None
         
     try:
-        hist, bin_edges = np.histogram(values, bins=bins, density=True)
-        # Avoid log(0) by removing zero counts
-        hist = hist[hist > 0]
-        entropy_value = entropy(hist)
-        logging.info(f"Computed {name} entropy: {entropy_value:.3f} using {len(bin_edges)-1} bins")
+        hist, bin_edges = np.histogram(values, bins=bins, density=False)
+        # Convert to probabilities
+        probabilities = hist / np.sum(hist) if np.sum(hist) > 0 else hist
+        # Filter out zeros to avoid log(0)
+        probabilities = probabilities[probabilities > 0]
+        # Calculate Shannon entropy
+        entropy_value = -np.sum(probabilities * np.log2(probabilities))
         return entropy_value
     except Exception as e:
         logging.error(f"Error computing {name} entropy: {str(e)}")
