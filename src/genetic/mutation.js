@@ -1,4 +1,4 @@
-export function mutation(individual, intensity) {
+export function mutationVoronoi(individual, intensity) {
   console.log(individual.dataSet.length);
   console.log(individual.selectedCells.length);
   const selectedCells = individual.selectedCells.map(cell => ({...cell.site}));

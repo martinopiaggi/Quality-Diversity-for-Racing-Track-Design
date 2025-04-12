@@ -2,7 +2,7 @@ import express from 'express';
 import { generateTrack } from '../trackGen/trackGenerator.js';
 import { crossover, crossover2} from '../genetic/crossoverVoronoi.js';
 import { crossover as crossoverConvexHull } from '../genetic/crossoverConvexHull.js';
-import { mutation, mutationConvexHull } from '../genetic/mutation.js';
+import { mutation, mutationConvexHull, mutationVoronoi } from '../genetic/mutation.js';
 import { BBOX, JSON_DEBUG } from '../utils/constants.js';
 import { simulate } from './simulateTrack.js';
 
@@ -124,7 +124,7 @@ app.post('/mutate', async (req, res, next) => {
         ]);
 
         if (individual.mode === 'voronoi') {
-            const mutatedData = mutation(trackGenerator, intensityMutation);
+            const mutatedData = mutationVoronoi(trackGenerator, intensityMutation);
             res.json({
                 mutated: {
                     dataSet: mutatedData.ds, 
