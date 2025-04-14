@@ -1,6 +1,4 @@
 export function mutationVoronoi(individual, intensity) {
-  console.log(individual.dataSet.length);
-  console.log(individual.selectedCells.length);
   const selectedCells = individual.selectedCells.map(cell => ({...cell.site}));
   const dataSet = [...individual.dataSet];
   const randomIndex = Math.floor(Math.random() * selectedCells.length);

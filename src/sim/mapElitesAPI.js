@@ -2,7 +2,7 @@ import express from 'express';
 import { generateTrack } from '../trackGen/trackGenerator.js';
 import { crossover, crossover2} from '../genetic/crossoverVoronoi.js';
 import { crossover as crossoverConvexHull } from '../genetic/crossoverConvexHull.js';
-import { mutation, mutationConvexHull, mutationVoronoi } from '../genetic/mutation.js';
+import { mutationConvexHull, mutationVoronoi } from '../genetic/mutation.js';
 import { BBOX, JSON_DEBUG } from '../utils/constants.js';
 import { simulate } from './simulateTrack.js';
 
