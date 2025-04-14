@@ -4,8 +4,10 @@
 import { simulate } from './simulateTrack.js';
 import { JSON_DEBUG,  SIMULATION_TIMEOUT, } from '../utils/constants.js';
 
-const TOTAL_SIMULATIONS = 100;
-const CONCURRENCY_LIMIT = 10; // Number of parallel simulations
+const STARTING_SEED = 0;
+const TOTAL_UNIQUE_TRACKS = 2000;
+const REPETITIONS_PER_TRACK  = 1; 
+const CONCURRENCY_LIMIT = 20; // Number of parallel simulations
 
 async function runSimulation(simulationIndex) {
     try {
@@ -14,7 +16,7 @@ async function runSimulation(simulationIndex) {
         // Generate random parameters for the simulation
         const mode = 'voronoi';
         const seed = simulationIndex;
-        const trackSize = (simulationIndex % 5) + 2;
+        const trackSize = (simulationIndex % 8) + 1;
 
         // Run the simulation
         const { fitness } = await Promise.race([
@@ -33,8 +35,8 @@ async function runSimulation(simulationIndex) {
 
 async function runSimulations() {
     const simulationPromises = [];
-    for (let i = 0; i < TOTAL_SIMULATIONS; i++) {
-        simulationPromises.push(runSimulation(i + 1));
+    for (let i = STARTING_SEED; i < REPETITIONS_PER_TRACK*TOTAL_UNIQUE_TRACKS + STARTING_SEED; i++) {
+        simulationPromises.push(runSimulation(i%TOTAL_UNIQUE_TRACKS));
         if (simulationPromises.length >= CONCURRENCY_LIMIT) {
             await Promise.all(simulationPromises);
             simulationPromises.length = 0;

@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import { generateTrack } from '../trackGen/trackGenerator.js';
 import * as xml from '../utils/xmlTorcsGenerator.js';
+import { mutationConvexHull, mutationVoronoi } from '../genetic/mutation.js';
 import { saveFitnessToJson } from '../utils/jsonUtils.js';
 import path from 'path';
 import os from 'os';
@@ -46,13 +47,31 @@ export async function simulate(
       trackSize = 50;
     }
   }
-  if (seed === null) seed = Math.random();
+
+
+  /* 
+  // Generate initial track
+  let initialTrack = await generateTrack(mode, BBOX, seed, trackSize, true, dataSet, selected);
+      
+  // Apply mutation
+  const intensityMutation = 1; 
+  
+  let mutatedData;
+  if (mode === "voronoi") {
+    mutatedData = mutationVoronoi(initialTrack.generator, intensityMutation);
+  } else {
+    mutatedData = mutationConvexHull(initialTrack.generator, intensityMutation);
+  }
+  // Generate final track with mutated data
+  const trackResults = await generateTrack(mode, BBOX, seed, trackSize, false, mutatedData.ds, mutatedData.sel || mutatedData.hull);
+  */
 
   const trackResults = await generateTrack(
     mode, BBOX, seed, trackSize,
     saveJson, dataSet, selected
   );
-  const trackXml = xml.exportTrackToXML(trackResults.track, Math.floor(Math.random() * trackResults.track.length), false);
+
+  const trackXml = xml.exportTrackToXML(trackResults.track);
   console.log(`SEED: ${seed}`);
   console.log(`MODE: ${mode}`);
   console.log(`trackSize: ${trackSize}`);

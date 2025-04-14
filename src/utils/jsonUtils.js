@@ -57,9 +57,11 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
 }
 
 export async function saveFitnessToJson(seed, mode, trackSize, fitness) {
-    // Create a unique suffix using the current timestamp
+    // Create a unique suffix using the current timestamp (useful to runs multiple experiments with same unique track/seed)
     const suffix = `${Date.now()}`;
-    const fitnessFileName = `${seed}_${suffix}.json`;
+    //Use _${suffix}.json`; to have unique JSON 
+
+    const fitnessFileName = `${seed}.json`; 
     const fitnessFilePath = path.join(OUTPUT_DIR, fitnessFileName);
 
     // Attempt to read the original points file (without suffix) to get its dataSet and selectedCells.
