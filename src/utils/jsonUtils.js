@@ -2,6 +2,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import {OUTPUT_DIR} from './constants.js'; 
+import { json } from 'express';
 
 async function readJsonFile(jsonFilePath) {
     try {
@@ -18,7 +19,7 @@ async function writeJsonFile(jsonFilePath, jsonContent) {
     console.log(`JSON file saved at: ${jsonFilePath}`);
 }
 
-export async function savePointsToJson(seed, dataSet, selectedCells = []) {
+export async function savePointsToJson(seed, dataSet, selectedCells = [], splineVector=[]) {
     const jsonFileName = `${seed}.json`;
     const jsonFilePath = path.join(OUTPUT_DIR, jsonFileName);
     
@@ -36,6 +37,7 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
             x: point.x,
             y: point.y
         }));
+        jsonContent.splineVector = splineVector;
     } else {
         jsonContent = {
             id: seed,
@@ -49,7 +51,8 @@ export async function savePointsToJson(seed, dataSet, selectedCells = []) {
             selectedCells: selectedCells.map(point => ({
                 x: point.x,
                 y: point.y
-            }))
+            })),
+            splineVector: splineVector
         };
     }
     
@@ -105,7 +108,8 @@ export async function saveFitnessToJson(seed, mode, trackSize, fitness) {
         },
         // Preserve points data if available.
         dataSet: originalPoints.dataSet || [],
-        selectedCells: originalPoints.selectedCells || []
+        selectedCells: originalPoints.selectedCells || [],
+        splineVector: originalPoints.splineVector || []
     };
 
     // Save the fitness JSON to the unique file.
