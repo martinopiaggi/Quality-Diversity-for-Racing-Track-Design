@@ -2,47 +2,9 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { resamplePoints } from '../src/utils/utils.js'
 import { generateTrack } from '../src/trackGen/trackGenerator.js'; // Adjust the path as needed
-
-// Define the bounding box as used in your website.
-const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-
-/**
- * Resamples an array of points along the polyline to a fixed number of samples using linear interpolation.
- * @param {Array} points - Array of points with properties {x, y}.
- * @param {number} numSamples - The desired number of samples.
- * @returns {Array} - Resampled array of points.
- */
-function resamplePoints(points, numSamples) {
-  if (points.length < 2) return points;
-  
-  // Compute cumulative distances along the polyline.
-  const distances = [0];
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i].x - points[i - 1].x;
-    const dy = points[i].y - points[i - 1].y;
-    distances.push(distances[i - 1] + Math.hypot(dx, dy));
-  }
-  
-  const totalLength = distances[distances.length - 1];
-  const resampled = [];
-  
-  // For each sample point, compute its target distance and interpolate.
-  for (let i = 0; i < numSamples; i++) {
-    const target = (i / (numSamples - 1)) * totalLength;
-    let j = 1;
-    while (j < distances.length && distances[j] < target) {
-      j++;
-    }
-    const t = (target - distances[j - 1]) / (distances[j] - distances[j - 1]);
-    const x = points[j - 1].x + t * (points[j].x - points[j - 1].x);
-    const y = points[j - 1].y + t * (points[j].y - points[j - 1].y);
-    resampled.push({ x, y });
-  }
-  
-  return resampled;
-}
-
+import { BBOX } from "../src/utils/constants.js";
 /**
  * Main function: For each JSON file provided (or all JSON files in a directory),
  * load the genotype, generate and normalize the track, resample to a fixed-length spline vector,
@@ -89,26 +51,7 @@ async function main() {
       const selectedCells = genotype.selectedCells || [];
       
       const trackResult = await generateTrack(mode, BBOX, seed, trackSize, false, dataSet, selectedCells);
-      
-      // Assume the generated track is available as trackResult.track (an array of points).
-      let generatedTrack = trackResult.track;
-      if (generatedTrack.length > 0) {
-        const first = generatedTrack[0];
-        const last = generatedTrack[generatedTrack.length - 1];
-        if (first.x !== last.x || first.y !== last.y) {
-          generatedTrack.push({ x: first.x, y: first.y });
-        }
-      }
-      
-      // Normalize the track points into the unit square.
-      const normalizedTrack = generatedTrack.map(pt => ({
-        x: pt.x / BBOX.xr,
-        y: pt.y / BBOX.yb
-      }));
-      
-      // Resample the normalized track into a fixed-length vector (e.g., 100 points).
-      const fixedLength = 100;
-      const splineVector = resamplePoints(normalizedTrack, fixedLength);
+      const splineVector = resamplePoints(trackResult.track);
       
       // Insert the fixed-length spline vector into the genotype JSON.
       genotype.splineVector = splineVector;

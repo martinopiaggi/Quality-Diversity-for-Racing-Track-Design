@@ -1,3 +1,5 @@
+import { BBOX } from "./constants.js";
+
 export function splineSmoothing(spline) {
     for (let i = 0; i < 5; i++) {
         spline = generateCatmullRomSpline(spline, 5, i * 10);
@@ -215,4 +217,60 @@ export function generateCatmullRomSpline(data, steps, startIndex) {
     }
 
     return spline;
+}
+
+
+export function resamplePoints(points) {
+  // Resample the normalized track into a fixed-length vector (e.g., 100 points).
+  const numSamples = 100;
+
+  if (points.length > 0) {
+    const first = points[0];
+    const last = points[points.length - 1];
+    if (first.x !== last.x || first.y !== last.y) {
+      points.push({ x: first.x, y: first.y });
+    }
+  }
+  
+  // Normalize the track points into the unit square.
+  const normalizedPoints= points.map(pt => ({
+    x: pt.x / BBOX.xr,
+    y: pt.y / BBOX.yb
+  }));
+
+  if (normalizedPoints.length < 2) return normalizedPoints;
+  
+  // Compute cumulative distances along the polyline.
+  const distances = [0];
+  for (let i = 1; i < normalizedPoints.length; i++) {
+    const dx = normalizedPoints[i].x - normalizedPoints[i - 1].x;
+    const dy = normalizedPoints[i].y - normalizedPoints[i - 1].y;
+    distances.push(distances[i - 1] + Math.hypot(dx, dy));
+  }
+  
+  const totalLength = distances[distances.length - 1];
+  let resampled = [];
+  
+  // For each sample point, compute its target distance and interpolate.
+  for (let i = 0; i < numSamples; i++) {
+    const target = (i / (numSamples - 1)) * totalLength;
+    let j = 1;
+    while (j < distances.length && distances[j] < target) {
+      j++;
+    }
+    const t = (target - distances[j - 1]) / (distances[j] - distances[j - 1]);
+    const x = normalizedPoints[j - 1].x + t * (normalizedPoints[j].x - normalizedPoints[j - 1].x);
+    const y = normalizedPoints[j - 1].y + t * (normalizedPoints[j].y - normalizedPoints[j - 1].y);
+    resampled.push({ x, y });
+  }
+  
+  // Centring (translate so centroid == (0,0))
+  const meanX = resampled.reduce((sum, p) => sum + p.x, 0) / resampled.length;
+  const meanY = resampled.reduce((sum, p) => sum + p.y, 0) / resampled.length;
+
+  resampled = resampled.map(p => ({
+    x: p.x - meanX,
+    y: p.y - meanY
+  }));
+  return resampled;
 }
