@@ -166,7 +166,7 @@ export async function simulate(
         }
       );
     }
-    return { fitness };
+    return { fitness: fitness, splineVector: trackResults.splineVector };
   } catch (err) {
     console.error(`Error: ${err.message}`);
     throw err;

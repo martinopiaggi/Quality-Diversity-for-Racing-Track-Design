@@ -35,8 +35,10 @@ app.post('/evaluate', async (req, res) => {
     try {
         const { id, mode, dataSet, selectedCells } = req.body;
         const simulationResult = await simulate(mode, selectedCells.length, dataSet, selectedCells, id,JSON_DEBUG);
+        console.log(simulationResult)
         res.json({
-            fitness: simulationResult.fitness
+            fitness: simulationResult.fitness,
+            splineVector: simulationResult.splineVector
         });
         console.log("Returning fitness from /evaluate: ", JSON.stringify(simulationResult.fitness));
     } catch (error) {
