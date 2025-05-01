@@ -35,13 +35,13 @@ export async function generateTrack(mode, bbox, seed, trackSize, saveJSON = JSON
     const minIndex = utils.findMaxCurveBeforeStraight(splineTrack, segmentLength);
     splineTrack.slice(minIndex).concat(splineTrack.slice(0, minIndex));
     
+    let splineVector = utils.resamplePoints(splineTrack)
     if (saveJSON) {
-        let splineVector = utils.resamplePoints(splineTrack)
         if(mode === 'voronoi') 
             savePointsToJson(seed, trackGenerator.dataSet, trackGenerator.selectedCells.map(cell => cell.site), splineVector);
         else
             savePointsToJson(seed, trackGenerator.dataSet, [], splineVector);
     }
 
-    return { track: splineTrack, generator: trackGenerator };
+    return { track: splineTrack, generator: trackGenerator, splineVector: splineVector };
 }

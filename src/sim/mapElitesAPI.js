@@ -14,14 +14,15 @@ app.post('/generate', async (req, res) => {
     try {
         const { id, mode, trackSize } = req.body;
         //id is used as seed for the generation of the track
-        const { track, generator } = await generateTrack(mode, BBOX, id, trackSize, JSON_DEBUG);
+        const { track, generator, splineVector } = await generateTrack(mode, BBOX, id, trackSize, JSON_DEBUG);
         
         const response = {
             id: id,
             mode: mode,
             dataSet: generator.dataSet,
             selectedCells: generator.selectedCells.map(cell => ({ x: cell.site.x, y: cell.site.y })),
-            trackSize: generator.trackSize
+            trackSize: generator.trackSize,
+            splineVector: splineVector
         };
         
         res.json(response);

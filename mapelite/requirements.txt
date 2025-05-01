@@ -1,5 +1,7 @@
-dask==2025.3.0
-matplotlib==3.10.1
-numpy==2.2.4
-Requests==2.32.3
-ribs==0.7.1
+dask[distributed]
+matplotlib
+numpy
+Requests
+ribs
+umap-learn
+shapely
