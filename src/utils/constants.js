@@ -1,6 +1,7 @@
 // constants.js
 export const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
 export const MODE = 'voronoi'; // voronoi or convexHull
+export const NUMBER_OF_VORONOI_SITES = 100;
 export const DOCKER_IMAGE_NAME = 'torcs';
 export const MAPELITE_PATH = '../utils/mapelite.xml';
 export const MEMORY_LIMIT = '2000m';

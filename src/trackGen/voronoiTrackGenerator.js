@@ -1,4 +1,5 @@
 import Voronoi from '../lib/rhill-voronoi-core.js';
+import { NUMBER_OF_VORONOI_SITES } from "../utils/constants.js"
 import { prng_alea } from '../lib/esm-seedrandom/alea.min.mjs';
 
 export class VoronoiTrackGenerator {
@@ -17,7 +18,7 @@ constructor(bbox, seed, trackSize, dataSet = [], selectedVoronoiSites = []) {
     }
 
     generatePoints() {
-        return Array.from({length: 50}, () => ({
+        return Array.from({length: NUMBER_OF_VORONOI_SITES}, () => ({
             x: this.randomGen() * this.bbox.xr,
             y: this.randomGen() * this.bbox.yb
         }));
