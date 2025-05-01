@@ -4,9 +4,7 @@ output.xml
 .netlify
 # used for Netlify serving 
 web/src 
-web/data
-data/tests/*
-data/tests/
+
 .vscode/
 
 mapelite/first_test/
@@ -14,3 +12,4 @@ mapelite/first_test/
 src/data/tests/
 
 *.json
+!package.json

@@ -1,0 +1,10 @@
+{
+    "scripts": {
+        "start": "node server.js",
+        "build": "cp -R ../src ./src"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "serverless-http": "^3.2.0"
+    }
+}
