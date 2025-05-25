@@ -2,7 +2,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import {OUTPUT_DIR} from './constants.js'; 
-import { json } from 'express';
 
 async function readJsonFile(jsonFilePath) {
     try {

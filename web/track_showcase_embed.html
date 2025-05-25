@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Racing Track Showcase</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    #track-container {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+  <script src="/src/lib/p5.js"></script>
+  <script src="/src/lib/rhill-voronoi-core.js"></script>
+</head>
+<body>
+  <div id="track-container"></div>
+
+  <script type="module">
+    import { generateTrack } from '../src/trackGen/trackGenerator.js';
+    import { VoronoiTrackGenerator } from '../src/trackGen/voronoiTrackGenerator.js';
+    import { ConvexHullTrackGenerator } from '../src/trackGen/convexHullTrackGenerator.js';
+
+    const COLORS = {
+      VORONOI: [41, 55, 61],
+      POINTS: [74, 88, 94],
+      EDGES: [107, 121, 127],
+      SPLINE: [
+        [221, 235, 157],
+        [160, 200, 120],
+        [39, 102, 123],
+        [20, 61, 96]
+      ]
+    };
+
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode') || 'voronoi'; // Default to voronoi
+    const showVoronoi = urlParams.get('voronoi') !== 'false'; // Default to true
+    const showSpline = urlParams.get('spline') !== 'false'; // Default to true
+    const showEdges = urlParams.get('edges') !== 'false'; // Default to true
+    const showPoints = urlParams.get('points') !== 'false'; // Default to true
+    const trackChangeInterval = parseInt(urlParams.get('interval')) || 1000; // Default to 1000ms
+
+    const BBOX = { xl: 0, xr: 0, yt: 0, yb: 0 }; // Will be set in setup
+    let currentTrack = null;
+    let lastTrackChange = 0;
+    let splinePoints = [];
+    let isGenerating = false;
+
+    // Generate a single random track
+    async function generateNewTrack() {
+      if (isGenerating) return;
+      isGenerating = true;
+      
+      let trackConfig;
+      
+      if (mode === 'voronoi') {
+        trackConfig = {
+          mode: 'voronoi',
+          trackSize: Math.floor(Math.random() * 5) + 5, // 5-9 cells
+          seed: Math.random()
+        };
+      } else if (mode === 'convexHull') {
+        trackConfig = {
+          mode: 'convexHull',
+          trackSize: Math.floor(Math.random() * 20) + 30, // 30-49 points
+          seed: Math.random()
+        };
+      } else if (mode === 'mixed') {
+        const trackMode = Math.random() > 0.5 ? 'voronoi' : 'convexHull';
+        trackConfig = {
+          mode: trackMode,
+          trackSize: trackMode === 'voronoi' ? 
+            Math.floor(Math.random() * 5) + 5 : 
+            Math.floor(Math.random() * 20) + 30,
+          seed: Math.random()
+        };
+      }
+
+      try {
+        const result = await generateTrack(
+          trackConfig.mode, 
+          BBOX, 
+          trackConfig.seed, 
+          trackConfig.trackSize, 
+          false, 
+          [], 
+          []
+        );
+        currentTrack = {
+          ...result,
+          mode: trackConfig.mode,
+          trackSize: trackConfig.trackSize
+        };
+        splinePoints = currentTrack.track || [];
+      } catch (error) {
+        console.error('Error generating track:', error);
+      }
+      
+      isGenerating = false;
+    }
+
+    function updateTrackCycle() {
+      const currentTime = millis();
+      if (currentTime - lastTrackChange > trackChangeInterval) {
+        lastTrackChange = currentTime;
+        generateNewTrack();
+      }
+    }
+
+    // P5.js setup
+    window.setup = function() {
+      // Set bbox to full screen
+      BBOX.xr = windowWidth;
+      BBOX.yb = windowHeight;
+      
+      const trackContainer = document.getElementById('track-container');
+      const canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent(trackContainer);
+      
+      // Transparent background
+      clear();
+      
+      frameRate(60);
+      lastTrackChange = millis();
+      
+      // Generate initial track
+      generateNewTrack();
+    }
+
+    // P5.js draw loop
+    window.draw = function() {
+      // Transparent background
+      clear();
+      
+      updateTrackCycle();
+      
+      if (currentTrack) {
+        // Draw Voronoi diagram or Convex Hull
+        if (showVoronoi) {
+          drawVoronoiOrConvexHull(currentTrack);
+        }
+
+        // Draw points
+        if (showPoints) {
+          drawPoints(currentTrack);
+        }
+
+        // Draw track edges
+        if (showEdges) {
+          drawOriginalEdges(currentTrack);
+        }
+
+        // Draw animated spline only if enabled
+        if (showSpline) {
+          drawAnimatedSpline();
+        }
+      }
+    }
+
+    function drawVoronoiOrConvexHull(trackResult) {
+      stroke(COLORS.VORONOI);
+      strokeWeight(1);
+      
+      if (trackResult.generator.diagram) {
+        // Voronoi mode
+        trackResult.generator.diagram.edges.forEach(edge => {
+          if (edge.va && edge.vb) {
+            line(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+          }
+        });
+      } else if (trackResult.generator.dataSetHull) {
+        // Convex Hull mode
+        for (let i = 0; i < trackResult.generator.dataSetHull.length; i++) {
+          let nextIndex = (i + 1) % trackResult.generator.dataSetHull.length;
+          line(
+            trackResult.generator.dataSetHull[i].x, 
+            trackResult.generator.dataSetHull[i].y, 
+            trackResult.generator.dataSetHull[nextIndex].x, 
+            trackResult.generator.dataSetHull[nextIndex].y
+          );
+        }
+      }
+    }
+
+    function drawPoints(trackResult) {
+      const dataSet = trackResult.generator.dataSet;
+      fill(COLORS.POINTS);
+      noStroke();
+      dataSet.forEach(pt => ellipse(pt.x, pt.y, 6, 6));
+    }
+
+    function drawOriginalEdges(trackResult) {
+      const trackEdges = trackResult.generator.trackEdges;
+      if (!trackEdges || trackEdges.length === 0) return;
+      
+      stroke(COLORS.EDGES);
+      strokeWeight(3);
+      for (let i = 0; i < trackEdges.length; i++) {
+        let nextIndex = (i + 1) % trackEdges.length;
+        line(
+          trackEdges[i].x, 
+          trackEdges[i].y, 
+          trackEdges[nextIndex].x, 
+          trackEdges[nextIndex].y
+        );
+      }
+    }
+
+    function drawAnimatedSpline() {
+      if (splinePoints.length === 0) return;
+      
+      for (let i = 0; i < splinePoints.length; i++) {
+        let t = (i / splinePoints.length + frameCount * 0.01) % 1;
+        t = (t + 1) % 1;
+        
+        let colorIndex = floor(t * COLORS.SPLINE.length);
+        let nextColorIndex = (colorIndex + 1) % COLORS.SPLINE.length;
+        let colorT = (t * COLORS.SPLINE.length) % 1;
+        
+        let c = lerpColor(
+          color(...COLORS.SPLINE[colorIndex]), 
+          color(...COLORS.SPLINE[nextColorIndex]), 
+          colorT
+        );
+        
+        stroke(c);
+        strokeWeight(6);
+        point(splinePoints[i].x, splinePoints[i].y);
+      }
+    }
+
+    // Handle window resize
+    window.windowResized = function() {
+      BBOX.xr = windowWidth;
+      BBOX.yb = windowHeight;
+      resizeCanvas(windowWidth, windowHeight);
+      
+      // Generate new track for new size
+      generateNewTrack();
+    }
+
+    // Click to regenerate
+    window.mousePressed = function() {
+      generateNewTrack();
+      lastTrackChange = millis();
+    }
+  </script>
+</body>
+</html>
