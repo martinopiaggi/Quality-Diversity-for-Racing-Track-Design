@@ -1,4 +1,4 @@
-import {BBOX } from "../utils/constants.js"
+import {BBOX, NUMBER_OF_VORONOI_SITES } from "../utils/constants.js"
 
 export function crossover(parent1, parent2, regularize = false) {
   // Extract dataset from each parent
@@ -64,16 +64,16 @@ export function crossover(parent1, parent2, regularize = false) {
   let combinedSelectedCells = [...selected1, ...selected2];
 
   // Combine the corresponding halves of the dataset
-  //keeping them with length 50
+  //keeping them with length NUMBER_OF_VORONOI_SITES
   let combinedDataSet = [];
-  let i = 50;
-  while (combinedDataSet.length < 50 && i >= 0) {
-    if (i < halfDataSet1.length && combinedDataSet.length < 50) {
+  let i = NUMBER_OF_VORONOI_SITES - 1; // Start from the end of the arrays
+  while (combinedDataSet.length < NUMBER_OF_VORONOI_SITES && i >= 0) {
+    if (i < halfDataSet1.length && combinedDataSet.length < NUMBER_OF_VORONOI_SITES) {
       if(!isPointAlreadyInSet(halfDataSet1[i],combinedDataSet)){
         combinedDataSet.push(halfDataSet1[i]);
       }
     }
-    if (i < halfDataSet2.length && combinedDataSet.length < 50 ) {
+    if (i < halfDataSet2.length && combinedDataSet.length < NUMBER_OF_VORONOI_SITES) {
       if(!isPointAlreadyInSet(halfDataSet2[i],combinedDataSet)){
         combinedDataSet.push(halfDataSet2[i]);
       }
@@ -182,12 +182,12 @@ export function crossover2(parent1, parent2,regularize=false) {
   const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
   const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
   const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
-  let i = 35; //arbitrary value: still giving priority to most far points but not at the borders
-  while (combinedDataSet.length < 50 && i >= 0) {
+  let i = Math.floor(NUMBER_OF_VORONOI_SITES*0.7); //arbitrary value: still giving priority to most far points but not at the borders
+  while (combinedDataSet.length < NUMBER_OF_VORONOI_SITES && i >= 0) {
     if (i < borderPoints1.length) {
       combinedDataSet.push(borderPoints1[i]);
     }
-    if (i < borderPoints2.length && combinedDataSet.length < 50 ) {
+    if (i < borderPoints2.length && combinedDataSet.length < NUMBER_OF_VORONOI_SITES) {
       combinedDataSet.push(borderPoints2[i]);
     }
     i--;
@@ -295,16 +295,16 @@ export function crossover3(parent1, parent2) {
     }
   }
 
-
   const centerOfCanvas = {x: BBOX.xr/2, y: BBOX.yb/2};
   const borderPoints1 = sortByDistance(parent1.dataSet,centerOfCanvas).filter(point => point != null);
   const borderPoints2 = sortByDistance(parent2.dataSet,centerOfCanvas).filter(point => point != null);
+
   let i = Math.min(borderPoints1.length, borderPoints2.length) - 1;
-  while (combinedDataSet.length < 50 && i >= 0) {
+  while (combinedDataSet.length < NUMBER_OF_VORONOI_SITES && i >= 0) {
     if (i < borderPoints1.length) {
       combinedDataSet.push(borderPoints1[i]);
     }
-    if (i < borderPoints2.length && combinedDataSet.length < 50 ) {
+    if (i < borderPoints2.length && combinedDataSet.length < NUMBER_OF_VORONOI_SITES) {
       combinedDataSet.push(borderPoints2[i]);
     }
     i--;
