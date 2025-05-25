@@ -1,9 +1,9 @@
 import { BBOX } from "./constants.js";
 
 export function splineSmoothing(spline) {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
         spline = generateCatmullRomSpline(spline, 5, i * 10);
-        spline = pushApart(spline, 10);
+        spline = pushApart(spline, 20);
         spline = fixAngles(spline);
     }
     spline = generateCatmullRomSpline(spline, 20, 0);
