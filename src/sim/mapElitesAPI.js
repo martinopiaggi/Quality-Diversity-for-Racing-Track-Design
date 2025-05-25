@@ -121,7 +121,7 @@ app.post('/crossover', async (req, res, next) => {
         if (mode === 'voronoi') {
             console.log('CROSSOVER VORONOI');
             try {
-                const result = Math.random() < 0.5
+                const result = Math.random() < 1 //mix between two crossovers , 0.5 to balance, 1 for only crossover method 1 , 0 only method 2 
                     ? crossover(trackGenerator1, trackGenerator2, true)
                     : crossover2(trackGenerator2, trackGenerator1, true);
 
@@ -148,7 +148,7 @@ app.post('/crossover', async (req, res, next) => {
    ──────────────────────────────────────────────────────────── */
 app.post('/mutate', async (req, res, next) => {
     try {
-        const { individual, intensityMutation = 10 } = req.body;
+        const { individual, intensityMutation = 50 } = req.body;
         if (!individual || !individual.dataSet) {
             return res.status(400).json({ error: 'Invalid individual data' });
         }
