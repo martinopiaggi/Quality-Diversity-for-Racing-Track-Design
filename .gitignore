@@ -13,3 +13,6 @@ src/data/tests/
 
 *.json
 !package.json
+*.pkl
+
+*.png
