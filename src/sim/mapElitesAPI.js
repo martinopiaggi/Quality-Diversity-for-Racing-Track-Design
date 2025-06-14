@@ -121,9 +121,12 @@ app.post('/crossover', async (req, res, next) => {
         if (mode === 'voronoi') {
             console.log('CROSSOVER VORONOI');
             try {
-                const result = Math.random() < 1 //mix between two crossovers , 0.5 to balance, 1 for only crossover method 1 , 0 only method 2 
+                const result = Math.random() < 0 //mix between two crossovers , 0.5 to balance, 1 for only crossover method 1 , 0 only method 2 
                     ? crossover(trackGenerator1, trackGenerator2, true)
                     : crossover2(trackGenerator2, trackGenerator1, true);
+                    
+                    console.log("Dataset lenght: ", result.ds.length);
+                    console.log("Selected cells lenght: ", result.sel.length);
 
                 return res.json({ offspring: { ds: result.ds, sel: result.sel } });
             } catch (err) {

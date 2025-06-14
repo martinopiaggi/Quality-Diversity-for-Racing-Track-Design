@@ -1,4 +1,4 @@
-import {BBOX, NUMBER_OF_VORONOI_SITES } from "../utils/constants.js"
+import {BBOX, NUMBER_OF_VORONOI_SITES, MAX_NUMBER_OF_SELECTED_CELLS } from "../utils/constants.js"
 
 export function crossover(parent1, parent2, regularize = false) {
   // Extract dataset from each parent
@@ -51,7 +51,9 @@ export function crossover(parent1, parent2, regularize = false) {
   if(regularize){
     //in case to reduce number of cells:
     const lengthOrig = Math.floor((parent1selected.length + parent2selected.length)/2);
-    while ((selected1.length + selected2.length) > lengthOrig) {
+    // Ensure the total number of selected cells does not exceed the original length
+    const maxCells = Math.min(lengthOrig, MAX_NUMBER_OF_SELECTED_CELLS);
+    while ((selected1.length + selected2.length) > maxCells) {
       if (selected1.length > selected2.length) {
         selected1.pop();
       } else {
@@ -117,8 +119,10 @@ export function crossover2(parent1, parent2,regularize=false) {
   if (regularize) {
     //+ 2 because with shift() we just removed 2 cells
     const averageLength = Math.floor((parentSelected1.length + parentSelected2.length + 1) / 2);
-
-    while ((parentSelected1.length + parentSelected2.length) > averageLength) {
+    // Ensure the total number of selected cells does not exceed the original length
+    const maxCells = Math.min(averageLength, MAX_NUMBER_OF_SELECTED_CELLS);
+    console.log("averageLength: ", averageLength);
+    while ((parentSelected1.length + parentSelected2.length) > maxCells) {
       if (parentSelected1.length > parentSelected2.length) {
         parentSelected1.pop();
       } else {
@@ -192,7 +196,6 @@ export function crossover2(parent1, parent2,regularize=false) {
     }
     i--;
   }
-
 
   return { ds: combinedDataSet, sel: selectedCellSites };
 }
