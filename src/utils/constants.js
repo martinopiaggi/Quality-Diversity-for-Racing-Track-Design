@@ -1,12 +1,12 @@
 // constants.js
 export const BBOX = { xl: 0, xr: 600, yt: 0, yb: 600 };
-export const MODE = 'voronoi'; // voronoi or convexHull
+export const MODE = 'convexHull'; // voronoi or convexHull
 export const NUMBER_OF_VORONOI_SITES = 100;
 export const MAX_NUMBER_OF_SELECTED_CELLS = 10;
 export const DOCKER_IMAGE_NAME = 'torcs';
 export const MAPELITE_PATH = '../utils/mapelite.xml';
 export const MEMORY_LIMIT = '2000m';
-export const OUTPUT_DIR = '../data/voronoi'
+export const OUTPUT_DIR = '../data/convexHull'
 export const JSON_DEBUG = true;
 export const SIMULATION_TIMEOUT = 60000;
 
