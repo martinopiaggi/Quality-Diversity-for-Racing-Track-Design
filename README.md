@@ -3,9 +3,10 @@
 MSc thesis project to evolve diverse, high‑quality racing tracks with MAP‑Elites, run headless sims, and analyze with a data‑driven stack. Take inspiration from the approach; it’s a thesis prototype, not a product. The full methodology, engineering trade‑offs, and TORCS quirks are in the thesis.
 
 - [Blog article](https://blog.martino.im/Quality-Diversity-for-Racing-Tracks-Design)
-- [Executive summary](https://blog.martino.im/qd_executive_summary.pdf)
-- [Full thesis](https://blog.martino.im/quality_diversity.pdf)
+- [Executive Summary & Full Thesis](https://www.politesi.polimi.it/handle/10589/239983)
 - [Live visualizer](https://pcgtrack.netlify.app/)
+
+A fork with a continuation of this project can be found at: [Novelty Search for Racing Track Design](https://github.com/zibasPk/Novelty-Search-for-Racing-Track-Design)
 
 ## What it is
 
